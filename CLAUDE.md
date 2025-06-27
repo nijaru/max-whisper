@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Technical Stack
 - **Mojo**: High-performance audio preprocessing and GPU kernel development
 - **MAX Graph**: Optimized Whisper model implementation (encoder/decoder)
+- **Development Hardware**: macOS (structure/setup) + Linux/RTX 4090 (GPU optimization)
 - **Target Hardware**: NVIDIA GPUs (optimized for 4GB+ memory)
 
 ## Repository Structure
@@ -51,11 +52,17 @@ external/
 - Focus on working implementation before optimization
 - Use existing weight conversion tools to avoid complexity
 
+### Hackathon Timeline
+**60-hour sprint**: Friday 6PM → Sunday 6PM  
+**Phases**: setup → foundation → core_model → optimization → demo → submission  
+**Detailed schedule**: See `docs/tasks.json` for hour-by-hour breakdown
+
 ### Risk Mitigation
 - Start with encoder-only version if full Whisper proves too complex
 - Build incrementally with testing at each stage
 - Have fallback to batch processing if real-time demo fails
 - Document trade-offs if accuracy targets can't be met
+- Decision points at each phase with fallback strategies
 
 ## Development Resources
 
@@ -91,10 +98,14 @@ external/
 - **`docs/demo_strategy.md`** - Live demonstration plan and wow factors
 - **`docs/presentation_strategy.md`** - Forum post strategy and judge positioning
 
+### Task Management
+- **`docs/tasks.json`** - Detailed 60-hour development timeline with phases, priorities, and fallback strategies
+
 ### Quick Reference
 - **Need to understand competition?** → `docs/competitive_strategy.md`
-- **Need development timeline?** → `docs/execution_plan.md`
+- **Need development timeline?** → `docs/execution_plan.md` (overview) or `docs/tasks.json` (detailed)
 - **Need performance targets?** → `docs/benchmarking_plan.md`
 - **Need technical details?** → `docs/max_whisper_spec.md`
 - **Need demo ideas?** → `docs/demo_strategy.md`
 - **Need presentation help?** → `docs/presentation_strategy.md`
+- **Need task breakdown?** → `docs/tasks.json`

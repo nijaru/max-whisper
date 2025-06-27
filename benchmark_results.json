@@ -1,0 +1,33 @@
+{
+  "results": {
+    "OpenAI Whisper": {
+      "status": "not_available",
+      "message": "OpenAI Whisper not installed"
+    },
+    "Faster-Whisper": {
+      "inference_time": 0.058017500006826594,
+      "model_size": "tiny",
+      "features_shape": [
+        80,
+        501
+      ],
+      "status": "simulated"
+    },
+    "MAX-Whisper": {
+      "inference_time": 0.028033250011503696,
+      "model_size": "custom",
+      "features_shape": [
+        80,
+        501
+      ],
+      "status": "implemented"
+    }
+  },
+  "targets": {
+    "audio_duration": 30.0,
+    "target_rtf": 0.05,
+    "target_inference_time": 1.5,
+    "target_speedup": 3.0
+  },
+  "timestamp": 1751046736.250221
+}

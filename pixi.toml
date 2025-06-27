@@ -1,0 +1,27 @@
+[project]
+authors = ["Nick Russo <nijaru7@gmail.com>"]
+channels = ["conda-forge", "https://conda.modular.com/max-nightly/"]
+description = "MAX-Whisper: High-performance speech transcription using Mojo and MAX Graph"
+name = "max-whisper"
+platforms = ["osx-arm64", "linux-64"]
+version = "0.1.0"
+
+[tasks]
+hello = "mojo hello.mojo"
+graph-test = "python -c 'import max.graph; print(\"MAX Graph ready\")'"
+
+[feature.benchmark.tasks]
+benchmark-test = "python -c 'import whisper; print(\"Whisper benchmark ready\")'"
+
+[dependencies]
+python = ">=3.9,<3.12"
+max = ">=25.5.0.dev2025062705,<26"
+numpy = ">=1.20,<2"
+
+[feature.benchmark.pypi-dependencies]
+openai-whisper = "*"
+torch = "*"
+
+[environments]
+default = { solve-group = "default" }
+benchmark = { features = ["benchmark"], solve-group = "default" }
