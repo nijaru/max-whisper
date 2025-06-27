@@ -158,9 +158,10 @@
 - **Demo preparation**: $50 (Final testing and recording)
 
 ### Hardware Strategy
-- **Development**: A100 40GB for maximum capability
-- **Edge testing**: Switch to RTX 4070 for real-world validation
-- **Cost optimization**: Stop instances during breaks, meals, sleep
+- **Development Phase 1**: macOS laptop for structure, basic Mojo, MAX Graph setup
+- **Development Phase 2**: Linux/RTX 4090 for GPU kernel optimization and benchmarking  
+- **Edge testing**: RTX 4090 represents high-end consumer GPU target
+- **Demo deployment**: Fedora desktop with RTX 4090 for live demonstrations
 
 ### Team Coordination (if applicable)
 - **Morning standup**: 15min status, priorities, blockers
