@@ -1,33 +1,121 @@
 {
-  "results": {
-    "OpenAI Whisper": {
-      "status": "not_available",
-      "message": "OpenAI Whisper not installed"
+  "comprehensive_results": {
+    "speech_short": {
+      "description": "\ud83d\udde3\ufe0f  Short Speech (5s)",
+      "duration": 5.0,
+      "audio_type": "speech",
+      "results": {
+        "OpenAI Whisper": {
+          "status": "success",
+          "inference_time": 0.5608110427856445,
+          "model_size": "tiny",
+          "transcription": " Thank you.",
+          "language": "en",
+          "implementation": "openai-whisper"
+        },
+        "Faster-Whisper": {
+          "status": "success",
+          "inference_time": 0.7079846858978271,
+          "model_size": "tiny",
+          "transcription_length": 1,
+          "language": "en",
+          "implementation": "faster-whisper"
+        },
+        "MAX-Whisper": {
+          "status": "partial_implementation",
+          "inference_time": 0.21141982078552246,
+          "preprocessing_time": 0.0027298927307128906,
+          "encoder_time": 0.20868515968322754,
+          "model_size": "basic_encoder",
+          "features_shape": [
+            80,
+            501
+          ],
+          "encoded_shape": [
+            1,
+            80,
+            1500
+          ],
+          "implementation": "max-whisper",
+          "note": "Basic encoder only - full Whisper model needed for fair comparison"
+        }
+      }
     },
-    "Faster-Whisper": {
-      "inference_time": 0.058017500006826594,
-      "model_size": "tiny",
-      "features_shape": [
-        80,
-        501
-      ],
-      "status": "simulated"
+    "speech_standard": {
+      "description": "\ud83c\udfa4 Standard Speech (30s)",
+      "duration": 30.0,
+      "audio_type": "speech",
+      "results": {
+        "OpenAI Whisper": {
+          "status": "success",
+          "inference_time": 0.3153820037841797,
+          "model_size": "tiny",
+          "transcription": " Music Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie iMalls out of the box on AMD and Nvidia hardware. With support for a port...",
+          "language": "en",
+          "implementation": "openai-whisper"
+        },
+        "Faster-Whisper": {
+          "status": "success",
+          "inference_time": 0.428333044052124,
+          "model_size": "tiny",
+          "transcription_length": 4,
+          "language": "en",
+          "implementation": "faster-whisper"
+        }
+      }
     },
-    "MAX-Whisper": {
-      "inference_time": 0.028033250011503696,
-      "model_size": "custom",
-      "features_shape": [
-        80,
-        501
-      ],
-      "status": "implemented"
+    "speech_long": {
+      "description": "\ud83d\udcfb Long Speech (60s)",
+      "duration": 60.0,
+      "audio_type": "speech",
+      "results": {
+        "OpenAI Whisper": {
+          "status": "success",
+          "inference_time": 0.7527670860290527,
+          "model_size": "tiny",
+          "transcription": " Music Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie iMalls out of the box on AMD and Nvidia hardware. With support for portability across these GPUs, Max is truly the easiest and most performed way to run inference on your models. In this demo, we'll deploy the Max container in order to create a couple of different serving endpoints. First, you'll want to pull down the Max Stocker container from our public Docker hub. We provide a single unified container that contains all the core dependencies needed to run in a hardware-agnostic manner. Let's start with the NVIDIA. I'm running on a host here that has an 828-GPU attached. I'm going to use",
+          "language": "en",
+          "implementation": "openai-whisper"
+        },
+        "Faster-Whisper": {
+          "status": "success",
+          "inference_time": 0.9107589721679688,
+          "model_size": "tiny",
+          "transcription_length": 9,
+          "language": "en",
+          "implementation": "faster-whisper"
+        }
+      }
+    },
+    "music": {
+      "description": "\ud83c\udfb5 Music Test (15s)",
+      "duration": 15.0,
+      "audio_type": "music",
+      "results": {
+        "OpenAI Whisper": {
+          "status": "success",
+          "inference_time": 1.3953289985656738,
+          "model_size": "tiny",
+          "transcription": " \ufffd",
+          "language": "en",
+          "implementation": "openai-whisper"
+        },
+        "Faster-Whisper": {
+          "status": "success",
+          "inference_time": 1.0329420566558838,
+          "model_size": "tiny",
+          "transcription_length": 1,
+          "language": "en",
+          "implementation": "faster-whisper"
+        }
+      }
     }
   },
   "targets": {
-    "audio_duration": 30.0,
+    "audio_duration": 120.0,
     "target_rtf": 0.05,
-    "target_inference_time": 1.5,
+    "target_inference_time": 6.0,
     "target_speedup": 3.0
   },
-  "timestamp": 1751046736.250221
+  "timestamp": 1751097185.0279949
 }
