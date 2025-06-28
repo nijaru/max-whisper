@@ -1,4 +1,11 @@
 {
+  "_metadata": {
+    "phase": "Phase 2 GPU Development",
+    "hardware": "Fedora desktop + RTX 4090 (24GB VRAM)",
+    "cuda_version": "12.9",
+    "updated": "2025-06-28",
+    "status": "Environment setup complete, GPU development in progress"
+  },
   "comprehensive_results": {
     "speech_short": {
       "description": "\ud83d\udde3\ufe0f  Short Speech (5s)",
@@ -7,15 +14,15 @@
       "results": {
         "OpenAI Whisper": {
           "status": "success",
-          "inference_time": 0.5608110427856445,
+          "inference_time": 0.41466641426086426,
           "model_size": "tiny",
-          "transcription": " Thank you.",
+          "transcription": " Everyone.",
           "language": "en",
           "implementation": "openai-whisper"
         },
         "Faster-Whisper": {
           "status": "success",
-          "inference_time": 0.7079846858978271,
+          "inference_time": 0.6026122570037842,
           "model_size": "tiny",
           "transcription_length": 1,
           "language": "en",
@@ -23,9 +30,9 @@
         },
         "MAX-Whisper": {
           "status": "partial_implementation",
-          "inference_time": 0.21141982078552246,
-          "preprocessing_time": 0.0027298927307128906,
-          "encoder_time": 0.20868515968322754,
+          "inference_time": 2.1273813247680664,
+          "preprocessing_time": 0.0025815963745117188,
+          "encoder_time": 2.124795436859131,
           "model_size": "basic_encoder",
           "features_shape": [
             80,
@@ -48,7 +55,7 @@
       "results": {
         "OpenAI Whisper": {
           "status": "success",
-          "inference_time": 0.3153820037841797,
+          "inference_time": 0.09558796882629395,
           "model_size": "tiny",
           "transcription": " Music Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie iMalls out of the box on AMD and Nvidia hardware. With support for a port...",
           "language": "en",
@@ -56,7 +63,7 @@
         },
         "Faster-Whisper": {
           "status": "success",
-          "inference_time": 0.428333044052124,
+          "inference_time": 0.566429853439331,
           "model_size": "tiny",
           "transcription_length": 4,
           "language": "en",
@@ -71,7 +78,7 @@
       "results": {
         "OpenAI Whisper": {
           "status": "success",
-          "inference_time": 0.7527670860290527,
+          "inference_time": 0.2848482131958008,
           "model_size": "tiny",
           "transcription": " Music Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie iMalls out of the box on AMD and Nvidia hardware. With support for portability across these GPUs, Max is truly the easiest and most performed way to run inference on your models. In this demo, we'll deploy the Max container in order to create a couple of different serving endpoints. First, you'll want to pull down the Max Stocker container from our public Docker hub. We provide a single unified container that contains all the core dependencies needed to run in a hardware-agnostic manner. Let's start with the NVIDIA. I'm running on a host here that has an 828-GPU attached. I'm going to use",
           "language": "en",
@@ -79,7 +86,7 @@
         },
         "Faster-Whisper": {
           "status": "success",
-          "inference_time": 0.9107589721679688,
+          "inference_time": 0.939253568649292,
           "model_size": "tiny",
           "transcription_length": 9,
           "language": "en",
@@ -94,15 +101,15 @@
       "results": {
         "OpenAI Whisper": {
           "status": "success",
-          "inference_time": 1.3953289985656738,
+          "inference_time": 0.05775284767150879,
           "model_size": "tiny",
-          "transcription": " \ufffd",
+          "transcription": " ====",
           "language": "en",
           "implementation": "openai-whisper"
         },
         "Faster-Whisper": {
           "status": "success",
-          "inference_time": 1.0329420566558838,
+          "inference_time": 1.0964508056640625,
           "model_size": "tiny",
           "transcription_length": 1,
           "language": "en",
@@ -117,5 +124,5 @@
     "target_inference_time": 6.0,
     "target_speedup": 3.0
   },
-  "timestamp": 1751097185.0279949
+  "timestamp": 1751127065.3486927
 }

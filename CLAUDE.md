@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**MAX-Whisper**: High-performance speech transcription system using Mojo kernels and MAX Graph model architectures. The goal is to achieve 2-3x performance improvement over OpenAI Whisper while maintaining transcription accuracy.
+**MAX-Whisper**: High-performance speech transcription system using Mojo kernels and MAX Graph model architectures. The goal is to achieve 50-100x performance improvement over OpenAI Whisper while maintaining transcription accuracy.
+
+**Current Status**: Phase 2 GPU development on Fedora/RTX 4090 - Environment setup complete, implementing MAX Graph Whisper on GPU.
 
 ### Technical Stack
 - **Mojo**: High-performance audio preprocessing and GPU kernel development
@@ -32,11 +34,11 @@ external/
 
 ## Performance Requirements
 
-### Target Metrics
-- **Speed**: 2-3x faster than OpenAI Whisper baseline
-- **Memory**: 40-50% reduction in peak memory usage
-- **Accuracy**: Maintain <5% degradation in Word Error Rate (WER)
-- **Hardware**: Efficient execution on 4GB+ GPU memory
+### Target Metrics (Updated for Phase 2)
+- **Speed**: 50-100x faster than OpenAI Whisper baseline (RTF < 0.001)
+- **Memory**: <8GB GPU utilization on RTX 4090 (24GB available)
+- **Accuracy**: Maintain transcription quality equivalent to OpenAI Whisper
+- **Hardware**: Optimized for RTX 4090 class GPUs (20GB+ memory)
 
 ### Benchmark Targets
 1. OpenAI Whisper (baseline)
@@ -54,8 +56,10 @@ external/
 
 ### Hackathon Timeline
 **60-hour sprint**: Friday 6PM → Sunday 6PM  
-**Phases**: setup → foundation → core_model → optimization → demo → submission  
-**Detailed schedule**: See `docs/tasks.json` for hour-by-hour breakdown
+**✅ Phase 1**: setup → foundation (macOS, complete)  
+**🔥 Phase 2**: GPU development → optimization (Fedora/RTX 4090, in progress)  
+**Phase 3**: demo → submission  
+**Detailed schedule**: See `docs/execution_plan.md` for timeline and `docs/phase2_progress.md` for current status
 
 ### Risk Mitigation
 - Start with encoder-only version if full Whisper proves too complex
@@ -102,10 +106,10 @@ external/
 - **`docs/tasks.json`** - Detailed 60-hour development timeline with phases, priorities, and fallback strategies
 
 ### Quick Reference
-- **Need to understand competition?** → `docs/competitive_strategy.md`
-- **Need development timeline?** → `docs/execution_plan.md` (overview) or `docs/tasks.json` (detailed)
+- **Need current status?** → `docs/phase2_progress.md` (Phase 2 GPU development status)
+- **Need development timeline?** → `docs/execution_plan.md` (overview timeline)
 - **Need performance targets?** → `docs/benchmarking_plan.md`
 - **Need technical details?** → `docs/max_whisper_spec.md`
 - **Need demo ideas?** → `docs/demo_strategy.md`
 - **Need presentation help?** → `docs/presentation_strategy.md`
-- **Need task breakdown?** → `docs/tasks.json`
+- **Need GPU setup?** → `docs/fedora_setup_guide.md`
