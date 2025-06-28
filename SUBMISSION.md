@@ -1,111 +1,86 @@
-# MAX-Whisper: 72,000x Real-Time Speech Recognition on GPU
+# MAX-Whisper Hackathon Submission
 
 **Team**: Solo submission  
-**Project**: MAX-Whisper - GPU-Accelerated Speech Recognition  
-**Achievement**: 1,250x faster than OpenAI Whisper baseline  
+**Project**: MAX-Whisper - GPU-Accelerated Speech Recognition with MAX Graph
 
-## Executive Summary
+## What We Built
 
-We've implemented a high-performance speech recognition system using MAX Graph that achieves **72,290x real-time speedup** on NVIDIA RTX 4090. This represents a 1,250x improvement over OpenAI Whisper, processing 30 seconds of audio in just 0.41 milliseconds.
+We implemented a speech recognition encoder using MAX Graph that demonstrates the platform's potential for transformer models on GPUs. Our implementation shows how to:
 
-## Performance Results
-
-| Implementation | Device | Time (30s audio) | Speedup | Improvement |
-|----------------|--------|------------------|---------|-------------|
-| OpenAI Whisper | CUDA | 51.12 ms | 586x | Baseline |
-| MAX-Whisper | RTX 4090 | **0.41 ms** | **72,290x** | **1,250x faster** |
-| MAX-Whisper | CPU | 2.45 ms | 12,236x | 21x faster |
+1. Build neural networks with MAX Graph API
+2. Execute models on NVIDIA GPUs 
+3. Achieve significant performance improvements
+4. Create custom architectures beyond PyTorch/TensorFlow
 
 ## Technical Implementation
 
 ### Architecture
-- **MAX Graph** optimized encoder with GPU acceleration
-- Efficient tensor operations leveraging RTX 4090 capabilities
-- Zero-copy memory transfers between CPU and GPU
-- Optimized for NVIDIA CUDA architecture
+- Custom encoder implementation using MAX Graph
+- GPU-optimized tensor operations
+- Native CUDA execution on RTX 4090
+- Zero-copy memory transfers
 
-### Key Features
-1. **GPU Acceleration**: Native MAX Graph GPU support
-2. **Memory Efficiency**: Optimized layouts for 24GB VRAM
-3. **Scalability**: Ready for batch processing
-4. **Compatibility**: Works with existing Whisper models
+### Performance
+- **Encoder Performance**: 0.41ms for 30s of audio features
+- **Device**: NVIDIA RTX 4090 (24GB VRAM)
+- **Framework**: MAX Graph with Python API
 
-### Code Structure
+### Code Highlights
+```python
+# Building models with MAX Graph
+with Graph("whisper_encoder", input_types=(input_type,)) as graph:
+    x = graph.inputs[0]
+    # Custom operations
+    x = ops.permute(x, [0, 2, 1])
+    x = ops.matmul(x_flat, weight)
+    x = elementwise.relu(x)
+    graph.output(x)
+
+# GPU execution
+session = engine.InferenceSession(devices=[Accelerator(id=0)])
+model = session.load(graph)
 ```
-src/
-├── model/
-│   ├── max_whisper_simple.py    # Core GPU implementation
-│   ├── max_whisper_gpu.py       # Full architecture
-│   └── whisper_weights.py       # Weight loading utilities
-├── audio/
-│   └── preprocessing.py         # Audio pipeline
-└── benchmarks/
-    └── gpu_comparison.py        # Performance testing
-```
 
-## Benchmarking Methodology
+## Current Limitations & Next Steps
 
-We tested against:
-1. **OpenAI Whisper** (official implementation)
-2. **Faster-Whisper** (optimized C++ version)
-3. **MAX-Whisper** (our implementation)
+This hackathon implementation demonstrates the foundation. To complete the system:
 
-All tests used:
-- 30-second audio samples
-- Whisper-tiny model size
-- NVIDIA RTX 4090 GPU
-- Multiple runs with statistical analysis
+1. Add decoder with attention mechanisms
+2. Load pretrained Whisper weights
+3. Integrate tokenizer for text output
+4. Implement full transformer architecture
 
-## GPU Hackathon Relevance
+## Why This Matters
 
-With NVIDIA sponsoring this hackathon, our project demonstrates:
-- **Extreme GPU Performance**: 72,290x real-time on RTX 4090
-- **CUDA Integration**: Leveraging NVIDIA's ecosystem
-- **Practical Application**: Real-world speech recognition
-- **Scalability**: Ready for production deployment
+- **MAX Graph Potential**: Shows how to build complex models
+- **GPU Performance**: Demonstrates native GPU acceleration
+- **Beyond Frameworks**: Alternative to PyTorch/TensorFlow
+- **Future Applications**: Foundation for production systems
 
 ## Running the Demo
 
 ```bash
-# Set up environment
+# Setup
 source setup_cuda_env.sh
+pixi install
 
 # Run benchmark
 pixi run -e default python benchmark_max_only.py
 
-# View results
+# View presentation
 python demo_presentation.py
 ```
 
-## Future Enhancements
+## Repository Structure
+- `src/model/` - MAX Graph implementations
+- `src/audio/` - Audio preprocessing
+- `benchmarks/` - Performance testing
+- `docs/` - Technical documentation
 
-1. **Complete Decoder**: Add full transcription capability
-2. **Mojo GPU Kernels**: Custom CUDA kernels in Mojo
-3. **Batch Processing**: Process multiple streams simultaneously
-4. **Model Sizes**: Support for base, small, medium, large models
-5. **Production Features**: Streaming, VAD, language detection
+## Acknowledgments
 
-## Impact
-
-This project shows that with MAX Graph and modern GPUs, speech recognition can be:
-- **Instantaneous**: 0.41ms for 30s of audio
-- **Scalable**: Process thousands of streams in parallel
-- **Accessible**: Democratize real-time transcription
-
-The 72,000x speedup opens new possibilities:
-- Real-time translation for live events
-- Instant captioning for accessibility
-- Mass transcription of audio archives
-- Edge deployment with minimal latency
-
-## Conclusion
-
-MAX-Whisper demonstrates the transformative power of combining Modular's MAX platform with NVIDIA GPUs. We've achieved performance levels that make "real-time" an understatement - this is **72,000x real-time**.
+Built for Modular Hack Weekend (June 27-29, 2025). Thanks to Modular for MAX Graph and NVIDIA for GPU sponsorship.
 
 ---
 
-**Repository**: [GitHub Link]  
-**Demo Video**: [Link to demonstration]  
-**Forum Post**: [Modular Forum Link]
-
-*Submitted for Modular Hack Weekend, June 27-29, 2025*
+*See [Technical Specification](docs/TECHNICAL_SPEC.md) for implementation details.*
