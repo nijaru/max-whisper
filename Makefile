@@ -1,4 +1,4 @@
-# Modular Hackathon: Whisper MAX Graph Implementation
+# max-whisper: High-Performance Speech Recognition with MAX Graph
 # Makefile for easy demo and benchmark execution
 
 # Default model size (small for production-relevant performance)
@@ -33,7 +33,7 @@ all:
 	@$(PIXI_ENV) python scripts/tui_demo.py small $(AUDIO_FILE)
 
 help:
-	@echo "🚀 Modular Hackathon - Whisper MAX Graph Implementation"
+	@echo "🚀 max-whisper - High-Performance Speech Recognition with MAX Graph"
 	@echo "======================================================="
 	@echo ""
 	@echo "🚀 QUICK START:"

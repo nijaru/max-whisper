@@ -1,8 +1,8 @@
-# 🎤 MAX Graph Whisper: High-Performance Speech Recognition
+# 🎤 max-whisper: High-Performance Speech Recognition with MAX Graph
 
-[![Performance](https://img.shields.io/badge/Speedup-2.4x-brightgreen)](https://github.com/nijaru/modular-hackathon)
-[![Quality](https://img.shields.io/badge/Quality-Perfect%20%E2%9C%85-brightgreen)](https://github.com/nijaru/modular-hackathon)
-[![Platform](https://img.shields.io/badge/Platform-MAX%20Graph-blue)](https://github.com/nijaru/modular-hackathon)
+[![Performance](https://img.shields.io/badge/Speedup-2.4x-brightgreen)](https://github.com/nijaru/max-whisper)
+[![Quality](https://img.shields.io/badge/Quality-Perfect%20%E2%9C%85-brightgreen)](https://github.com/nijaru/max-whisper)
+[![Platform](https://img.shields.io/badge/Platform-MAX%20Graph-blue)](https://github.com/nijaru/max-whisper)
 
 **🏆 Modular Hackathon 2025 Submission**
 
@@ -21,15 +21,15 @@ The breakthrough was developing a hybrid approach that combines MAX Graph's tens
 | **MAX Graph** | MAX Graph + PyTorch | 2.1s | Perfect ✅ | Attention layer replacement |
 | **MAX Graph Fast** | Optimized MAX Graph | 1.5s | Perfect ✅ | **Streamlined processing** |
 
-*Tested on RTX 4090 with 161.5s technical audio*
+*Tested on Fedora server with NVIDIA RTX 4090, 161.5s technical audio*
 
 ## 🚀 Quick Start
 
 ### Installation and Basic Demo
 ```bash
 # Clone and setup (one-time)
-git clone https://github.com/nijaru/modular-hackathon
-cd modular-hackathon
+git clone https://github.com/nijaru/max-whisper
+cd max-whisper
 make install         # Automated pixi + dependency installation
 
 # Run demo with all 4 implementations
@@ -104,7 +104,7 @@ This isn't just faster MAX Graph operations - it's a fundamentally more efficien
 ## 🏆 Hackathon Submission Details
 
 ### Reproducible Results
-All results are immediately reproducible with one-command setup. Benchmarks use identical methodology across implementations with the same 161.5-second audio input on documented hardware (RTX 4090).
+All results are immediately reproducible with one-command setup. Benchmarks use identical methodology across implementations with the same 161.5-second audio input on documented hardware (Fedora server with NVIDIA RTX 4090).
 
 ### Correctness Validation
 - **Quality verification**: All implementations produce identical English transcription
