@@ -174,6 +174,132 @@ cat results/benchmarks/benchmark_results_table.txt
 pixi run -e default python src/model/max_whisper_complete.py
 ```
 
+## 📚 Documentation Management Guide
+
+### Primary Documentation (Update First When Making Progress)
+
+#### `README.md` - **PROJECT OVERVIEW & JUDGE ENTRY POINT**
+- **Purpose**: First impression for judges and users
+- **Contains**: Key achievements, benchmark results, quick demo guide
+- **Update When**: 
+  - Performance results change
+  - New benchmarks completed
+  - Demo workflow changes
+  - Major milestones achieved
+- **Key Sections**: Performance table, judge demo guide, project structure
+
+#### `CLAUDE.md` - **AI AGENT MASTER CONTROL** 
+- **Purpose**: Complete instructions and status for AI agents
+- **Contains**: Current status, priorities, file locations, commands, documentation workflow
+- **Update When**: 
+  - Project status changes
+  - New priorities emerge
+  - File locations change
+  - Documentation structure changes
+- **Critical**: This file controls all other documentation updates
+
+### Essential Documentation (docs/ directory)
+
+#### `docs/CURRENT_STATUS.md` - **TECHNICAL STATUS**
+- **Purpose**: Detailed technical achievements and current state
+- **Contains**: Breakthrough details, performance results, working components
+- **Update When**: 
+  - Technical breakthroughs occur
+  - Performance benchmarks change
+  - Component status changes
+  - CUDA/GPU status changes
+
+#### `docs/SETUP_GUIDE.md` - **INSTALLATION GUIDE**
+- **Purpose**: Complete setup instructions for users
+- **Contains**: Dependencies, environment setup, verification steps
+- **Update When**: 
+  - Installation process changes
+  - New dependencies added
+  - Environment requirements change
+  - Verification commands change
+
+#### `docs/API_REFERENCE.md` - **TECHNICAL SPECIFICATIONS**
+- **Purpose**: Technical details, usage examples, performance specs
+- **Contains**: Model architecture, API usage, performance benchmarks
+- **Update When**: 
+  - Model architecture changes
+  - Performance characteristics change
+  - Usage patterns change
+  - New features added
+
+### Demo and Evaluation Documentation
+
+#### `JUDGE_DEMO_GUIDE.md` - **JUDGE EVALUATION**
+- **Purpose**: Step-by-step demo instructions for hackathon judges
+- **Contains**: 5/15-minute demos, expected outputs, evaluation criteria
+- **Update When**: 
+  - Demo workflow changes
+  - Expected outputs change
+  - New demo features added
+  - Performance results change
+
+#### `PROJECT_STRUCTURE.md` - **ORGANIZATION GUIDE**
+- **Purpose**: Project navigation and file organization
+- **Contains**: Directory structure, file purposes, judge evaluation path
+- **Update When**: 
+  - Directory structure changes
+  - File organization changes
+  - New essential files added
+  - Judge evaluation workflow changes
+
+### 🔄 Documentation Update Workflow
+
+#### When Making Technical Progress
+1. **Update CLAUDE.md first** - Record new status and achievements
+2. **Update docs/CURRENT_STATUS.md** - Technical details and performance
+3. **Update README.md** - If benchmark results or major features change
+4. **Update JUDGE_DEMO_GUIDE.md** - If demo workflow changes
+5. **Update results/** - Save new benchmark data
+
+#### When Achieving Major Milestones
+1. **Update all primary docs** (README, CLAUDE, CURRENT_STATUS)
+2. **Update JUDGE_DEMO_GUIDE** with new capabilities
+3. **Archive significant results** in results/benchmarks/
+4. **Update PROJECT_STRUCTURE** if organization changes
+
+#### Consistency Requirements
+- **Performance numbers** must match across all docs
+- **File paths** must be current in all references
+- **Status updates** must be synchronized
+- **Demo commands** must work as documented
+
+#### Quality Checklist (Run Before Commits)
+- [ ] All performance numbers consistent across docs
+- [ ] All file paths current and correct
+- [ ] Demo commands tested and working
+- [ ] Status updates reflect actual progress
+- [ ] Judge evaluation path clear and working
+- [ ] Technical details accurate and current
+
+### 📊 Current Documentation Status
+
+#### Last Updated: June 29, 2025 - 21:30 GMT
+
+**Primary Docs (Judge Critical)**
+- ✅ `README.md` - Current with organized structure + benchmark table
+- ✅ `CLAUDE.md` - Current with documentation management guide
+- ✅ `JUDGE_DEMO_GUIDE.md` - Current with 5/15-minute demos
+- ✅ `PROJECT_STRUCTURE.md` - Current with results/ organization
+
+**Technical Docs (Up to Date)**
+- ✅ `docs/CURRENT_STATUS.md` - Current with CUDA breakthrough + 4/4 tests
+- ✅ `docs/SETUP_GUIDE.md` - Current with organized file paths
+- ✅ `docs/API_REFERENCE.md` - Current with performance specs
+- ✅ `docs/README.md` - Current with organized documentation index
+
+**Known Documentation Gaps (Update After Next Progress)**
+- 📊 `README.md` benchmark table - Needs real 400x data (currently projected)
+- 📊 `JUDGE_DEMO_GUIDE.md` expected outputs - Needs actual benchmark results
+- 📊 `results/benchmarks/` - Needs comprehensive benchmark data
+- 📊 `docs/CURRENT_STATUS.md` - Needs trained weights integration status
+
+**Next Documentation Priority**: Update all benchmark-related content after completing trained weights integration and comprehensive benchmarking.
+
 ## 🏆 Hackathon Value Proposition
 
 ### Technical Achievement
@@ -197,14 +323,27 @@ pixi run -e default python src/model/max_whisper_complete.py
 ## 🎯 Next 24 Hours Priority
 
 ### 🔥 CRITICAL (Must Complete - 4 hours)
-1. **Complete trained weights integration** - Load 47 tensors into working GPU model
-2. **Run final head-to-head comparison** - All 3 models on same real audio  
-3. **Document performance results** - Speed + quality analysis for presentation
+1. **Complete trained weights integration** - Load 47 tensors into working GPU model (400x target)
+2. **Run comprehensive benchmark suite** - Test all 6 models on same real audio  
+3. **Update documentation package** - Following the Documentation Management Guide above
+   - Update CLAUDE.md with new status
+   - Update docs/CURRENT_STATUS.md with technical details
+   - Update README.md with new benchmark results
+   - Update JUDGE_DEMO_GUIDE.md with actual outputs
+   - Save results in results/benchmarks/
 
 ### 🚀 HIGH IMPACT (Should Complete - 6 hours)
-4. **Create impressive demo** - Live transcription showcase
-5. **Optimize performance** - Maximize GPU utilization
-6. **Prepare presentation** - Professional hackathon materials
+4. **Optimize GPU utilization** - Achieve maximum performance  
+5. **Create live demo showcase** - Interactive transcription demonstration
+6. **Prepare presentation materials** - Professional hackathon content
+
+### 📚 Documentation Maintenance Priority
+After each technical achievement, follow the Documentation Update Workflow:
+- [ ] CLAUDE.md updated with progress
+- [ ] docs/CURRENT_STATUS.md reflects technical state
+- [ ] README.md shows latest results (if significant)
+- [ ] All file paths and commands still work
+- [ ] Performance numbers consistent across all docs
 
 ## 💡 Success Criteria - ALL EXCEEDED
 
