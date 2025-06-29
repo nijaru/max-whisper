@@ -11,8 +11,9 @@ import os
 class WhisperGPU:
     """GPU-accelerated OpenAI Whisper implementation"""
     
-    def __init__(self, use_gpu=True):
+    def __init__(self, model_size="tiny", use_gpu=True):
         self.available = True
+        self.model_size = model_size
         self.use_gpu = use_gpu
         
         # Initialize OpenAI Whisper 
@@ -30,25 +31,26 @@ class WhisperGPU:
             device = "cuda"
             
             # Load model with optimizations
-            self.whisper_model = whisper.load_model("tiny", device=device)
+            self.whisper_model = whisper.load_model(self.model_size, device=device)
             self.device = device
             
             # Enable optimizations
             if device == "cuda":
                 torch.backends.cudnn.benchmark = True
-                print(f"✅ OpenAI Whisper optimized on {device}")
+                print(f"✅ OpenAI Whisper {self.model_size} optimized on {device}")
             else:
-                print(f"✅ OpenAI Whisper on {device}")
+                print(f"✅ OpenAI Whisper {self.model_size} on {device}")
             
         except Exception as e:
             print(f"❌ Whisper setup failed: {e}")
             self.available = False
     
-    def _load_real_audio(self):
+    def _load_real_audio(self, audio_file=None):
         """Load real audio file"""
         try:
             import librosa
-            audio_file = "audio_samples/modular_video.wav"
+            if not audio_file:
+                audio_file = "audio_samples/modular_video.wav"
             
             if os.path.exists(audio_file):
                 audio, sr = librosa.load(audio_file, sr=16000)
@@ -61,7 +63,7 @@ class WhisperGPU:
             print(f"    ⚠️ Audio loading failed: {e}")
             return None
     
-    def transcribe(self, mel_spectrogram: np.ndarray = None) -> str:
+    def transcribe(self, audio_file: str = None) -> str:
         """
         Transcribe using optimized OpenAI Whisper
         """
@@ -72,8 +74,8 @@ class WhisperGPU:
         total_start = time.time()
         
         try:
-            # Load real audio (ignore mel_spectrogram for now)
-            audio = self._load_real_audio()
+            # Load real audio
+            audio = self._load_real_audio(audio_file)
             
             if audio is None:
                 return "❌ No audio available for transcription"
@@ -114,19 +116,19 @@ class WhisperGPU:
             print(f"❌ Optimized transcription failed: {e}")
             return f"Transcription error: {e}"
 
-def demo_gpu():
+def demo_gpu(model_size="tiny", audio_file=None):
     """Demo of GPU Whisper implementation"""
-    print("🚀 GPU Whisper Demo (CUDA-accelerated OpenAI Whisper)")  
+    print(f"🚀 GPU Whisper Demo (CUDA-accelerated OpenAI Whisper, model: {model_size})")
     print("=" * 60)
     
-    model = WhisperGPU(use_gpu=True)
+    model = WhisperGPU(model_size=model_size, use_gpu=True)
     
     if not model.available:
         print("❌ Demo cannot run - model not available")
         return
     
     try:
-        result = model.transcribe()
+        result = model.transcribe(audio_file=audio_file)
         print(f"\n📝 GPU Transcription Result:")
         print(f"   {result}")
         
@@ -140,4 +142,13 @@ def demo_gpu():
     print(f"   ⚡ Optimized for GPU performance")
 
 if __name__ == "__main__":
-    demo_gpu()
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="GPU Whisper Demo")
+    parser.add_argument('--model-size', choices=['tiny', 'small', 'base'], default='tiny',
+                       help='Whisper model size (default: tiny)')
+    parser.add_argument('--audio-file', default=None,
+                       help='Audio file path (default: audio_samples/modular_video.wav)')
+    
+    args = parser.parse_args()
+    demo_gpu(model_size=args.model_size, audio_file=args.audio_file)

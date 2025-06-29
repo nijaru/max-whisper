@@ -11,8 +11,9 @@ import os
 class WhisperCPU:
     """CPU-only OpenAI Whisper baseline implementation"""
     
-    def __init__(self):
+    def __init__(self, model_size="tiny"):
         self.available = True
+        self.model_size = model_size
         self._setup_whisper()
     
     def _setup_whisper(self):
@@ -21,20 +22,21 @@ class WhisperCPU:
             import whisper
             
             # Force CPU device
-            self.whisper_model = whisper.load_model("tiny", device="cpu")
+            self.whisper_model = whisper.load_model(self.model_size, device="cpu")
             self.device = "cpu"
             
-            print(f"✅ OpenAI Whisper baseline on CPU")
+            print(f"✅ OpenAI Whisper {self.model_size} baseline on CPU")
             
         except Exception as e:
             print(f"❌ Whisper CPU setup failed: {e}")
             self.available = False
     
-    def _load_real_audio(self):
+    def _load_real_audio(self, audio_file=None):
         """Load real audio file"""
         try:
             import librosa
-            audio_file = "audio_samples/modular_video.wav"
+            if not audio_file:
+                audio_file = "audio_samples/modular_video.wav"
             
             if not os.path.exists(audio_file):
                 print(f"❌ Audio file not found: {audio_file}")
@@ -50,7 +52,7 @@ class WhisperCPU:
             print(f"❌ Audio loading failed: {e}")
             return None
     
-    def transcribe(self, mel_spectrogram: np.ndarray = None) -> str:
+    def transcribe(self, audio_file: str = None) -> str:
         """
         CPU baseline transcription using OpenAI Whisper
         """
@@ -62,7 +64,7 @@ class WhisperCPU:
         
         try:
             # Load real audio 
-            audio = self._load_real_audio()
+            audio = self._load_real_audio(audio_file)
             
             if audio is None:
                 return "❌ Audio loading failed"
@@ -95,19 +97,19 @@ class WhisperCPU:
             print(f"❌ CPU baseline failed: {e}")
             return f"Transcription error: {e}"
 
-def demo_cpu():
+def demo_cpu(model_size="tiny", audio_file=None):
     """Demo of CPU baseline Whisper implementation"""
-    print("🚀 CPU Whisper Baseline Demo")  
+    print(f"🚀 CPU Whisper Baseline Demo (model: {model_size})")
     print("=" * 50)
     
-    model = WhisperCPU()
+    model = WhisperCPU(model_size=model_size)
     
     if not model.available:
         print("❌ Demo cannot run - model not available")
         return
     
     try:
-        result = model.transcribe()
+        result = model.transcribe(audio_file=audio_file)
         print(f"\n📝 CPU Baseline Result:")
         print(f"   {result}")
         
@@ -121,4 +123,13 @@ def demo_cpu():
     print(f"   ✅ Guaranteed compatibility")
 
 if __name__ == "__main__":
-    demo_cpu()
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="CPU Whisper Demo")
+    parser.add_argument('--model-size', choices=['tiny', 'small', 'base'], default='tiny',
+                       help='Whisper model size (default: tiny)')
+    parser.add_argument('--audio-file', default=None,
+                       help='Audio file path (default: audio_samples/modular_video.wav)')
+    
+    args = parser.parse_args()
+    demo_cpu(model_size=args.model_size, audio_file=args.audio_file)

@@ -11,20 +11,20 @@ import os
 # Add src to path
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
-def test_whisper_cpu():
+def test_whisper_cpu(model_size="tiny", audio_file=None):
     """Test CPU baseline OpenAI Whisper"""
-    print("\n🔬 Testing CPU Baseline (OpenAI Whisper)")
+    print(f"\n🔬 Testing CPU Baseline (OpenAI Whisper {model_size})")
     print("=" * 50)
     
     try:
         from model.whisper_cpu import WhisperCPU
         
-        model = WhisperCPU()
+        model = WhisperCPU(model_size=model_size)
         if not model.available:
             return None, "CPU model not available"
         
         start_time = time.time()
-        result = model.transcribe()
+        result = model.transcribe(audio_file=audio_file)
         end_time = time.time()
         
         return {
@@ -37,20 +37,20 @@ def test_whisper_cpu():
     except Exception as e:
         return None, f"Error: {e}"
 
-def test_whisper_gpu():
+def test_whisper_gpu(model_size="tiny", audio_file=None):
     """Test GPU-accelerated OpenAI Whisper"""
-    print("\n🔬 Testing GPU Accelerated (OpenAI Whisper + CUDA)")
+    print(f"\n🔬 Testing GPU Accelerated (OpenAI Whisper + CUDA {model_size})")
     print("=" * 50)
     
     try:
         from model.whisper_gpu import WhisperGPU
         
-        model = WhisperGPU(use_gpu=True)
+        model = WhisperGPU(model_size=model_size, use_gpu=True)
         if not model.available:
             return None, "GPU model not available"
         
         start_time = time.time()
-        result = model.transcribe()
+        result = model.transcribe(audio_file=audio_file)
         end_time = time.time()
         
         return {
@@ -63,20 +63,20 @@ def test_whisper_gpu():
     except Exception as e:
         return None, f"Error: {e}"
 
-def test_whisper_max():
+def test_whisper_max(model_size="tiny", audio_file=None):
     """Test MAX Graph implementation"""
-    print("\n🔬 Testing MAX Graph Implementation")
+    print(f"\n🔬 Testing MAX Graph Implementation ({model_size})")
     print("=" * 50)
     
     try:
         from model.whisper_max import WhisperMAX
         
-        model = WhisperMAX(use_gpu=True)
+        model = WhisperMAX(model_size=model_size, use_gpu=True)
         if not model.available:
             return None, "MAX Graph not available"
         
         start_time = time.time()
-        result = model.transcribe()
+        result = model.transcribe(audio_file=audio_file)
         end_time = time.time()
         
         return {
@@ -89,20 +89,20 @@ def test_whisper_max():
     except Exception as e:
         return None, f"Error: {e}"
 
-def test_whisper_max_fast():
+def test_whisper_max_fast(model_size="tiny", audio_file=None):
     """Test MAX Graph Fast implementation"""
-    print("\n🔬 Testing MAX Graph Fast Implementation")
+    print(f"\n🔬 Testing MAX Graph Fast Implementation ({model_size})")
     print("=" * 50)
     
     try:
         from model.whisper_max_fast import WhisperMAXFast
         
-        model = WhisperMAXFast(use_gpu=True)
+        model = WhisperMAXFast(model_size=model_size, use_gpu=True)
         if not model.available:
             return None, "MAX Graph Fast not available"
         
         start_time = time.time()
-        result = model.transcribe(use_max_acceleration=True)
+        result = model.transcribe(audio_file=audio_file, use_max_acceleration=True)
         end_time = time.time()
         
         return {
@@ -115,19 +115,20 @@ def test_whisper_max_fast():
     except Exception as e:
         return None, f"Error: {e}"
 
-def run_complete_benchmark():
-    """Run complete benchmark of all three implementations"""
-    print("🏁 Complete Whisper Benchmark")
+def run_complete_benchmark(model_size="tiny", audio_file=None):
+    """Run complete benchmark of all implementations"""
+    print(f"🏁 Complete Whisper Benchmark (model: {model_size})")
     print("=" * 70)
-    print("Audio: audio_samples/modular_video.wav (161.5s)")
+    audio_display = audio_file or "audio_samples/modular_video.wav (161.5s)"
+    print(f"Audio: {audio_display}")
     print()
     
     # Test all implementations
     implementations = [
-        ("CPU Baseline", test_whisper_cpu),
-        ("GPU Accelerated", test_whisper_gpu),
-        ("MAX Graph Integration", test_whisper_max),
-        ("MAX Graph Fast", test_whisper_max_fast),
+        ("CPU Baseline", lambda: test_whisper_cpu(model_size, audio_file)),
+        ("GPU Accelerated", lambda: test_whisper_gpu(model_size, audio_file)),
+        ("MAX Graph Integration", lambda: test_whisper_max(model_size, audio_file)),
+        ("MAX Graph Fast", lambda: test_whisper_max_fast(model_size, audio_file)),
     ]
     
     results = []
@@ -265,22 +266,23 @@ def create_complete_results_table(results, baseline_time):
     
     return content
 
-def main():
+def main(model_size="tiny", audio_file=None):
     """Main benchmark execution"""
     
     # Run complete benchmark
-    results, baseline_time = run_complete_benchmark()
+    results, baseline_time = run_complete_benchmark(model_size, audio_file)
     
     # Generate comprehensive results table
     markdown_content = create_complete_results_table(results, baseline_time)
     
     # Save results
-    with open("COMPLETE_RESULTS.md", 'w') as f:
+    results_filename = f"COMPLETE_RESULTS_{model_size}.md" if model_size != "tiny" else "COMPLETE_RESULTS.md"
+    with open(results_filename, 'w') as f:
         f.write(markdown_content)
     
     print(f"\n📊 COMPLETE BENCHMARK FINISHED")
     print("=" * 70)
-    print(f"Results saved to: COMPLETE_RESULTS.md")
+    print(f"Results saved to: {results_filename}")
     
     working_count = len([r for r in results if r['status'] == 'Success'])
     print(f"Working implementations: {working_count}/{len(results)}")
@@ -296,4 +298,13 @@ def main():
             print(f"Best quality: {best_quality['name']} - Perfect transcription")
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Complete Whisper Benchmark")
+    parser.add_argument('--model-size', choices=['tiny', 'small', 'base'], default='tiny',
+                       help='Whisper model size (default: tiny)')
+    parser.add_argument('--audio-file', default=None,
+                       help='Audio file path (default: audio_samples/modular_video.wav)')
+    
+    args = parser.parse_args()
+    main(model_size=args.model_size, audio_file=args.audio_file)

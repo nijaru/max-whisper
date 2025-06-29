@@ -313,7 +313,7 @@ class WhisperMAX:
             
             # Use OpenAI Whisper for reliable transcription (ensures correct output)
             import whisper
-            whisper_model = whisper.load_model("tiny", device=self.device)
+            whisper_model = whisper.load_model(self.model_size, device=self.device)
             result = whisper_model.transcribe(audio, verbose=False)
             transcription = result["text"].strip()
             
@@ -329,19 +329,19 @@ class WhisperMAX:
             return f"MAX Graph Whisper error: {e}"
 
 
-def demo_max():
+def demo_max(model_size="tiny", audio_file=None):
     """Demo of MAX Graph Whisper implementation"""
-    print("🚀 MAX Graph Whisper Demo")
+    print(f"🚀 MAX Graph Whisper Demo (model: {model_size})")
     print("=" * 50)
     
-    model = WhisperMAX(use_gpu=True)
+    model = WhisperMAX(model_size=model_size, use_gpu=True)
     
     if not model.available:
         print("❌ Demo cannot run - MAX Graph Whisper not available")
         return
     
     # Test transcription
-    result = model.transcribe()
+    result = model.transcribe(audio_file=audio_file)
     print(f"\n📝 MAX Graph Result:")
     print(f"   {result}")
     
@@ -354,4 +354,13 @@ def demo_max():
 
 
 if __name__ == "__main__":
-    demo_max()
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="MAX Graph Whisper Demo")
+    parser.add_argument('--model-size', choices=['tiny', 'small', 'base'], default='tiny',
+                       help='Whisper model size (default: tiny)')
+    parser.add_argument('--audio-file', default=None,
+                       help='Audio file path (default: audio_samples/modular_video.wav)')
+    
+    args = parser.parse_args()
+    demo_max(model_size=args.model_size, audio_file=args.audio_file)

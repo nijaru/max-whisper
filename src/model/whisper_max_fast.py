@@ -210,26 +210,26 @@ class WhisperMAXFast:
             return f"Fast MAX Graph error: {e}"
 
 
-def demo_max_fast():
+def demo_max_fast(model_size="tiny", audio_file=None):
     """Demo of MAX Whisper Fast implementation"""
-    print("🚀 MAX Whisper Fast Demo")
+    print(f"🚀 MAX Whisper Fast Demo (model: {model_size})")
     print("=" * 60)
     
     # Test both accelerated and baseline versions
-    model = WhisperMAXFast(use_gpu=True)
+    model = WhisperMAXFast(model_size=model_size, use_gpu=True)
     
     if not model.available:
         print("❌ Demo cannot run - required dependencies not available")
         return
     
     print("\n🎯 Testing MAX Graph Acceleration:")
-    result_max = model.transcribe(use_max_acceleration=True)
+    result_max = model.transcribe(audio_file=audio_file, use_max_acceleration=True)
     print(f"\n📝 MAX Accelerated Result:")
     print(f"   {result_max}")
     
     print("\n" + "="*60)
     print("\n🎯 Testing Baseline Comparison:")
-    result_baseline = model.transcribe(use_max_acceleration=False)
+    result_baseline = model.transcribe(audio_file=audio_file, use_max_acceleration=False)
     print(f"\n📝 Baseline Result:")
     print(f"   {result_baseline}")
     
@@ -244,4 +244,13 @@ def demo_max_fast():
 
 
 if __name__ == "__main__":
-    demo_max_fast()
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="MAX Whisper Fast Demo")
+    parser.add_argument('--model-size', choices=['tiny', 'small', 'base'], default='tiny',
+                       help='Whisper model size (default: tiny)')
+    parser.add_argument('--audio-file', default=None,
+                       help='Audio file path (default: audio_samples/modular_video.wav)')
+    
+    args = parser.parse_args()
+    demo_max_fast(model_size=args.model_size, audio_file=args.audio_file)
