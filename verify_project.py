@@ -34,7 +34,7 @@ def main():
     
     print("\n📁 Essential Files:")
     all_good &= check_file_exists("README.md", "Project overview")
-    all_good &= check_file_exists("STATUS.md", "Project status")
+    all_good &= check_file_exists("docs/STATUS.md", "Project status")
     all_good &= check_file_exists("comprehensive_results.md", "Benchmark results")
     all_good &= check_file_exists("demo.py", "Demo script")
     all_good &= check_file_exists("generate_results.py", "Results generator")
@@ -51,8 +51,8 @@ def main():
     
     print("\n📚 Documentation:")
     all_good &= check_file_exists("CLAUDE.md", "AI instructions")
-    all_good &= check_file_exists("JUDGE_DEMO_GUIDE.md", "Judge demo guide")
-    all_good &= check_file_exists("PROJECT_STRUCTURE.md", "Project structure")
+    all_good &= check_file_exists("docs/SUMMARY.md", "Project summary")
+    all_good &= check_directory_exists("docs", "Documentation directory")
     
     print("\n🗃️ Archive:")
     all_good &= check_directory_exists("archive", "Archive directory")

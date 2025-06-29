@@ -24,8 +24,8 @@
 
 ### ✅ Essential Working Files
 - **README.md** - Project overview with 5.5x results
-- **STATUS.md** - Complete project status and achievements  
-- **SUMMARY.md** - Project summary for evaluation
+- **docs/STATUS.md** - Complete project status and achievements  
+- **docs/SUMMARY.md** - Project summary for evaluation
 - **src/model/max_whisper_fixed.py** - ✅ Working implementation (5.5x speedup)
 - **benchmarks/safe_comprehensive_benchmark.py** - Complete benchmark suite
 - **comprehensive_results.md** - Latest verified results
@@ -37,8 +37,8 @@
 - **src/model/max_whisper_real.py** - MAX Graph attempt (blocked by torch.uint16)
 - **src/model/max_whisper_proper.py** - Full transformer approach
 - **src/model/max_whisper_hybrid.py** - Hybrid approach
-- **MAX_GRAPH_STATUS.md** - Technical analysis of MAX Graph blockers
-- **NEXT_STEPS.md** - Options for MAX Graph implementation
+- **docs/MAX_GRAPH_STATUS.md** - Technical analysis of MAX Graph blockers
+- **docs/NEXT_STEPS.md** - Options for MAX Graph implementation
 
 ### 🗄️ Archive
 - **archive/dev_models/** - 9 development model files moved here
@@ -89,12 +89,12 @@ pixi run -e default python src/model/max_whisper_real.py
 ## 🔄 TASK CONTINUITY
 
 ### Between Sessions
-1. **Read STATUS.md** - Check latest achievements (currently shows complete success)
+1. **Read docs/STATUS.md** - Check latest achievements (currently shows complete success)
 2. **Current working**: `src/model/max_whisper_fixed.py` with 5.5x speedup
 3. **Next goal**: MAX Graph implementation if possible, documentation if not
 
 ### Status Update Protocol
-- **STATUS.md**: Update after any MAX Graph progress
+- **docs/STATUS.md**: Update after any MAX Graph progress
 - **README.md**: Only update if MAX Graph implementation succeeds
 - **Current demos**: All working and tested
 
@@ -102,11 +102,11 @@ pixi run -e default python src/model/max_whisper_real.py
 
 ### ✅ Current and Accurate
 - **README.md** - Updated with 5.5x results and current implementation details
-- **STATUS.md** - Complete project status with final achievements
-- **SUMMARY.md** - Project summary ready for evaluation
+- **docs/STATUS.md** - Complete project status with final achievements
+- **docs/SUMMARY.md** - Project summary ready for evaluation
 - **comprehensive_results.md** - Latest benchmark results verified
-- **MAX_GRAPH_STATUS.md** - Technical analysis of blockers
-- **NEXT_STEPS.md** - Options for MAX Graph work
+- **docs/MAX_GRAPH_STATUS.md** - Technical analysis of blockers
+- **docs/NEXT_STEPS.md** - Options for MAX Graph work
 
 ### 🗑️ Cleaned Up
 - Moved redundant docs to archive/
