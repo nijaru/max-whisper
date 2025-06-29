@@ -44,7 +44,10 @@ class ModularDemo:
     
     def clear_screen(self):
         """Clear terminal"""
-        os.system('clear' if os.name == 'posix' else 'cls')
+        # Use cursor positioning to move to top and clear from there
+        import sys
+        sys.stdout.write('\033[2J\033[H')
+        sys.stdout.flush()
     
     def draw_box(self, test: Dict, width: int = 60) -> str:
         """Draw a box for one test"""
