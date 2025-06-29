@@ -21,67 +21,64 @@ This project demonstrates high-performance speech recognition using the Modular 
 | **MAX Graph Integration** | MAX Graph Hybrid | 2.1s (1.7x) | Perfect ✅ | **Competitive with CUDA** |
 | **MAX Graph Fast** | Ultra-Optimized | 1.5s (2.4x) | Perfect ✅ | **Maximum Performance** |
 
-*Performance results using Whisper small model on 161.5s technical audio*
+*Performance results using Whisper small model on 161.5s technical audio (RTX 4090)*
 
 **Test Audio**: `audio_samples/modular_video.wav` (161.5 seconds of technical content)
 
-## 🚀 Quick Demo
+## 🚀 Quick Start
 
-### Easy Demo Commands (Professional TUI Interface)
+### First-Time Setup
 ```bash
-# Production TUI demo - all 4 implementations with visual progress (small model)
-make demo
+# Clone and setup (one-time installation)
+git clone https://github.com/nijaru/modular-hackathon
+cd modular-hackathon
+make install         # Installs pixi + all dependencies
 
-# Quick TUI demo - CPU + GPU only (fast showcase)
-make demo-quick
-
-# Judge demo - production-scale performance (small model)  
-make judge
-
-# Complete benchmark with analysis
-make benchmark
-
-# Show all available options
-make help
+# Run demo immediately after setup
+make                 # Recommended demo (small model)
 ```
 
-### TUI Demo Options
+### Quick Demo Commands
 ```bash
-# Specialized TUI demos
-make demo-gpu-only   # GPU implementation only
-make demo-max-only   # MAX Graph implementations only
-make demo-tui        # Configurable TUI demo
+# 🚀 INSTANT START (after installation)
+make                 # Recommended demo (small model, all 4 implementations)
+make tiny            # Quick demo (fastest, tiny model)
+make small           # Production demo (recommended, small model)
+make base            # Best quality demo (base model)
 
-# Individual demos (legacy)
-make demo-cpu        # CPU baseline (OpenAI Whisper reference)
-make demo-gpu        # GPU accelerated (CUDA + PyTorch optimization)  
-make demo-max        # MAX Graph integration (attention layer replacement)
-make demo-fast       # MAX Graph ultra-optimized (maximum performance)
+# 🎯 SPECIFIC TESTS
+make cpu tiny        # CPU baseline only, tiny model
+make gpu small       # GPU accelerated only, small model  
+make max base        # MAX Graph integration only, base model
+make fast small      # MAX Graph fast only, small model
 
-# Benchmarks with different model sizes
-make benchmark-tiny  # Fast testing (tiny model)
-make benchmark-small # Production-relevant (small model)
-make benchmark-base  # Full-scale performance (base model)
+# 📊 BENCHMARKING
+make benchmark       # Comprehensive analysis (small model)
+make benchmark tiny  # Quick benchmark (tiny model)
+make benchmark base  # Full-scale benchmark (base model)
 ```
 
 ### Advanced Usage
 ```bash
 # Custom audio files
-make demo AUDIO_FILE=my_audio.wav
+make demo tiny my_audio.wav
+make cpu small presentation.wav
+make fast base interview.wav
 
-# Production-scale testing
-make benchmark MODEL_SIZE=base AUDIO_FILE=long_presentation.wav
+# Environment management
+make install         # First-time setup
+make build          # Update dependencies
+make env-check      # Verify environment
+make gpu-check      # Check GPU setup
+make clean          # Clean up files
 
-# GPU compatibility check
-make gpu-check
-
-# Help and options
-make help
+# Help
+make help           # Show all options
 ```
 
 ## 📊 Performance Results
 
-**Latest Benchmark Results** *(Whisper small model)*:
+**Latest Benchmark Results** *(Whisper small model, RTX 4090)*:
 - **CPU Baseline**: 3.6s - Perfect transcription (reference implementation)
 - **GPU Accelerated**: 2.0s - 1.8x speedup (CUDA optimization)
 - **MAX Graph Integration**: 2.1s - 1.7x speedup (**competitive with CUDA**)
@@ -106,24 +103,37 @@ make perf-chart  # ASCII charts showing speedup comparison
 
 ## 🛠️ Installation & Setup
 
-### Prerequisites
-- CUDA-compatible GPU (recommended)
-- Pixi package manager
-- Python 3.11+
+### Automated Setup (Recommended)
+```bash
+# One-command setup
+make install         # Installs pixi + all dependencies automatically
 
-### Quick Setup
+# Alternative manual setup
+make build          # If pixi is already installed
+```
+
+### Manual Setup (if needed)
 ```bash
 # Install Pixi package manager
 curl -fsSL https://pixi.sh/install.sh | bash
-export PATH="$HOME/.pixi/bin:$PATH"
+source ~/.bashrc    # or restart shell
 
-# Install project dependencies
-pixi install -e benchmark  # Complete environment with MAX Graph + PyTorch + OpenAI Whisper
-pixi install -e default    # Default MAX Graph environment
+# Install project dependencies  
+pixi install       # Installs all environments
 
 # Verify installation
-pixi run -e benchmark python benchmark_all.py
+make env-check     # Check environment
+make gpu-check     # Check GPU (optional)
 ```
+
+### Prerequisites
+- CUDA-compatible GPU (recommended, not required)
+- Internet connection (for initial setup)
+- Linux/macOS/Windows with WSL
+
+### Hardware Used for Benchmarks
+- **GPU**: NVIDIA RTX 4090
+- **Performance may vary on different hardware**
 
 ## 🏗️ Technical Architecture
 
@@ -232,17 +242,24 @@ pixi run -e benchmark python benchmark_all.py
 
 ### Essential Commands
 ```bash
-# Complete demo (recommended)
-pixi run -e benchmark python benchmark_all.py
+# Complete setup and demo (recommended for first-time users)
+make install         # Setup everything
+make                # Run demo
 
-# View latest results
-cat COMPLETE_RESULTS.md
+# Quick demos  
+make tiny           # Fastest demo
+make small          # Recommended demo
+make base           # Best quality demo
 
-# Test individual implementations
-pixi run -e benchmark python src/model/whisper_cpu.py      # Baseline
-pixi run -e benchmark python src/model/whisper_gpu.py      # GPU accelerated  
-pixi run -e benchmark python src/model/whisper_max.py      # MAX Graph integration
-pixi run -e benchmark python src/model/whisper_max_fast.py # MAX Graph optimized
+# Individual tests
+make cpu tiny       # CPU baseline
+make gpu small      # GPU accelerated  
+make max base       # MAX Graph integration
+make fast small     # MAX Graph optimized
+
+# Analysis
+make benchmark      # Complete performance analysis
+make help          # Show all options
 ```
 
 ## ✅ Success Criteria Achieved

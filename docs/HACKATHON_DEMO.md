@@ -16,11 +16,14 @@ We've built a high-performance speech recognition system demonstrating the progr
 
 ## 🚀 Live Demo Script
 
-### **Phase 1: Clean TUI Demo (2 minutes)**
+### **Phase 1: Quick Setup & Demo (2 minutes)**
 
 ```bash
+# First-time setup (if needed)
+make install         # Automated pixi + dependency installation
+
 # Show clean visual demo with real-time progress
-make demo
+make                # Runs recommended demo (small model, all 4 implementations)
 ```
 
 **Narration**: 

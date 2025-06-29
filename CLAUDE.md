@@ -36,32 +36,48 @@ The project has four complete implementations demonstrating progressive optimiza
 
 ## 🚀 CURRENT WORKING COMMANDS
 
-### Easy Demo & Benchmark Commands (Makefile)
+### Installation & Setup
 ```bash
-# Quick demo (all 4 implementations with tiny model)
-make demo
+# First-time setup (automated)
+make install                  # Install pixi + all dependencies
 
-# Judge demo (production-scale with small model)
-make judge
+# Environment management
+make build                    # Install/update dependencies
+make env-check               # Verify environment setup
+make gpu-check               # Check GPU compatibility
+```
 
-# Individual demos
-make demo-cpu                 # CPU baseline (OpenAI Whisper reference)
-make demo-gpu                 # GPU accelerated (CUDA optimization)
-make demo-max                 # MAX Graph integration (attention replacement)
-make demo-fast                # MAX Graph ultra-optimized (maximum performance)
+### Quick Demo Commands (Professional TUI Interface)
+```bash
+# 🚀 INSTANT START (after installation)
+make                         # Recommended demo (small model, all 4 implementations)
+make tiny                    # Quick demo (tiny model, fastest)
+make small                   # Production demo (small model, recommended)
+make base                    # Best quality demo (base model)
 
-# Complete benchmarks
-make benchmark                # Complete benchmark with analysis
-make benchmark-small          # Production-relevant (small model)
-make benchmark-base           # Full-scale performance (base model)
+# 🎯 INDIVIDUAL TESTS
+make cpu tiny                # CPU baseline only, tiny model
+make gpu small               # GPU accelerated only, small model
+make max base                # MAX Graph integration only, base model
+make fast small              # MAX Graph ultra-optimized only, small model
 
-# For judges - production showcase
-make judge                    # Judge demo (small model, production-scale)
-make gpu-check                # Verify GPU setup
+# 📊 BENCHMARKING
+make benchmark               # Comprehensive analysis (small model)
+make benchmark tiny          # Quick benchmark (tiny model)
+make benchmark base          # Full-scale benchmark (base model)
 
-# Custom audio files
-make demo AUDIO_FILE=my_audio.wav
-make judge AUDIO_FILE=custom.wav
+# 🛠️ UTILITIES
+make clean                   # Clean up generated files
+make help                    # Show all available commands
+```
+
+### Advanced Usage with Custom Files
+```bash
+# Custom audio files with positional arguments
+make demo tiny my_audio.wav
+make cpu small presentation.wav
+make fast base interview.wav
+make benchmark base long_audio.wav
 ```
 
 ### Direct Python Commands (Alternative)

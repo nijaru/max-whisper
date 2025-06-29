@@ -74,20 +74,26 @@ Audio: modular_video.wav | Tests: 4
 
 ## 🎯 Easy Demo
 
-The project includes multiple demo options suitable for different audiences:
+The project includes simple setup and multiple demo options:
 
 ```bash
-# Production TUI demo - all 4 implementations with visual progress (small model)
-make demo
+# First-time setup (automated)
+make install         # Install pixi + all dependencies
 
-# Quick TUI demo - CPU + GPU only (fast showcase)  
-make demo-quick
+# Instant demos (after setup)
+make                # Recommended demo (small model, all 4 implementations)
+make tiny           # Quick demo (tiny model, fastest)
+make base           # Best quality demo (base model)
 
-# Judge demo - production-scale performance
-make judge
+# Individual tests
+make cpu tiny       # CPU baseline only
+make gpu small      # GPU accelerated only
+make max base       # MAX Graph integration only
+make fast small     # MAX Graph ultra-optimized only
 
-# Complete benchmark with detailed analysis
-make benchmark
+# Analysis
+make benchmark      # Complete performance analysis
+make help          # Show all options
 ```
 
 ## 📂 Repository
@@ -130,7 +136,8 @@ Meaningful MAX Graph usage with extensive tensor operations, not just surface-le
 ```bash
 git clone https://github.com/nijaru/modular-hackathon
 cd modular-hackathon
-make demo
+make install         # Automated setup
+make                # Run demo
 ```
 
 Experience the clean TUI interface and see MAX Graph achieve **2.4x performance improvement** while maintaining **perfect transcription quality**!
