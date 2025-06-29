@@ -87,8 +87,8 @@ pixi run -e benchmark python demos/enhanced_comparison.py
 
 ### 3. Full Benchmark Suite
 ```bash
-# Run complete comparison (all 6 models)
-pixi run -e benchmark python benchmarks/comprehensive_comparison.py
+# Run complete comparison (all models)
+pixi run -e benchmark python benchmarks/benchmark_all_models.py
 
 # View detailed results
 cat results/benchmarks/benchmark_results.json | python -m json.tool
