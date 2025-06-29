@@ -1,13 +1,44 @@
 # MAX-Whisper Project Structure
 
-Clean, organized structure for easy navigation and development.
+**Clean, judge-friendly organization with essential files highlighted**
 
-## Directory Organization
+## 🎯 Key Files for Judges
 
 ```
 modular-hackathon/
-├── README.md                     # Project overview and quick start
-├── CLAUDE.md                     # AI agent instructions
+├── README.md                     # ⭐ Project overview and achievements
+├── CLAUDE.md                     # AI agent instructions and status
+├── PROJECT_STRUCTURE.md          # This file - project organization guide
+│
+├── docs/                         # ⭐ Essential documentation
+│   ├── README.md                 # Documentation index 
+│   ├── SETUP_GUIDE.md           # ⭐ How to run the project
+│   ├── API_REFERENCE.md         # ⭐ Technical specifications
+│   └── CURRENT_STATUS.md        # ⭐ Current achievements and performance
+│
+├── tests/                        # ⭐ Validation (2 essential tests)
+│   ├── test_everything.py       # ⭐ PRIMARY: All components (4/4 passing)
+│   └── test_baselines_only.py   # ⭐ Baseline comparison
+│
+├── scripts/                      # ⭐ Essential utilities (3 key scripts)
+│   ├── setup_cuda_env.sh        # ⭐ CUDA environment setup
+│   ├── deploy_lambda_ai.sh      # ⭐ Cloud deployment
+│   └── extract_whisper_weights.py # ⭐ Weight extraction
+│
+└── src/model/                    # ⭐ MAX-Whisper implementations
+    ├── max_whisper_complete.py   # ⭐ Main end-to-end model
+    ├── max_whisper_real_simple.py # Simple encoder
+    ├── max_whisper_step2.py      # Multi-head attention
+    └── max_whisper_decoder.py    # Encoder-decoder
+```
+
+## 📁 Complete Directory Structure
+
+```
+modular-hackathon/
+├── README.md                     # Project overview
+├── CLAUDE.md                     # AI agent instructions  
+├── PROJECT_STRUCTURE.md          # This organization guide
 ├── pixi.toml                     # Environment configuration
 │
 ├── src/                          # Source code
@@ -15,18 +46,33 @@ modular-hackathon/
 │   │   ├── max_whisper_complete.py          # ⭐ Main end-to-end model
 │   │   ├── max_whisper_real_simple.py       # Simple encoder (0.25ms)
 │   │   ├── max_whisper_step2.py             # Multi-head attention (0.41ms)
-│   │   ├── max_whisper_decoder.py           # Encoder-decoder
-│   │   └── max_whisper_with_trained_weights.py # Weight integration
+│   │   ├── max_whisper_decoder.py           # Encoder-decoder pipeline
+│   │   ├── max_whisper_with_trained_weights.py # Weight integration framework
+│   │   └── [other model variants...]        # Additional implementations
 │   ├── audio/                    # Audio processing utilities
-│   │   ├── preprocessing.py      # Audio preprocessing
-│   │   └── *.mojo               # Mojo GPU kernels
 │   └── benchmarks/              # Benchmark utilities
 │
-├── tests/                        # Test suite (4/4 passing)
+├── docs/                         # ⭐ Essential documentation (4 files)
+│   ├── README.md                 # Documentation index
+│   ├── SETUP_GUIDE.md           # ⭐ Installation and setup
+│   ├── API_REFERENCE.md         # ⭐ Technical specifications  
+│   ├── CURRENT_STATUS.md        # ⭐ Current technical status
+│   ├── setup/                   # Platform-specific setup guides
+│   ├── development/             # Development history and planning
+│   └── specs/                   # Original technical specifications
+│
+├── tests/                        # ⭐ Essential tests (2 files)
 │   ├── README.md                # Test documentation
-│   ├── test_everything.py       # ⭐ PRIMARY: All component tests
-│   ├── test_baselines_only.py   # Baseline validation
-│   └── test_*.py               # Additional tests
+│   ├── test_everything.py       # ⭐ PRIMARY: All components (4/4 passing)
+│   ├── test_baselines_only.py   # ⭐ Baseline validation
+│   └── archive/                 # Development tests
+│
+├── scripts/                      # ⭐ Essential scripts (3 files)
+│   ├── README.md                # Script documentation
+│   ├── setup_cuda_env.sh        # ⭐ CUDA environment setup
+│   ├── deploy_lambda_ai.sh      # ⭐ Cloud deployment
+│   ├── extract_whisper_weights.py # ⭐ Weight extraction
+│   └── archive/                 # Development scripts
 │
 ├── demos/                        # Interactive demonstrations
 │   ├── README.md                # Demo documentation
@@ -34,25 +80,10 @@ modular-hackathon/
 │   ├── integrate_real_tokenizer.py         # Tokenizer demo
 │   └── enhanced_comparison.py              # Model comparison
 │
-├── scripts/                      # Utility scripts
-│   ├── README.md                # Script documentation
-│   ├── setup_cuda_env.sh        # CUDA environment setup
-│   ├── deploy_lambda_ai.sh      # Cloud deployment
-│   └── extract_whisper_weights.py          # Weight extraction
-│
 ├── benchmarks/                   # Performance testing
-│   ├── real_audio_comparison.py # ⭐ Head-to-head comparison
+│   ├── real_audio_comparison.py # Head-to-head comparison
 │   ├── fair_comparison.py       # Synthetic benchmarks
 │   └── gpu_comparison.py        # GPU-specific tests
-│
-├── docs/                         # Documentation
-│   ├── README.md                # Documentation index
-│   ├── SETUP_GUIDE.md          # Installation guide
-│   ├── API_REFERENCE.md        # Technical reference
-│   ├── CURRENT_STATUS.md       # Live technical status
-│   ├── STATUS_SUMMARY.md       # Executive summary
-│   ├── FINAL_24_HOUR_PLAN.md   # Completion roadmap
-│   └── [historical docs...]    # Archive documentation
 │
 ├── audio_samples/               # Test audio files
 │   └── modular_video.wav       # Primary test audio (161.5s)
@@ -60,104 +91,64 @@ modular-hackathon/
 ├── whisper_weights/             # Trained model weights
 │   └── whisper_tiny_weights.npz # ⭐ 47 extracted tensors
 │
-└── archive/                     # Archived files
+└── archive/                     # Archived development files
     ├── start_real_implementation.py
     └── hello.mojo
 ```
 
-## Key Entry Points
+## 🚀 Judge Evaluation Path
 
-### For New Users
-1. **[README.md](README.md)** - Project overview and quick start
-2. **[docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md)** - Complete setup instructions
-3. **[tests/test_everything.py](tests/test_everything.py)** - Verify everything works
+**For quick project assessment:**
 
-### For Development
-1. **[src/model/max_whisper_complete.py](src/model/max_whisper_complete.py)** - Main model
-2. **[docs/API_REFERENCE.md](docs/API_REFERENCE.md)** - Technical reference
-3. **[docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md)** - Current technical state
+1. **[README.md](README.md)** - Project overview, achievements, and impact
+2. **[docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md)** - How to reproduce results
+3. **[tests/test_everything.py](tests/test_everything.py)** - Verify all components work
+4. **[docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md)** - Technical achievements
+5. **[docs/API_REFERENCE.md](docs/API_REFERENCE.md)** - Implementation details
 
-### For Demonstrations
-1. **[demos/](demos/)** - Interactive demonstrations
-2. **[benchmarks/real_audio_comparison.py](benchmarks/real_audio_comparison.py)** - Performance comparison
-3. **[tests/test_everything.py](tests/test_everything.py)** - Component validation
-
-### For AI Agents
-1. **[CLAUDE.md](CLAUDE.md)** - Complete instructions and status
-2. **[docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md)** - Technical details
-3. **[docs/FINAL_24_HOUR_PLAN.md](docs/FINAL_24_HOUR_PLAN.md)** - Immediate priorities
-
-## File Naming Conventions
-
-### Models
-- `max_whisper_*.py` - MAX Graph implementations
-- `*_complete.py` - Full end-to-end models
-- `*_simple.py` - Basic/minimal implementations
-
-### Tests
-- `test_*.py` - Test scripts
-- `test_everything.py` - Primary comprehensive test
-
-### Demos
-- `demo_*.py` - Interactive demonstrations
-- `integrate_*.py` - Integration examples
-
-### Scripts
-- `setup_*.sh` - Environment setup
-- `deploy_*.sh` - Deployment automation
-- `extract_*.py` - Data extraction utilities
-
-## Dependencies and Environments
-
-### Pixi Environments
-- **default** - MAX Graph models with CUDA
-- **benchmark** - Baseline models and comparisons
-
-### Key Files
-- `pixi.toml` - Environment configuration
-- `pixi.lock` - Locked dependencies
-- `scripts/setup_cuda_env.sh` - CUDA environment variables
-
-## Quick Commands
-
-### Setup
+**Quick validation commands:**
 ```bash
-source scripts/setup_cuda_env.sh
-export PATH="$HOME/.pixi/bin:$PATH"
+source scripts/setup_cuda_env.sh          # Setup environment
+pixi run -e default python tests/test_everything.py  # Test components
 ```
 
-### Primary Tests
-```bash
-pixi run -e default python tests/test_everything.py    # All components
-pixi run -e benchmark python tests/test_baselines_only.py  # Baselines
-```
+## 🎯 Organization Principles
 
-### Primary Demos
-```bash
-pixi run -e benchmark python demos/demo_trained_weights_simple.py
-pixi run -e benchmark python demos/integrate_real_tokenizer.py
-```
+### Essential Files (Highlighted with ⭐)
+- **Minimal set**: Only what judges need to evaluate the project
+- **Clear purpose**: Each file has a specific, obvious role
+- **Working system**: All essential components are validated and functional
 
-### Primary Benchmarks
-```bash
-pixi run -e benchmark python benchmarks/real_audio_comparison.py
-```
+### Supporting Files (Organized in subdirectories)
+- **Development history**: Preserved in `docs/development/`
+- **Setup variants**: Platform-specific guides in `docs/setup/`
+- **Development artifacts**: Archived in `*/archive/` directories
 
-## Organization Benefits
+### Benefits for Judges
+- **Quick navigation**: Essential files are obvious and minimal
+- **Clear evaluation path**: Logical flow from overview to technical details
+- **Reproducible results**: Clear setup and testing instructions
+- **Complete context**: Supporting documentation available but organized
 
-### Clear Separation
-- **Source code** (`src/`) - Implementation
-- **Tests** (`tests/`) - Validation
-- **Demos** (`demos/`) - Demonstrations
-- **Scripts** (`scripts/`) - Utilities
-- **Documentation** (`docs/`) - Guides and references
+## 📊 Current Project State
 
-### Easy Discovery
-- README files in each directory explain contents
-- Consistent naming conventions
-- Clear entry points for different use cases
+**Status**: 🎉 **COMPLETE WORKING SYSTEM**
+- ✅ **Essential docs**: 4 key documentation files
+- ✅ **Essential tests**: 2 primary test files (4/4 components passing)
+- ✅ **Essential scripts**: 3 key utility scripts
+- ✅ **Clean organization**: Development artifacts archived
+- ✅ **Judge-friendly**: Clear evaluation path with minimal confusion
 
-### Maintainability
-- Related files grouped together
-- Archive directory for old files
-- Documentation reflects current structure
+## 💡 File Naming Conventions
+
+### Clear Priorities
+- **⭐ symbols**: Mark essential files for judges
+- **README.md**: In each directory for navigation
+- **archive/**: Development artifacts preserved but separated
+
+### Logical Grouping
+- **docs/**: All documentation with clear subdirectories
+- **tests/**: Essential tests with archived development tests
+- **scripts/**: Essential utilities with archived development scripts
+
+This structure makes it easy for judges to quickly understand and evaluate the project while preserving all development history in an organized manner.
