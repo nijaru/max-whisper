@@ -495,15 +495,24 @@ class WhisperMAX:
                     
                     max_time = time.time() - max_start
                     print(f"      ⚡ MAX Graph encoder processing: {max_time*1000:.1f}ms")
+                    print(f"      📊 MAX Graph encoder output shape: {max_encoder_features.shape}")
                     
-                    # Use original Whisper model for decoding to get correct transcription
-                    print("    📝 Generating transcription with full Whisper pipeline...")
-                    result = self.whisper_model.transcribe(audio, verbose=False)
-                    base_transcription = result["text"].strip()
+                    # PHASE 1: Debug tensor compatibility
+                    # Compare MAX Graph output vs OpenAI encoder output
+                    print("    🔍 Debugging encoder output compatibility...")
+                    openai_encoder_features = self._get_openai_encoder_features(mel_db)
+                    print(f"      📊 OpenAI encoder output shape: {openai_encoder_features.shape}")
                     
-                    # The output is correct transcription enhanced by MAX Graph processing
-                    transcription = f"{base_transcription} [Processed with MAX Graph encoder: {max_encoder_features.shape} features]"
-                    print(f"      ✅ MAX Graph encoder successfully processed features")
+                    # Try using MAX Graph encoder output with OpenAI decoder
+                    print("    🎯 ATTEMPTING: Use MAX Graph encoder + OpenAI decoder...")
+                    transcription = self._decode_with_openai_decoder(max_encoder_features, audio)
+                    
+                    if transcription:
+                        print(f"      ✅ SUCCESS: Used MAX Graph encoder output for transcription!")
+                    else:
+                        print(f"      ❌ FAILED: Falling back to full OpenAI pipeline")
+                        result = self.whisper_model.transcribe(audio, verbose=False)
+                        transcription = result["text"].strip()
                     
                 except Exception as e:
                     print(f"      ⚠️ MAX Graph encoder failed: {e}")
@@ -581,6 +590,102 @@ class WhisperMAX:
             return np.random.randn(1, min(mel_features.shape[1], 1500), 384).astype(np.float32)
 
     
+    def _get_openai_encoder_features(self, mel_features: np.ndarray) -> np.ndarray:
+        """
+        Get encoder features from OpenAI Whisper for comparison
+        
+        Args:
+            mel_features: Mel spectrogram [n_mels, seq_len]
+            
+        Returns:
+            Encoder features from OpenAI Whisper [batch, seq_len, d_model]
+        """
+        try:
+            import torch
+            
+            # Convert to PyTorch tensor
+            mel_tensor = torch.from_numpy(mel_features).float()
+            
+            # Add batch dimension if needed
+            if mel_tensor.dim() == 2:
+                mel_tensor = mel_tensor.unsqueeze(0)
+            
+            # Move to same device as model
+            mel_tensor = mel_tensor.to(next(self.whisper_model.encoder.parameters()).device)
+            
+            # Get encoder features
+            with torch.no_grad():
+                encoder_features = self.whisper_model.encoder(mel_tensor)
+            
+            return encoder_features.cpu().numpy()
+            
+        except Exception as e:
+            print(f"        ❌ Failed to get OpenAI encoder features: {e}")
+            return np.zeros((1, 1500, 384), dtype=np.float32)
+    
+    def _decode_with_openai_decoder(self, encoder_features: np.ndarray, audio: np.ndarray) -> Optional[str]:
+        """
+        Use MAX Graph encoder features with OpenAI decoder
+        
+        Args:
+            encoder_features: Features from MAX Graph encoder [batch, seq_len, d_model]
+            audio: Original audio for fallback
+            
+        Returns:
+            Transcribed text or None if failed
+        """
+        try:
+            import torch
+            
+            # Convert encoder features to PyTorch tensor and make writable
+            encoder_tensor = torch.from_numpy(encoder_features.copy()).float()
+            
+            # Move to same device as model  
+            device = next(self.whisper_model.decoder.parameters()).device
+            encoder_tensor = encoder_tensor.to(device)
+            
+            print(f"        📊 Using encoder features shape: {encoder_tensor.shape}")
+            
+            # Use the direct decode method with our encoder features
+            # Create initial tokens for decoding
+            import torch.nn.functional as F
+            
+            # Create simple decode tokens (start with language and transcribe tokens)
+            sot_sequence = [
+                50258,  # <|startoftranscript|>
+                50259,  # <|en|>
+                50359,  # <|transcribe|>
+                50363   # <|notimestamps|>
+            ]
+            
+            tokens = torch.tensor([sot_sequence], dtype=torch.long, device=device)
+            
+            # Decode using the model's decoder directly
+            with torch.no_grad():
+                # Use encoder features with decoder
+                for i in range(100):  # Max 100 tokens
+                    logits = self.whisper_model.decoder(tokens, encoder_tensor)
+                    next_token = logits[0, -1].argmax()
+                    
+                    if next_token == 50257:  # <|endoftext|>
+                        break
+                        
+                    tokens = torch.cat([tokens, next_token.unsqueeze(0).unsqueeze(0)], dim=1)
+            
+            # Decode tokens to text
+            import whisper
+            text_tokens = tokens[0][len(sot_sequence):].tolist()
+            tokenizer = whisper.tokenizer.get_tokenizer(multilingual=True)
+            text = tokenizer.decode(text_tokens)
+            
+            return text.strip()
+            
+        except Exception as e:
+            print(f"        ❌ Failed to decode with OpenAI decoder: {e}")
+            import traceback
+            traceback.print_exc()
+            return None
+
     def _decode_with_max_graph(self, encoder_output: np.ndarray) -> str:
         """
         Decode encoder output to text using MAX Graph
