@@ -12,9 +12,9 @@ from pathlib import Path
 def save_benchmark_results(results):
     """Save results in multiple formats for easy viewing and analysis"""
     
-    # Create results directory
-    results_dir = Path("benchmark_results")
-    results_dir.mkdir(exist_ok=True)
+    # Create organized results directory
+    results_dir = Path("results/benchmarks")
+    results_dir.mkdir(parents=True, exist_ok=True)
     
     # 1. Save JSON for machine reading
     with open(results_dir / "benchmark_results.json", "w") as f:

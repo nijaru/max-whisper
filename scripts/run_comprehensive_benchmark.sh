@@ -14,9 +14,9 @@ echo "======================================================================="
 source scripts/setup_cuda_env.sh
 export PATH="$HOME/.pixi/bin:$PATH"
 
-# Create results directory
-mkdir -p benchmark_results
-cd benchmark_results
+# Create organized results directory
+mkdir -p results/benchmarks
+cd results/benchmarks
 
 echo "📋 Running comprehensive benchmarks..."
 echo ""
@@ -32,17 +32,17 @@ pixi run -e benchmark python ../tests/test_baselines_only.py --save-results
 echo ""
 echo "✅ Benchmark complete! Results saved in multiple formats:"
 echo ""
-echo "📄 Human-readable table: benchmark_results_table.txt"
-echo "📊 Machine-readable data: benchmark_results.json"
-echo "📝 Markdown table: benchmark_results_markdown.md"
-echo "🖥️  Terminal display: benchmark_results_terminal.txt"
+echo "📄 Human-readable table: results/benchmarks/benchmark_results_table.txt"
+echo "📊 Machine-readable data: results/benchmarks/benchmark_results.json"
+echo "📝 Markdown table: results/benchmarks/benchmark_results_markdown.md"
+echo "🖥️  Terminal display: results/benchmarks/benchmark_results_terminal.txt"
 echo ""
 
 # Display results
 echo "======================================================================="
 echo "BENCHMARK RESULTS SUMMARY"
 echo "======================================================================="
-cat benchmark_results_table.txt
+cat results/benchmarks/benchmark_results_table.txt
 
 echo ""
 echo "======================================================================="
@@ -53,6 +53,6 @@ echo "2. ✅ Baseline models validated on real audio"
 echo "3. 🎯 Ready for trained weights integration"
 echo "4. 🚀 Ready for maximum performance demonstration"
 echo ""
-echo "For detailed analysis: cat benchmark_results.json | python -m json.tool"
-echo "For markdown table: cat benchmark_results_markdown.md"
+echo "For detailed analysis: cat results/benchmarks/benchmark_results.json | python -m json.tool"
+echo "For markdown table: cat results/benchmarks/benchmark_results_markdown.md"
 echo "======================================================================="
