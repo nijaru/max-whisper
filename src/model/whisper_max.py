@@ -425,33 +425,20 @@ class WhisperMAX:
                 # Transpose mel: [batch, n_mels, seq_len] -> [batch, seq_len, n_mels]
                 mel_transposed = ops.transpose(mel_input, 1, 2)
                 
-                # Conv1d layer 1: Proper convolution simulation
-                # Whisper uses 1D conv with kernel_size=3, so we need to process all 3 positions
-                # For now, use a weighted combination of all kernel positions instead of just middle
-                conv1_k0 = conv1_weight[:, :, 0]  # Left kernel
-                conv1_k1 = conv1_weight[:, :, 1]  # Middle kernel  
-                conv1_k2 = conv1_weight[:, :, 2]  # Right kernel
+                # Conv1d layer 1: Use middle kernel only (simplified but more accurate)
+                # For 1D conv with kernel_size=3, use the middle kernel weight for linear transformation
+                # This is a simplification but more accurate than adding all kernel positions
+                conv1_middle = conv1_weight[:, :, 1]  # Use middle kernel (most important)
                 
-                # Apply each kernel and combine (simplified conv1d approximation)
-                x0 = ops.matmul(mel_transposed, ops.transpose(conv1_k0, 0, 1))
-                x1 = ops.matmul(mel_transposed, ops.transpose(conv1_k1, 0, 1)) 
-                x2 = ops.matmul(mel_transposed, ops.transpose(conv1_k2, 0, 1))
-                
-                # Combine all kernel outputs (approximates conv1d)
-                x = ops.add(ops.add(x0, x1), x2)
+                # Apply convolution using middle kernel
+                x = ops.matmul(mel_transposed, ops.transpose(conv1_middle, 0, 1))
                 x = ops.add(x, conv1_bias)
                 x = ops.gelu(x)  # GELU activation
                 
-                # Conv1d layer 2: Apply same fix
-                conv2_k0 = conv2_weight[:, :, 0]
-                conv2_k1 = conv2_weight[:, :, 1]
-                conv2_k2 = conv2_weight[:, :, 2]
+                # Conv1d layer 2: Use middle kernel only
+                conv2_middle = conv2_weight[:, :, 1]  # Use middle kernel
                 
-                x0 = ops.matmul(x, ops.transpose(conv2_k0, 0, 1))
-                x1 = ops.matmul(x, ops.transpose(conv2_k1, 0, 1))
-                x2 = ops.matmul(x, ops.transpose(conv2_k2, 0, 1))
-                
-                x = ops.add(ops.add(x0, x1), x2)
+                x = ops.matmul(x, ops.transpose(conv2_middle, 0, 1))
                 x = ops.add(x, conv2_bias) 
                 x = ops.gelu(x)  # GELU activation
                 
@@ -936,11 +923,11 @@ class WhisperMAX:
     
     def _decode_with_openai_decoder(self, encoder_features: np.ndarray, audio: np.ndarray) -> Optional[str]:
         """
-        Use MAX Graph encoder features with OpenAI decoder - direct decode approach
+        Use MAX Graph encoder features with OpenAI decoder - monkey patch approach
         
         Args:
-            encoder_features: Features from MAX Graph encoder [batch, seq_len, d_model]
-            audio: Original audio for fallback
+            encoder_features: Features from MAX Graph encoder [batch, seq_len, d_model]  
+            audio: Original audio for format compatibility
             
         Returns:
             Transcribed text or None if failed
@@ -948,53 +935,50 @@ class WhisperMAX:
         try:
             import torch
             import whisper
-            from whisper.decoding import DecodingOptions, DecodingTask
+            import librosa
             
             # Convert encoder features to PyTorch tensor
             max_encoder_tensor = torch.from_numpy(encoder_features.copy()).float()
-            device = next(self.whisper_model.decoder.parameters()).device
+            device = next(self.whisper_model.parameters()).device
             max_encoder_tensor = max_encoder_tensor.to(device)
             
             print(f"        📊 Using encoder features shape: {max_encoder_tensor.shape}")
             
-            # Use Whisper's decode API directly with our encoder features
-            options = DecodingOptions(
-                language="en",
-                task="transcribe",
-                fp16=False,
-                temperature=0.0,
-                beam_size=1,
-                suppress_tokens="",
-                prompt=None,
-                without_timestamps=True,
-            )
+            # Store original encoder forward method
+            original_encode = self.whisper_model.encoder.forward
             
-            # Create a mel spectrogram tensor for Whisper's internal processing
-            # This is needed for proper audio feature format, but we'll use our encoder features
-            mel_dummy = torch.zeros((1, 80, 3000), device=device, dtype=torch.float32)
+            # Create custom encoder forward that returns our MAX Graph features
+            def custom_encoder_forward(x):
+                # Return our MAX Graph encoder features instead of computed ones
+                return max_encoder_tensor
             
-            # Create decoding task
-            task = DecodingTask(self.whisper_model, options)
+            # Temporarily replace encoder forward
+            self.whisper_model.encoder.forward = custom_encoder_forward
             
-            # Use our encoder features directly in the decode process
-            with torch.no_grad():
-                # Use our MAX Graph encoder features as audio_features
-                result = task.run(max_encoder_tensor)
+            try:
+                # Use standard whisper transcribe with our monkey-patched encoder
                 
-                # Handle different result formats
-                if isinstance(result, list) and len(result) > 0:
-                    # Result is a list of DecodingResult objects
-                    first_result = result[0]
-                    if hasattr(first_result, 'text'):
-                        return first_result.text.strip()
-                    else:
-                        print(f"        ⚠️ First result has no text attribute: {dir(first_result)}")
-                        return None
-                elif hasattr(result, 'text'):
-                    return result.text.strip()
+                # Resample audio to match Whisper's expected sample rate
+                if len(audio.shape) > 1:
+                    audio = audio[0]  # Take first channel if stereo
+                
+                audio_resampled = librosa.resample(audio, orig_sr=16000, target_sr=16000)
+                
+                # Pad or truncate to 30 seconds (Whisper's chunk size)
+                audio_padded = whisper.pad_or_trim(audio_resampled)
+                
+                # Use whisper.transcribe which will use our monkey-patched encoder
+                result = whisper.transcribe(self.whisper_model, audio_padded, language="en")
+                
+                if isinstance(result, dict) and 'text' in result:
+                    return result['text'].strip()
                 else:
-                    print(f"        ⚠️ Decode result format unexpected: {type(result)}")
+                    print(f"        ⚠️ Unexpected transcribe result format: {type(result)}")
                     return None
+                    
+            finally:
+                # Always restore original encoder
+                self.whisper_model.encoder.forward = original_encode
             
         except Exception as e:
             print(f"        ❌ Failed to decode with OpenAI decoder: {e}")
