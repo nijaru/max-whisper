@@ -1,8 +1,8 @@
-# max-whisper: High-Performance Speech Recognition with MAX Graph
-# Makefile for easy demo and benchmark execution
+# max-whisper: Speech Recognition with MAX Graph
+# Makefile for demo and testing of all implementations
 
-# Default model size (small for production-relevant performance)
-MODEL_SIZE ?= small
+# Default model size (tiny for fastest testing)
+MODEL_SIZE ?= tiny
 
 # Default audio file
 AUDIO_FILE ?= audio_samples/modular_video.wav
@@ -29,17 +29,17 @@ AUDIO_ARG := $(if $(filter-out tiny small base,$(ARGS)),$(filter-out tiny small 
 # Default target - run recommended demo
 all:
 	$(call check_env)
-	@echo "🚀 Starting recommended demo (small model)..."
-	@$(PIXI_ENV) python scripts/tui_demo.py small $(AUDIO_FILE)
+	@echo "🚀 Starting recommended demo (tiny model)..."
+	@$(PIXI_ENV) python scripts/tui_demo.py tiny $(AUDIO_FILE)
 
 help:
-	@echo "🚀 max-whisper - High-Performance Speech Recognition with MAX Graph"
+	@echo "🚀 max-whisper - Speech Recognition with MAX Graph"
 	@echo "======================================================="
 	@echo ""
 	@echo "🚀 QUICK START:"
-	@echo "  tiny                   - Full demo with tiny model (fastest)"
-	@echo "  small                  - Full demo with small model (recommended)"
-	@echo "  base                   - Full demo with base model (best quality)"
+	@echo "  tiny                   - Full demo with tiny model (fastest, recommended)"
+	@echo "  small                  - Full demo with small model (slower)"
+	@echo "  base                   - Full demo with base model (slowest)"
 	@echo ""
 	@echo "🎯 MAIN COMMANDS:"
 	@echo "  demo [model] [file]    - All 3 implementations"
