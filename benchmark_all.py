@@ -32,7 +32,7 @@ def test_whisper_cpu():
             'text': result,
             'status': 'Success',
             'platform': 'OpenAI Whisper CPU'
-        }
+        }, None
         
     except Exception as e:
         return None, f"Error: {e}"
@@ -58,7 +58,7 @@ def test_whisper_gpu():
             'text': result,
             'status': 'Success',
             'platform': 'OpenAI Whisper + CUDA'
-        }
+        }, None
         
     except Exception as e:
         return None, f"Error: {e}"
@@ -83,8 +83,34 @@ def test_whisper_max():
             'time': end_time - start_time,
             'text': result,
             'status': 'Success',
-            'platform': 'MAX Graph'
-        }
+            'platform': 'MAX Graph Integration'
+        }, None
+        
+    except Exception as e:
+        return None, f"Error: {e}"
+
+def test_whisper_max_fast():
+    """Test MAX Graph Fast implementation"""
+    print("\n🔬 Testing MAX Graph Fast Implementation")
+    print("=" * 50)
+    
+    try:
+        from model.whisper_max_fast import WhisperMAXFast
+        
+        model = WhisperMAXFast(use_gpu=True)
+        if not model.available:
+            return None, "MAX Graph Fast not available"
+        
+        start_time = time.time()
+        result = model.transcribe(use_max_acceleration=True)
+        end_time = time.time()
+        
+        return {
+            'time': end_time - start_time,
+            'text': result,
+            'status': 'Success',
+            'platform': 'MAX Graph Fast'
+        }, None
         
     except Exception as e:
         return None, f"Error: {e}"
@@ -96,18 +122,24 @@ def run_complete_benchmark():
     print("Audio: audio_samples/modular_video.wav (161.5s)")
     print()
     
-    # Test all three implementations
+    # Test all implementations
     implementations = [
         ("CPU Baseline", test_whisper_cpu),
         ("GPU Accelerated", test_whisper_gpu),
-        ("MAX Graph", test_whisper_max),
+        ("MAX Graph Integration", test_whisper_max),
+        ("MAX Graph Fast", test_whisper_max_fast),
     ]
     
     results = []
     baseline_time = None
     
     for name, test_func in implementations:
-        result, error = test_func()
+        test_result = test_func()
+        if isinstance(test_result, tuple):
+            result, error = test_result
+        else:
+            result = test_result
+            error = None
         
         if result:
             # Set baseline from CPU implementation
