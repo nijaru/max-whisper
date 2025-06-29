@@ -12,16 +12,16 @@ MAX-Whisper successfully demonstrates the first PyTorch → MAX Graph trained we
 **Test Audio**: 161.5s Modular technical presentation  
 **GPU Baseline**: OpenAI Whisper GPU established at 1.28s (2.5x faster than CPU)
 
-| Model | Device | Time | vs Baseline | Output Quality | Status |
-|-------|--------|------|-------------|----------------|--------|
-| OpenAI Whisper-tiny | CPU | 3.18s | 1.0x | "Music Max provides several different libraries..." | ✅ Industry Baseline |
-| OpenAI Whisper-tiny | GPU | 1.28s | 2.5x | "Music Max provides several different libraries..." | ✅ GPU Reference |
-| **🚀 MAX-Whisper CPU** | **CPU** | **~0.1s** | **20x+** | **Technical breakthrough demonstration** | **✅ Proof of Concept** |
-| **🎯 MAX-Whisper GPU** | **GPU** | **TBD** | **Target: 5-10x** | **Full GPU optimization needed** | **🔧 Next Step** |
+| Model | Device | Time | vs OpenAI CPU | Output Quality | Status |
+|-------|--------|------|---------------|----------------|--------|
+| OpenAI Whisper-tiny | CPU | 3.18s | 1.0x (Baseline) | "Music Max provides several different libraries..." | ✅ Industry Baseline |
+| OpenAI Whisper-tiny | GPU | 1.28s | 2.5x faster | "Music Max provides several different libraries..." | ✅ GPU Reference |
+| **🚀 MAX-Whisper CPU** | **CPU** | **~0.1s** | **~32x faster** | **Technical breakthrough demonstration** | **✅ Proof of Concept** |
+| **🎯 MAX-Whisper GPU** | **GPU** | **TBD** | **Target: 50x+ faster** | **Full GPU optimization needed** | **🔧 Next Step** |
 
 ### 🎯 Current Status
 - ✅ **Technical Breakthrough**: PyTorch → MAX Graph weight conversion proven  
-- ✅ **Performance Proof**: 20x+ speedup demonstrated on CPU vs industry standard
+- ✅ **Performance Proof**: 32x speedup demonstrated vs OpenAI CPU baseline
 - ✅ **GPU Infrastructure**: Complete CUDA environment + OpenAI GPU baseline established
 - 🔧 **GPU Optimization**: MAX Graph + PyTorch CUDA compatibility resolution needed
 
