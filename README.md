@@ -55,22 +55,26 @@ MAX-Whisper demonstrates MAX Graph's production readiness by building a complete
 ### Current Working Demo (Baselines + Components)
 ```bash
 # Set up environment
+source scripts/setup_cuda_env.sh
 export PATH="$HOME/.pixi/bin:$PATH"
 
+# Test all components (4/4 tests passing)
+pixi run -e default python tests/test_everything.py
+
 # Test baseline performance
-pixi run -e benchmark python test_baselines_only.py
+pixi run -e benchmark python tests/test_baselines_only.py
 
 # Verify trained weights extracted
-pixi run -e benchmark python demo_trained_weights_simple.py
+pixi run -e benchmark python demos/demo_trained_weights_simple.py
 
 # Show tokenizer integration
-pixi run -e benchmark python integrate_real_tokenizer.py
+pixi run -e benchmark python demos/integrate_real_tokenizer.py
 ```
 
 ### Lambda AI Deployment (Full Demo)
 ```bash
 # Deploy complete system
-./deploy_lambda_ai.sh
+./scripts/deploy_lambda_ai.sh
 
 # Run head-to-head comparison
 pixi run -e benchmark python benchmarks/real_audio_comparison.py
@@ -90,8 +94,12 @@ pixi run -e benchmark python benchmarks/real_audio_comparison.py
 │   └── whisper_tiny_weights.npz      # ⭐ 47 trained weight tensors
 ├── audio_samples/
 │   └── modular_video.wav            # Real test audio (161.5s)
-├── extract_whisper_weights.py        # Weight extraction utility
-├── deploy_lambda_ai.sh              # ⭐ Lambda AI deployment script
+├── scripts/                          # Utility scripts and deployment
+│   ├── extract_whisper_weights.py    # Weight extraction utility
+│   ├── deploy_lambda_ai.sh          # ⭐ Lambda AI deployment script
+│   └── setup_cuda_env.sh            # CUDA environment setup
+├── demos/                           # Interactive demonstrations
+├── tests/                           # Component validation (4/4 passing)
 └── docs/                           # Comprehensive documentation
 ```
 
@@ -107,7 +115,7 @@ export PATH="$HOME/.pixi/bin:$PATH"
 pixi install -e benchmark
 
 # Extract trained weights (if needed)
-pixi run -e benchmark python extract_whisper_weights.py
+pixi run -e benchmark python scripts/extract_whisper_weights.py
 ```
 
 ### Lambda AI Deployment
@@ -116,7 +124,7 @@ pixi run -e benchmark python extract_whisper_weights.py
 rsync -av --progress ./ lambda-server:~/max-whisper-demo/
 
 # Automated setup and benchmarking
-./deploy_lambda_ai.sh
+./scripts/deploy_lambda_ai.sh
 ```
 
 ## 🎯 Technical Architecture
