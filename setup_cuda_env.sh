@@ -4,7 +4,7 @@
 echo "Setting up CUDA environment for MAX-Whisper..."
 
 # Find CUDA libraries in pixi environment
-PIXI_ENV="/home/nick/github/modular-hackathon/.pixi/envs/benchmark/lib/python3.11/site-packages/nvidia"
+PIXI_ENV="/home/nick/github/modular-hackathon/.pixi/envs/default/lib/python3.11/site-packages/nvidia"
 
 # Set library paths
 export LD_LIBRARY_PATH="$PIXI_ENV/cublas/lib:$PIXI_ENV/cudnn/lib:$PIXI_ENV/cuda_runtime/lib:$PIXI_ENV/cuda_nvtx/lib:$LD_LIBRARY_PATH"
