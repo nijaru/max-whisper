@@ -327,22 +327,31 @@ class WhisperMAX:
                         self.weights[f'layer_{i}_mlp_ln_weight'] = block.mlp_ln.weight.detach().cpu().numpy()
                         self.weights[f'layer_{i}_mlp_ln_bias'] = block.mlp_ln.bias.detach().cpu().numpy()
                     
-                    # MLP weights
+                    # MLP weights - handle Sequential structure
                     if hasattr(block, 'mlp'):
-                        if hasattr(block.mlp, 'c_fc'):
-                            self.weights[f'layer_{i}_mlp_fc1'] = block.mlp.c_fc.weight.detach().cpu().numpy()
-                            if block.mlp.c_fc.bias is not None:
-                                self.weights[f'layer_{i}_mlp_fc1_bias'] = block.mlp.c_fc.bias.detach().cpu().numpy()
-                        
-                        if hasattr(block.mlp, 'c_proj'):
-                            self.weights[f'layer_{i}_mlp_fc2'] = block.mlp.c_proj.weight.detach().cpu().numpy()
-                            if block.mlp.c_proj.bias is not None:
-                                self.weights[f'layer_{i}_mlp_fc2_bias'] = block.mlp.c_proj.bias.detach().cpu().numpy()
+                        print(f"      🔍 MLP is Sequential with {len(block.mlp)} layers")
+                        # MLP is typically Sequential([Linear(d_model, 4*d_model), GELU, Linear(4*d_model, d_model)])
+                        if len(block.mlp) >= 3:
+                            # First layer (FC1): d_model -> 4*d_model
+                            fc1_layer = block.mlp[0]
+                            if hasattr(fc1_layer, 'weight'):
+                                self.weights[f'layer_{i}_mlp_fc1'] = fc1_layer.weight.detach().cpu().numpy()
+                                if hasattr(fc1_layer, 'bias') and fc1_layer.bias is not None:
+                                    self.weights[f'layer_{i}_mlp_fc1_bias'] = fc1_layer.bias.detach().cpu().numpy()
+                                print(f"        ✅ Extracted MLP FC1 from block.mlp[0]")
+                            
+                            # Last layer (FC2): 4*d_model -> d_model  
+                            fc2_layer = block.mlp[2]  # Skip GELU activation
+                            if hasattr(fc2_layer, 'weight'):
+                                self.weights[f'layer_{i}_mlp_fc2'] = fc2_layer.weight.detach().cpu().numpy()
+                                if hasattr(fc2_layer, 'bias') and fc2_layer.bias is not None:
+                                    self.weights[f'layer_{i}_mlp_fc2_bias'] = fc2_layer.bias.detach().cpu().numpy()
+                                print(f"        ✅ Extracted MLP FC2 from block.mlp[2]")
             
             print(f"    ✅ Extracted {len(self.weights)} weight tensors")
             
             # Debug: Print available weight keys to understand what we actually extracted
-            print(f"    🔍 Available weights: {list(self.weights.keys())[:10]}...")  # Show first 10 keys
+            print(f"    🔍 Available weights: {list(self.weights.keys())}")  # Show all keys for debugging
             
         except Exception as e:
             print(f"    ❌ Weight extraction failed: {e}")
@@ -377,8 +386,8 @@ class WhisperMAX:
                 TensorType(DType.float32, (n_audio_ctx, n_audio_state), device=self.max_device), # pos_embed
             ]
             
-            # Add attention layer weights for first transformer block
-            for layer_idx in range(min(1, n_audio_layer)):  # Start with just first layer
+            # Add attention layer weights for first two transformer blocks (expand gradually)
+            for layer_idx in range(min(2, n_audio_layer)):  # Use first 2 layers for better quality
                 # Attention weights
                 input_types.extend([
                     TensorType(DType.float32, (n_audio_state, n_audio_state), device=self.max_device),  # query
@@ -428,8 +437,8 @@ class WhisperMAX:
                 x = ops.add(x, pos_embed)
                 
                 print(f"      🔧 Building transformer layers...")
-                # Build transformer blocks
-                for layer_idx in range(min(1, n_audio_layer)):  # Start with first layer
+                # Build transformer blocks  
+                for layer_idx in range(min(2, n_audio_layer)):  # Build first 2 layers for better quality
                     # Get layer weights
                     attn_query_weight = inputs[input_idx]; input_idx += 1
                     attn_key_weight = inputs[input_idx]; input_idx += 1
@@ -725,41 +734,51 @@ class WhisperMAX:
                 Tensor.from_numpy(pos_embed.astype(np.float32)).to(self.max_driver_device),
             ])
             
-            # Add transformer layer weights (first layer only for now)
-            layer_idx = 0
-            attn_query = self.weights.get(f'layer_{layer_idx}_attn_query', 
-                np.random.randn(d_model, d_model).astype(np.float32) * 0.02)
-            attn_key = self.weights.get(f'layer_{layer_idx}_attn_key',
-                np.random.randn(d_model, d_model).astype(np.float32) * 0.02)
-            attn_value = self.weights.get(f'layer_{layer_idx}_attn_value',
-                np.random.randn(d_model, d_model).astype(np.float32) * 0.02)
-            attn_out = self.weights.get(f'layer_{layer_idx}_attn_out',
-                np.random.randn(d_model, d_model).astype(np.float32) * 0.02)
-            attn_ln_weight = self.weights.get(f'layer_{layer_idx}_attn_ln_weight',
-                np.ones(d_model).astype(np.float32))
-            attn_ln_bias = self.weights.get(f'layer_{layer_idx}_attn_ln_bias',
-                np.zeros(d_model).astype(np.float32))
-            mlp_ln_weight = self.weights.get(f'layer_{layer_idx}_mlp_ln_weight',
-                np.ones(d_model).astype(np.float32))
-            mlp_ln_bias = self.weights.get(f'layer_{layer_idx}_mlp_ln_bias',
-                np.zeros(d_model).astype(np.float32))
-            mlp_fc1 = self.weights.get(f'layer_{layer_idx}_mlp_fc1',
-                np.random.randn(d_model * 4, d_model).astype(np.float32) * 0.02)
-            mlp_fc2 = self.weights.get(f'layer_{layer_idx}_mlp_fc2',
-                np.random.randn(d_model, d_model * 4).astype(np.float32) * 0.02)
+            # Add transformer layer weights (first two layers for better quality)
+            # Use real weights with proper logging
+            def get_weight_with_logging(key, fallback_shape, fallback_init):
+                if key in self.weights:
+                    print(f"        ✅ Using real pretrained weight: {key}")
+                    return self.weights[key]
+                else:
+                    print(f"        ⚠️ Using fallback random weight: {key}")
+                    return fallback_init(*fallback_shape).astype(np.float32)
             
-            weight_tensors.extend([
-                Tensor.from_numpy(attn_query.astype(np.float32)).to(self.max_driver_device),
-                Tensor.from_numpy(attn_key.astype(np.float32)).to(self.max_driver_device),
-                Tensor.from_numpy(attn_value.astype(np.float32)).to(self.max_driver_device),
-                Tensor.from_numpy(attn_out.astype(np.float32)).to(self.max_driver_device),
-                Tensor.from_numpy(attn_ln_weight.astype(np.float32)).to(self.max_driver_device),
-                Tensor.from_numpy(attn_ln_bias.astype(np.float32)).to(self.max_driver_device),
-                Tensor.from_numpy(mlp_ln_weight.astype(np.float32)).to(self.max_driver_device),
-                Tensor.from_numpy(mlp_ln_bias.astype(np.float32)).to(self.max_driver_device),
-                Tensor.from_numpy(mlp_fc1.astype(np.float32)).to(self.max_driver_device),
-                Tensor.from_numpy(mlp_fc2.astype(np.float32)).to(self.max_driver_device),
-            ])
+            # Add weights for first 2 transformer layers
+            for layer_idx in range(2):
+                attn_query = get_weight_with_logging(f'layer_{layer_idx}_attn_query', 
+                    (d_model, d_model), lambda *s: np.random.randn(*s) * 0.02)
+                attn_key = get_weight_with_logging(f'layer_{layer_idx}_attn_key',
+                    (d_model, d_model), lambda *s: np.random.randn(*s) * 0.02)
+                attn_value = get_weight_with_logging(f'layer_{layer_idx}_attn_value',
+                    (d_model, d_model), lambda *s: np.random.randn(*s) * 0.02)
+                attn_out = get_weight_with_logging(f'layer_{layer_idx}_attn_out',
+                    (d_model, d_model), lambda *s: np.random.randn(*s) * 0.02)
+                attn_ln_weight = get_weight_with_logging(f'layer_{layer_idx}_attn_ln_weight',
+                    (d_model,), lambda *s: np.ones(*s))
+                attn_ln_bias = get_weight_with_logging(f'layer_{layer_idx}_attn_ln_bias',
+                    (d_model,), lambda *s: np.zeros(*s))
+                mlp_ln_weight = get_weight_with_logging(f'layer_{layer_idx}_mlp_ln_weight',
+                    (d_model,), lambda *s: np.ones(*s))
+                mlp_ln_bias = get_weight_with_logging(f'layer_{layer_idx}_mlp_ln_bias',
+                    (d_model,), lambda *s: np.zeros(*s))
+                mlp_fc1 = get_weight_with_logging(f'layer_{layer_idx}_mlp_fc1',
+                    (d_model * 4, d_model), lambda *s: np.random.randn(*s) * 0.02)
+                mlp_fc2 = get_weight_with_logging(f'layer_{layer_idx}_mlp_fc2',
+                    (d_model, d_model * 4), lambda *s: np.random.randn(*s) * 0.02)
+                
+                weight_tensors.extend([
+                    Tensor.from_numpy(attn_query.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(attn_key.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(attn_value.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(attn_out.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(attn_ln_weight.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(attn_ln_bias.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(mlp_ln_weight.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(mlp_ln_bias.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(mlp_fc1.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(mlp_fc2.astype(np.float32)).to(self.max_driver_device),
+                ])
             
             # Execute MAX Graph encoder with all tensors
             outputs = self.max_encoder.execute(*weight_tensors)
