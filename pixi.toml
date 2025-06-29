@@ -41,6 +41,7 @@ openai-whisper = "*"
 faster-whisper = "*"
 soundfile = "*"
 rich = "*"
+psutil = "*"
 
 [feature.benchmark.system-requirements]
 cuda = "12"

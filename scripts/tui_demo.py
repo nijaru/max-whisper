@@ -10,6 +10,8 @@ import subprocess
 import sys
 import os
 import re
+import platform
+import psutil
 from typing import Optional, Dict, List
 
 class ModularDemo:
@@ -41,6 +43,98 @@ class ModularDemo:
                 self.tests.append(test_def)
         
         self.baseline_time = None
+        self.hw_specs = self._detect_hardware()
+    
+    def _detect_hardware(self) -> Dict:
+        """Detect hardware specifications"""
+        specs = {}
+        
+        # CPU info - try to get actual model name
+        try:
+            specs['cpu_count'] = psutil.cpu_count()
+            specs['cpu_cores'] = psutil.cpu_count(logical=False)
+            
+            # Try to get CPU model from /proc/cpuinfo on Linux
+            specs['cpu'] = "Unknown"
+            try:
+                with open('/proc/cpuinfo', 'r') as f:
+                    for line in f:
+                        if line.startswith('model name'):
+                            cpu_model = line.split(':')[1].strip()
+                            # Clean up common suffixes and duplicates
+                            cpu_model = cpu_model.replace(' CPU', '').replace(' @ ', '@')
+                            specs['cpu'] = cpu_model
+                            break
+            except:
+                # Fallback to platform info
+                specs['cpu'] = platform.processor() or platform.machine()
+        except:
+            specs['cpu'] = "Unknown"
+            specs['cpu_count'] = "Unknown"
+            specs['cpu_cores'] = "Unknown"
+        
+        # Memory info
+        try:
+            mem = psutil.virtual_memory()
+            specs['memory_gb'] = round(mem.total / (1024**3), 1)
+        except:
+            specs['memory_gb'] = "Unknown"
+        
+        # GPU info (try multiple approaches)
+        specs['gpu'] = "Not detected"
+        try:
+            # Try nvidia-smi first
+            result = subprocess.run(['nvidia-smi', '--query-gpu=name', '--format=csv,noheader,nounits'], 
+                                  capture_output=True, text=True, timeout=5)
+            if result.returncode == 0 and result.stdout.strip():
+                specs['gpu'] = result.stdout.strip().split('\n')[0]
+        except:
+            try:
+                # Try lspci as fallback
+                result = subprocess.run(['lspci'], capture_output=True, text=True, timeout=5)
+                if result.returncode == 0:
+                    for line in result.stdout.split('\n'):
+                        if 'VGA' in line or '3D controller' in line:
+                            # Extract GPU name from lspci output
+                            if 'NVIDIA' in line:
+                                specs['gpu'] = line.split(': ')[-1] if ': ' in line else "NVIDIA GPU"
+                            elif 'AMD' in line or 'Radeon' in line:
+                                specs['gpu'] = line.split(': ')[-1] if ': ' in line else "AMD GPU"
+                            break
+            except:
+                pass
+        
+        # Platform info
+        specs['platform'] = platform.system()
+        specs['arch'] = platform.machine()
+        
+        return specs
+    
+    def _format_hw_info(self) -> List[str]:
+        """Format hardware info for display as multiple lines"""
+        hw = self.hw_specs
+        lines = []
+        
+        # CPU line - show model and cores/threads
+        if hw.get('cpu') and hw['cpu'] not in ['Unknown', '']:
+            cpu_model = hw['cpu'][:50] + "..." if len(hw['cpu']) > 50 else hw['cpu']
+            cpu_info = f"CPU: {cpu_model}"
+            if hw.get('cpu_cores') and hw.get('cpu_count'):
+                cpu_info += f" ({hw['cpu_cores']}C/{hw['cpu_count']}T)"
+            lines.append(cpu_info)
+        elif hw.get('cpu_cores') and hw.get('cpu_count'):
+            lines.append(f"CPU: {hw['cpu_cores']}C/{hw['cpu_count']}T")
+        
+        # RAM line
+        if hw.get('memory_gb') != "Unknown":
+            lines.append(f"RAM: {hw['memory_gb']}GB")
+        
+        # GPU line
+        if hw.get('gpu') and hw['gpu'] != "Not detected":
+            gpu_name = hw['gpu'][:50] + "..." if len(hw['gpu']) > 50 else hw['gpu']
+            lines.append(f"GPU: {gpu_name}")
+        
+        return lines
     
     def clear_screen(self):
         """Clear terminal"""
@@ -130,14 +224,37 @@ class ModularDemo:
         """Render complete interface"""
         self.clear_screen()
         
-        # Header
-        print("🎪 Whisper MAX Graph Performance Demo")
-        print("=" * 60)
-        print(f"Audio: {os.path.basename(self.audio_file)} | Tests: {len(self.tests)}")
+        # Header box
+        width = 60
+        outer_top = "┌" + "─" * (width - 2) + "┐"
+        outer_bottom = "└" + "─" * (width - 2) + "┘"
+        
+        print(outer_top)
+        self._print_boxed_line("🎪 MAX Graph Performance Demo", width, center=True, has_emoji=True)
+        self._print_boxed_line("=" * (width - 4), width, center=True)
+        self._print_boxed_line("", width)  # Empty line
+        
+        # Hardware specs (multiple lines)
+        hw_lines = self._format_hw_info()
+        for line in hw_lines:
+            self._print_boxed_line(line, width)
+        
+        # Tests and audio info
+        self._print_boxed_line(f"Tests: {len(self.tests)}", width)
+        
+        # Audio file info (truncated to fit)
+        audio_name = os.path.basename(self.audio_file)
+        if len(audio_name) > 50:
+            audio_name = audio_name[:47] + "..."
+        self._print_boxed_line(f"Audio: {audio_name}", width)
+        
+        print(outer_bottom)
         print()
         
-        # Test boxes
-        for test in self.tests:
+        # Test boxes with bold headers
+        for i, test in enumerate(self.tests):
+            # Bold header for each test
+            print(f"\033[1m{test['name']} ({self.model_size.upper()})\033[0m")
             print(self.draw_box(test))
             print()
         
@@ -148,6 +265,41 @@ class ModularDemo:
             print(f"🏆 Status: {len(completed)}/{len(self.tests)} complete")
             if len(completed) == len(self.tests) and self.baseline_time:
                 print(f"⚡ Fastest: {fastest['name']} - {fastest['time']:.2f}s ({self.baseline_time/fastest['time']:.1f}x speedup)")
+    
+    def _print_boxed_line(self, content: str, width: int, center: bool = False, has_emoji: bool = False):
+        """Print a line inside the header box"""
+        inner_width = width - 2  # Account for │ on both sides
+        
+        if center:
+            # Account for emoji visual width (emojis take 2 display chars but count as 1 in len())
+            if has_emoji:
+                # Count emojis in the content
+                emoji_count = 0
+                for char in content:
+                    code = ord(char)
+                    if (0x1F600 <= code <= 0x1F64F or  # Emoticons
+                        0x1F300 <= code <= 0x1F5FF or  # Misc Symbols and Pictographs
+                        0x1F680 <= code <= 0x1F6FF or  # Transport and Map
+                        0x1F1E0 <= code <= 0x1F1FF or  # Regional indicators
+                        0x2600 <= code <= 0x26FF or    # Misc symbols
+                        0x2700 <= code <= 0x27BF or    # Dingbats
+                        0x23E9 <= code <= 0x23FA):     # More symbols
+                        emoji_count += 1
+                
+                # Adjust padding calculation for emoji visual width
+                visual_width = len(content) + emoji_count
+                padding_total = inner_width - visual_width
+            else:
+                padding_total = inner_width - len(content)
+            
+            left_pad = padding_total // 2
+            right_pad = padding_total - left_pad
+            line = f"│{' ' * left_pad}{content}{' ' * right_pad}│"
+        else:
+            padding = " " * (inner_width - len(content))
+            line = f"│ {content}{padding[1:]}│"  # Start with space, adjust padding
+        
+        print(line)
     
     def run_test(self, test_index: int):
         """Run a single test"""
