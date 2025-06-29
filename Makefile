@@ -79,16 +79,22 @@ benchmark:
 tiny:
 ifeq ($(word 1,$(MAKECMDGOALS)),tiny)
 	@$(PIXI_ENV) python scripts/tui_demo.py tiny $(AUDIO_FILE)
+else
+	@true
 endif
 
 small:
 ifeq ($(word 1,$(MAKECMDGOALS)),small)
 	@$(PIXI_ENV) python scripts/tui_demo.py small $(AUDIO_FILE)
+else
+	@true
 endif
 
 base:
 ifeq ($(word 1,$(MAKECMDGOALS)),base)
 	@$(PIXI_ENV) python scripts/tui_demo.py base $(AUDIO_FILE)
+else
+	@true
 endif
 
 # Catch-all rule for audio files and unknown targets
