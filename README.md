@@ -27,10 +27,13 @@ This project demonstrates high-performance speech recognition using the Modular 
 
 ## 🚀 Quick Demo
 
-### Easy Demo Commands (Makefile)
+### Easy Demo Commands (Professional TUI Interface)
 ```bash
-# Quick demo - all 4 implementations (tiny model)
+# Clean TUI demo - all 4 implementations with visual progress
 make demo
+
+# Quick TUI demo - CPU + GPU only (fast showcase)
+make demo-quick
 
 # Judge demo - production-scale performance (small model)  
 make judge
@@ -42,9 +45,14 @@ make benchmark
 make help
 ```
 
-### Individual Implementation Testing
+### TUI Demo Options
 ```bash
-# Individual demos
+# Specialized TUI demos
+make demo-gpu-only   # GPU implementation only
+make demo-max-only   # MAX Graph implementations only
+make demo-tui        # Configurable TUI demo
+
+# Individual demos (legacy)
 make demo-cpu        # CPU baseline (OpenAI Whisper reference)
 make demo-gpu        # GPU accelerated (CUDA + PyTorch optimization)  
 make demo-max        # MAX Graph integration (attention layer replacement)

@@ -16,28 +16,55 @@ We've built a high-performance speech recognition system demonstrating the progr
 
 ## 🚀 Live Demo Script
 
-### **Phase 1: Quick Overview (2 minutes)**
+### **Phase 1: Clean TUI Demo (2 minutes)**
 
 ```bash
-# Show complete benchmark results (easy command)
-make benchmark
+# Show clean visual demo with real-time progress
+make demo
 ```
 
 **Narration**: 
-> "We've implemented Whisper speech recognition across four platforms, showing clear performance progression. Let me run our complete benchmark to show you the results..."
+> "We've implemented Whisper speech recognition across four platforms. Let me run our clean demo interface to show you the performance progression..."
 
-**Expected Output**:
+**Expected Visual Output**:
 ```
-CPU Baseline: 3.46s (baseline) ✅ Success
-GPU Accelerated: 0.99s (3.5x) ✅ Success  
-MAX Graph Integration: 1.04s (3.3x) ✅ Success
-MAX Graph Fast: 0.88s (3.9x) ✅ Success
+🎪 Whisper MAX Graph Performance Demo
+============================================================
+Audio: modular_video.wav | Tests: 4
+
+┌──────────────────────────────────────────────────────────┐
+│ ✅ CPU Baseline (small)                                   │
+│   OpenAI Whisper                                          │
+│   Complete                                          3.46s │
+└──────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────┐
+│ ✅ GPU Accelerated (small)                                │
+│   CUDA + PyTorch                                          │
+│   Complete                                   0.99s (3.5x) │
+└──────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────┐
+│ ✅ MAX Graph (small)                                      │
+│   MAX Graph Hybrid                                        │
+│   Complete                                   1.04s (3.3x) │
+└──────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────┐
+│ ✅ MAX Graph Fast (small)                                 │
+│   Ultra-Optimized                                         │
+│   Complete                                   0.88s (3.9x) │
+└──────────────────────────────────────────────────────────┘
+
+🏆 Status: 4/4 complete
+⚡ Fastest: MAX Graph Fast - 0.88s (3.9x speedup)
 ```
 
 **Key Points**:
-- All implementations produce perfect transcription
-- Clear performance progression from baseline to optimized
-- MAX Graph achieves best performance while maintaining quality
+- Visual progress tracking with clean boxes
+- Real-time status updates during execution
+- Clear performance comparison with speedups
+- Professional presentation suitable for judges
 
 ### **Phase 2: Technical Deep Dive (3-4 minutes)**
 
@@ -204,22 +231,27 @@ Quality: All implementations produce identical transcription
 
 ### **Judge-Ready Demo Commands**
 ```bash
-# Complete impressive demo (recommended for judges)
-make judge-demo
-
-# Quick all-implementations demo
+# Complete impressive TUI demo (recommended for judges)
 make demo
 
-# Individual implementation testing
-make demo-cpu      # CPU baseline (~3.5s)
-make demo-gpu      # GPU accelerated (~1.0s)  
-make demo-max      # MAX Graph integration (~1.0s)
-make demo-fast     # MAX Graph optimized (~0.9s)
+# Quick TUI demo (CPU + GPU only, fast showcase)
+make demo-quick
+
+# Specialized TUI demos
+make demo-gpu-only    # GPU implementation only
+make demo-max-only    # MAX Graph implementations only
+make demo-tui         # Configurable TUI demo
+
+# Individual implementation testing (legacy)
+make demo-cpu      # CPU baseline
+make demo-gpu      # GPU accelerated  
+make demo-max      # MAX Graph integration
+make demo-fast     # MAX Graph optimized
 
 # Production-scale demos
-make demo MODEL_SIZE=small    # Better quality
-make benchmark-small          # Small model benchmark
-make benchmark-base           # Production scale
+make demo MODEL_SIZE=small    # Better quality TUI demo
+make benchmark-small          # Detailed benchmark analysis
+make benchmark-base           # Production scale analysis
 ```
 
 ### **Setup and Environment Check**

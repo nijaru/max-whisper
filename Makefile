@@ -10,6 +10,9 @@ AUDIO_FILE ?= audio_samples/modular_video.wav
 # Environment setup
 PIXI_ENV = pixi run -e benchmark
 
+# Suppress make directory messages
+MAKEFLAGS += --no-print-directory
+
 .PHONY: help demo benchmark test clean
 
 # Default target
@@ -20,13 +23,15 @@ help:
 	@echo "======================================================="
 	@echo ""
 	@echo "🎯 QUICK START:"
-	@echo "  demo          - Demo all 4 implementations (tiny model, fast showcase)"
+	@echo "  demo          - Clean TUI demo (all 4 implementations)"
 	@echo "  judge         - Complete judge demo (small model, production-scale)"
 	@echo "  benchmark     - Full performance benchmark with analysis"
 	@echo ""
-	@echo "📊 DEMO vs BENCHMARK:"
-	@echo "  Demo:         Quick functionality showcase, basic performance indication"
-	@echo "  Benchmark:    Comprehensive timing analysis, statistical comparison"
+	@echo "🎭 TUI DEMOS:"
+	@echo "  demo-tui      - Modular TUI demo (configurable)"
+	@echo "  demo-quick    - Quick TUI demo (CPU + GPU only)"  
+	@echo "  demo-gpu-only - GPU implementation only"
+	@echo "  demo-max-only - MAX Graph implementations only"
 	@echo ""
 	@echo "🔧 INDIVIDUAL TARGETS:"
 	@echo "  demo-cpu      - CPU baseline (OpenAI Whisper)"
@@ -103,13 +108,24 @@ benchmark-small:
 benchmark-base:
 	@$(MAKE) benchmark MODEL_SIZE=base
 
-# Quick test (just CPU and GPU for speed)
+# Quick test using TUI (just CPU and GPU for speed)
 test:
 	@echo "🧪 Quick Test (CPU + GPU only)"
 	@echo "==============================="
-	@$(MAKE) demo-cpu MODEL_SIZE=tiny
-	@echo ""
-	@$(MAKE) demo-gpu MODEL_SIZE=tiny
+	@$(PIXI_ENV) python scripts/tui_demo.py --model-size tiny --demo-type quick
+
+# TUI demos with different configurations
+demo-tui:
+	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE)
+
+demo-quick:
+	@$(PIXI_ENV) python scripts/tui_demo.py --model-size tiny --demo-type quick
+
+demo-gpu-only:
+	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --tests gpu
+
+demo-max-only:
+	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --tests max fast
 
 # Clean up generated files
 clean:
@@ -146,21 +162,9 @@ judge-demo:
 judge-demo-manual:
 	@$(MAKE) judge
 
-# Internal target - run demo with performance grid
+# Internal target - run demo with TUI interface
 _run_demo_grid:
-	@echo ""
-	@echo "📊 Performance Grid - $(MODEL_SIZE) Model"
-	@echo "┌─────────────────────────┬──────────────┬─────────────┬────────────────┐"
-	@echo "│ Implementation          │ Performance  │ Speedup     │ Platform       │"
-	@echo "├─────────────────────────┼──────────────┼─────────────┼────────────────┤"
-	@$(PIXI_ENV) python scripts/demo_grid.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE)
-	@echo "└─────────────────────────┴──────────────┴─────────────┴────────────────┘"
-	@echo ""
-	@echo "Key Insights:"
-	@echo "• whisper_cpu.py:      OpenAI Whisper baseline (perfect quality reference)"
-	@echo "• whisper_gpu.py:      CUDA acceleration (production-ready optimization)"  
-	@echo "• whisper_max.py:      MAX Graph integration (competitive with CUDA)"
-	@echo "• whisper_max_fast.py: Ultra-optimized MAX Graph (maximum performance)"
+	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE) --demo-type judge
 
 # Quick GPU performance check
 gpu-check:
