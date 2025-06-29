@@ -77,7 +77,7 @@ Audio: modular_video.wav | Tests: 4
 The project includes multiple demo options suitable for different audiences:
 
 ```bash
-# Clean TUI demo - all 4 implementations with visual progress
+# Production TUI demo - all 4 implementations with visual progress (small model)
 make demo
 
 # Quick TUI demo - CPU + GPU only (fast showcase)  

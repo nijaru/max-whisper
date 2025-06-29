@@ -29,7 +29,7 @@ This project demonstrates high-performance speech recognition using the Modular 
 
 ### Easy Demo Commands (Professional TUI Interface)
 ```bash
-# Clean TUI demo - all 4 implementations with visual progress
+# Production TUI demo - all 4 implementations with visual progress (small model)
 make demo
 
 # Quick TUI demo - CPU + GPU only (fast showcase)

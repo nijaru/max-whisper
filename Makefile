@@ -1,8 +1,8 @@
 # Modular Hackathon: Whisper MAX Graph Implementation
 # Makefile for easy demo and benchmark execution
 
-# Default model size (tiny is fastest for demos)
-MODEL_SIZE ?= tiny
+# Default model size (small for production-relevant performance)
+MODEL_SIZE ?= small
 
 # Default audio file
 AUDIO_FILE ?= audio_samples/modular_video.wav
@@ -40,9 +40,9 @@ help:
 	@echo "  demo-fast     - MAX Graph ultra-optimized (maximum performance)"
 	@echo ""
 	@echo "🏆 MODEL SIZES:"
-	@echo "  demo-tiny     - Fastest demos (default for 'make demo')"
-	@echo "  demo-small    - Better quality, production-relevant"
-	@echo "  demo-base     - Production-scale, impressive for judges"
+	@echo "  demo-tiny     - Fastest demos for quick testing"
+	@echo "  demo-small    - Production-relevant (default for 'make demo')"
+	@echo "  demo-base     - Full-scale, most impressive for judges"
 	@echo ""
 	@echo "📈 BENCHMARKS:"
 	@echo "  benchmark-tiny   - Quick benchmark analysis"
@@ -55,15 +55,15 @@ help:
 	@echo "  clean         - Clean up generated files"
 	@echo ""
 	@echo "💡 EXAMPLES:"
-	@echo "  make demo                    # Quick demo with tiny model"
+	@echo "  make demo                    # Production demo with small model"
 	@echo "  make judge                   # Judge demo with small model"
 	@echo "  make demo-fast MODEL_SIZE=base AUDIO_FILE=my_audio.wav"
 
-# Run all demos sequentially (tiny model by default)
+# Run all demos sequentially (small model by default for production performance)
 demo:
-	@echo "🎬 Quick Demo - All 4 Implementations (Tiny Model)"
-	@echo "=================================================="
-	@$(MAKE) _run_demo_grid MODEL_SIZE=tiny
+	@echo "🎬 Production Demo - All 4 Implementations (Small Model)"
+	@echo "========================================================"
+	@$(MAKE) _run_demo_grid MODEL_SIZE=small
 
 # Individual demos
 demo-cpu:
