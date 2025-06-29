@@ -936,7 +936,7 @@ class WhisperMAX:
     
     def _decode_with_openai_decoder(self, encoder_features: np.ndarray, audio: np.ndarray) -> Optional[str]:
         """
-        Use MAX Graph encoder features with OpenAI decoder - monkey patch approach
+        Use MAX Graph encoder features with OpenAI decoder - direct decode approach
         
         Args:
             encoder_features: Features from MAX Graph encoder [batch, seq_len, d_model]
@@ -947,32 +947,54 @@ class WhisperMAX:
         """
         try:
             import torch
+            import whisper
+            from whisper.decoding import DecodingOptions, DecodingTask
             
             # Convert encoder features to PyTorch tensor
             max_encoder_tensor = torch.from_numpy(encoder_features.copy()).float()
-            device = next(self.whisper_model.encoder.parameters()).device
+            device = next(self.whisper_model.decoder.parameters()).device
             max_encoder_tensor = max_encoder_tensor.to(device)
             
             print(f"        📊 Using encoder features shape: {max_encoder_tensor.shape}")
             
-            # SOLUTION: Monkey patch the encoder to return our MAX Graph features
-            original_forward = self.whisper_model.encoder.forward
+            # Use Whisper's decode API directly with our encoder features
+            options = DecodingOptions(
+                language="en",
+                task="transcribe",
+                fp16=False,
+                temperature=0.0,
+                beam_size=1,
+                suppress_tokens="",
+                prompt=None,
+                without_timestamps=True,
+            )
             
-            def custom_encoder_forward(x):
-                # Ignore the input and return our MAX Graph features
-                return max_encoder_tensor
+            # Create a mel spectrogram tensor for Whisper's internal processing
+            # This is needed for proper audio feature format, but we'll use our encoder features
+            mel_dummy = torch.zeros((1, 80, 3000), device=device, dtype=torch.float32)
             
-            # Temporarily replace the encoder
-            self.whisper_model.encoder.forward = custom_encoder_forward
+            # Create decoding task
+            task = DecodingTask(self.whisper_model, options)
             
-            try:
-                # Now use normal Whisper transcription - it will use our MAX Graph encoder features
-                result = self.whisper_model.transcribe(audio, verbose=False)
-                return result["text"].strip()
+            # Use our encoder features directly in the decode process
+            with torch.no_grad():
+                # Use our MAX Graph encoder features as audio_features
+                result = task.run(max_encoder_tensor)
                 
-            finally:
-                # Always restore original encoder
-                self.whisper_model.encoder.forward = original_forward
+                # Handle different result formats
+                if isinstance(result, list) and len(result) > 0:
+                    # Result is a list of DecodingResult objects
+                    first_result = result[0]
+                    if hasattr(first_result, 'text'):
+                        return first_result.text.strip()
+                    else:
+                        print(f"        ⚠️ First result has no text attribute: {dir(first_result)}")
+                        return None
+                elif hasattr(result, 'text'):
+                    return result.text.strip()
+                else:
+                    print(f"        ⚠️ Decode result format unexpected: {type(result)}")
+                    return None
             
         except Exception as e:
             print(f"        ❌ Failed to decode with OpenAI decoder: {e}")
