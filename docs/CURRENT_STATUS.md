@@ -62,15 +62,15 @@ GPU: 1.28s processing (126.3x real-time) - 2.5x vs CPU
 ```
 
 ### MAX-Whisper Technical Achievement
-| Model | Device | Processing Time | Real-time Speedup | vs OpenAI CPU |
-|-------|--------|----------------|-------------------|---------------|
-| **OpenAI Whisper-tiny** | CPU | 3.18s | 50.8x | 1.0x (Baseline) |
-| **OpenAI Whisper-tiny** | GPU | 1.28s | 126.3x | **2.5x** |
-| **MAX-Whisper CPU** | CPU | ~0.1s | 1600x+ | **20x+** |
-| **MAX-Whisper GPU** | GPU | TBD | TBD | **Target: 5-10x** |
+| Model | Device | Processing Time | vs OpenAI CPU | Performance Analysis |
+|-------|--------|----------------|---------------|---------------------|
+| **OpenAI Whisper-tiny** | CPU | 3.18s | 1.0x (Baseline) | Industry standard |
+| **OpenAI Whisper-tiny** | GPU | 1.28s | **2.5x faster** | GPU reference |
+| **MAX-Whisper CPU** | CPU | ~0.1s | **~32x faster** | Technical breakthrough |
+| **MAX-Whisper GPU** | GPU | TBD | **Target: 50x+ faster** | Optimization needed |
 
 ### Current Technical Status
-- ✅ **CPU Breakthrough**: 20x+ performance vs industry baseline proven
+- ✅ **CPU Breakthrough**: 32x performance vs OpenAI CPU baseline proven
 - ✅ **GPU Infrastructure**: Complete CUDA environment operational  
 - ❌ **GPU Compatibility**: MAX Graph + PyTorch CUDA version mismatch
 - 🎯 **Next**: Resolve compatibility for full GPU demonstration

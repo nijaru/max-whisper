@@ -103,16 +103,16 @@
 ## 📊 Current Performance Results
 
 ### GPU Environment Breakthrough (Real 161.5s Modular Video)
-- **OpenAI Whisper-tiny (CPU)**: 3.18s processing = **50.8x real-time** (Industry Baseline)
-- **OpenAI Whisper-tiny (GPU)**: 1.28s processing = **126.3x real-time** (2.5x faster than CPU)
-- **MAX-Whisper CPU**: ~0.1s processing = **1600x+ real-time** (20x+ faster than OpenAI CPU)
+- **OpenAI Whisper-tiny (CPU)**: 3.18s processing (Industry Baseline)
+- **OpenAI Whisper-tiny (GPU)**: 1.28s processing (2.5x faster than CPU)
+- **MAX-Whisper CPU**: ~0.1s processing (32x faster than OpenAI CPU)
 - **Real transcription**: *"Music Max provides several different libraries, including a high-performance serving library..."*
 
 ### Current Technical Status
-- ✅ **CPU Performance**: Proven significant speedup with trained weights
+- ✅ **CPU Performance**: 32x speedup vs OpenAI CPU baseline proven
 - ✅ **GPU Infrastructure**: CUDA environment working (RTX 4090)
 - ❌ **GPU Execution**: MAX Graph compatibility issues with PyTorch CUDA
-- 🎯 **Target**: 5-10x faster than OpenAI GPU (400x+ real-time) once compatibility resolved
+- 🎯 **Target**: 50x+ faster than OpenAI CPU once GPU compatibility resolved
 
 ## 🎯 Key Implementation Files
 
