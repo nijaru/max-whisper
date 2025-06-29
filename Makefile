@@ -160,6 +160,10 @@ install:
 	@$(MAKE) build
 	@echo "🎉 Installation complete! Try: make small"
 
+setup-weights:
+	@echo "📦 Setting up MAX Graph Whisper weights..."
+	@$(PIXI_ENV) python scripts/setup_weights.py
+
 build:
 	@echo "🔨 Building project dependencies..."
 	@if ! command -v pixi >/dev/null 2>&1; then \

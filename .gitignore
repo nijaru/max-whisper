@@ -204,3 +204,5 @@ results/tests/temp_*
 !results/benchmarks/benchmark_results*.txt
 !results/benchmarks/benchmark_results*.json
 !results/benchmarks/benchmark_results*.md
+whisper_*.npz
+whisper_*_config.json
