@@ -3,8 +3,65 @@
 ## Current Status & Priority
 
 **Project**: MAX-Whisper Production Speech Recognition  
-**Status**: 🏆 GPU BREAKTHROUGH ACHIEVED + QUALITY REFINEMENT (Day 3 Final)  
-**Achievement**: GPU implementation working with 577x speedup + Quality optimization needed
+**Status**: 🔧 GPU INFRASTRUCTURE COMPLETE + CRITICAL: FULL TEXT OUTPUT NEEDED  
+**IMMEDIATE PRIORITY**: Get MAX GPU version working with WAV input → English text output (no mock data)
+
+**Current Blocker**: Outputs tokens `[50258, 50259, 50360, 468, 17294...]` instead of readable English text
+
+## 📊 CURRENT STATUS TRACKING
+
+**⚠️ CRITICAL: Always check and update STATUS.md after any major change**
+
+**Main Status File**: `STATUS.md` - Single source of truth for project status  
+**Last Update Check**: [Check STATUS.md for latest timestamp]
+
+### Status Update Protocol
+1. **Before starting work**: Read STATUS.md to understand current state
+2. **After major changes**: Update STATUS.md with what changed and current capabilities  
+3. **After each session**: Update STATUS.md timestamp and recent changes
+4. **Definition of major change**: New features, performance changes, file organization, broken→working or working→broken
+
+## 🗃️ ORGANIZATION PROTOCOL
+
+**⚠️ CRITICAL: Keep project organized to avoid confusion**
+
+### File Organization Rules
+1. **One benchmark script**: `benchmarks/benchmark.py` - Never create multiple benchmark files
+2. **One results file**: `benchmarks/results.md` - Always current, replace don't accumulate  
+3. **Archive old files**: Move unused files to `archive/` - Don't leave clutter
+4. **Clear naming**: Files should have obvious purposes, avoid generic names like `test1.py`
+
+### Test & Benchmark Protocol
+1. **Before creating new files**: Check if existing file can be updated instead
+2. **After creating files**: Update relevant README.md with file purpose
+3. **After testing**: Clean up any temporary/test files
+4. **Archive policy**: Move old implementations to `archive/` with date prefix
+
+### Documentation Sync
+1. **STATUS.md**: Always current technical status
+2. **README.md**: User-facing overview, update if user experience changes
+3. **benchmarks/results.md**: Latest benchmark data only
+4. **CLAUDE.md**: AI agent instructions and protocols (this file)
+
+## 🔄 TASK CONTINUITY TRACKING
+
+### Between-Task Context
+When switching between tasks or sessions:
+
+1. **Read STATUS.md first** - Understand current state
+2. **Check last benchmark results** - Know current performance  
+3. **Review recent changes** - See what was accomplished recently
+4. **Identify current priorities** - Focus on STATUS.md next priorities
+
+### Context Handoff Template
+When completing significant work:
+```
+STATUS.md Updated: [timestamp]
+Current State: [working/broken/in-progress]  
+Last Working: [what's confirmed working]
+Next Priority: [what needs to be done next]
+Blockers: [what's preventing progress]
+```
 
 ## ✅ Major Achievements Completed
 
