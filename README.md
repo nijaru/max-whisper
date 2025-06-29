@@ -61,14 +61,17 @@ pixi run -e benchmark python scripts/extract_whisper_weights.py
 
 ## 🏗️ Technical Implementation
 
-### Architecture
+### Current Implementation
 - **Core**: Optimized OpenAI Whisper with CUDA acceleration
+- **Tokenizer**: OpenAI's original tokenizer (tiktoken/gpt2)  
 - **Performance**: Enhanced parameters for 5.5x speedup
 - **Quality**: Identical transcription to industry standard
 - **GPU**: CUDA optimization with torch.backends.cudnn.benchmark
 
-### Key Innovation
-**Optimized Implementation**: Achieves significant performance gains while maintaining perfect transcription quality, demonstrating MAX platform potential for speech recognition optimization.
+### Technical Approach
+**Current**: Optimized OpenAI Whisper implementation for proven results  
+**Future**: Full MAX Graph transformer implementation for deeper platform integration  
+**Value**: Demonstrates optimization potential while ensuring hackathon success
 
 ## 📁 Essential Files
 
@@ -103,14 +106,15 @@ pixi run -e benchmark python scripts/extract_whisper_weights.py
 
 ## 📚 Documentation
 
-### For Evaluation
-- **[JUDGE_DEMO_GUIDE.md](JUDGE_DEMO_GUIDE.md)** - Demo instructions and expected outputs
-- **[PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)** - File organization
-- **[docs/SETUP_GUIDE.md](docs/SETUP_GUIDE.md)** - Installation guide
+### Core Documentation
+- **[STATUS.md](STATUS.md)** - Complete project status and achievements
+- **[SUMMARY.md](SUMMARY.md)** - Project summary for evaluation
+- **[comprehensive_results.md](comprehensive_results.md)** - Latest benchmark results
 
-### For Development
-- **[CLAUDE.md](CLAUDE.md)** - Current status and next priorities
-- **[docs/CURRENT_STATUS.md](docs/CURRENT_STATUS.md)** - Technical details
+### Quick Reference
+- **Demo**: `python demo.py` - Simple demonstration
+- **Results**: `python generate_results.py` - View benchmark results  
+- **Verify**: `python verify_project.py` - Validate project structure
 
 ---
 
