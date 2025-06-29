@@ -425,22 +425,46 @@ class WhisperMAX:
                 # Transpose mel: [batch, n_mels, seq_len] -> [batch, seq_len, n_mels]
                 mel_transposed = ops.transpose(mel_input, 1, 2)
                 
-                # Conv1d layer 1: Use middle kernel only (simplified but more accurate)
-                # For 1D conv with kernel_size=3, use the middle kernel weight for linear transformation
-                # This is a simplification but more accurate than adding all kernel positions
-                conv1_middle = conv1_weight[:, :, 1]  # Use middle kernel (most important)
+                # Conv1d layer 1: kernel_size=3, stride=1, padding=1
+                # Whisper Conv1: 80 -> 384 channels, keeps sequence length
+                # For proper 1D conv, we need to handle padding and use all 3 kernel positions
+                # Simplified approach: use weighted sum of all kernel positions
+                conv1_k0 = conv1_weight[:, :, 0]  # Left kernel  
+                conv1_k1 = conv1_weight[:, :, 1]  # Middle kernel
+                conv1_k2 = conv1_weight[:, :, 2]  # Right kernel
                 
-                # Apply convolution using middle kernel
-                x = ops.matmul(mel_transposed, ops.transpose(conv1_middle, 0, 1))
+                # Apply convolution-like operation (weighted average of kernels)
+                # This approximates the conv1d with padding but in a simplified way
+                x0 = ops.matmul(mel_transposed, ops.transpose(conv1_k0, 0, 1))
+                x1 = ops.matmul(mel_transposed, ops.transpose(conv1_k1, 0, 1))
+                x2 = ops.matmul(mel_transposed, ops.transpose(conv1_k2, 0, 1))
+                
+                # Average the kernel outputs (simplified conv)
+                scale_third = ops.constant(1.0/3.0, dtype=DType.float32, device=self.max_device)
+                x = ops.mul(ops.add(ops.add(x0, x1), x2), scale_third)
                 x = ops.add(x, conv1_bias)
                 x = ops.gelu(x)  # GELU activation
                 
-                # Conv1d layer 2: Use middle kernel only
-                conv2_middle = conv2_weight[:, :, 1]  # Use middle kernel
+                # Conv1d layer 2: kernel_size=3, stride=2, padding=1  
+                # Whisper Conv2: 384 -> 384 channels, HALVES sequence length (stride=2)
+                # This is crucial - we need to downsample by 2!
+                conv2_k0 = conv2_weight[:, :, 0]
+                conv2_k1 = conv2_weight[:, :, 1] 
+                conv2_k2 = conv2_weight[:, :, 2]
                 
-                x = ops.matmul(x, ops.transpose(conv2_middle, 0, 1))
-                x = ops.add(x, conv2_bias) 
+                # Apply convolution with all kernels
+                x0 = ops.matmul(x, ops.transpose(conv2_k0, 0, 1))
+                x1 = ops.matmul(x, ops.transpose(conv2_k1, 0, 1))
+                x2 = ops.matmul(x, ops.transpose(conv2_k2, 0, 1))
+                
+                # Average kernel outputs
+                x = ops.mul(ops.add(ops.add(x0, x1), x2), scale_third)
+                x = ops.add(x, conv2_bias)
                 x = ops.gelu(x)  # GELU activation
+                
+                # TODO: Proper stride=2 implementation
+                # For now, keep the sequence length the same to test the core convolution
+                # In a real implementation, Conv2 stride=2 would halve the sequence length
                 
                 # Add positional embeddings
                 x = ops.add(x, pos_embed)
@@ -899,20 +923,26 @@ class WhisperMAX:
         """
         try:
             import torch
+            import whisper
             
-            # Use the actual audio and let Whisper process it properly
-            # This is more reliable than trying to manually feed mel features
-            audio_sample = self._load_audio_sample()
+            # Convert mel features to tensor and process with OpenAI encoder
+            # Pad or truncate to match our MAX Graph processing
+            n_mels, seq_len = mel_features.shape
+            max_seq_len = 1500
             
-            # Process with Whisper model directly
+            if seq_len > max_seq_len:
+                mel_features = mel_features[:, :max_seq_len]
+            else:
+                pad_width = max_seq_len - seq_len
+                mel_features = np.pad(mel_features, ((0, 0), (0, pad_width)), mode='constant')
+            
+            # Convert to tensor and add batch dimension
+            mel_tensor = torch.from_numpy(mel_features).float().unsqueeze(0)
+            device = next(self.whisper_model.encoder.parameters()).device
+            mel_tensor = mel_tensor.to(device)
+            
+            # Run through OpenAI encoder
             with torch.no_grad():
-                result = self.whisper_model.transcribe(audio_sample, verbose=False)
-                
-                # Get encoder features by running encoder on the same mel features Whisper used
-                mel_tensor = whisper.log_mel_spectrogram(audio_sample).unsqueeze(0)
-                device = next(self.whisper_model.encoder.parameters()).device
-                mel_tensor = mel_tensor.to(device)
-                
                 encoder_features = self.whisper_model.encoder(mel_tensor)
                 return encoder_features.cpu().numpy()
             
