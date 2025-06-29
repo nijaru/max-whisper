@@ -27,21 +27,22 @@ tiktoken = ">=0.9.0,<0.10"
 nvidia-cublas-cu12 = "*"
 nvidia-cuda-runtime-cu12 = "*"
 
+[feature.benchmark.dependencies]
+pytorch-gpu = ">=2.5.0,<=2.7.0"
+transformers = "*"
+librosa = "*"
+yt-dlp = "*"
+tiktoken = "*"
+# Cross-platform audio dependencies
+ffmpeg = "*"
+
 [feature.benchmark.pypi-dependencies]
 openai-whisper = "*"
 faster-whisper = "*"
-# PyTorch with CUDA support (manually install via pip)
-librosa = "*"
 soundfile = "*"
-yt-dlp = "*"
-tiktoken = "*"
-nvidia-cublas-cu12 = "*"
-nvidia-cuda-runtime-cu12 = "*"
-nvidia-cudnn-cu12 = "*"
 
-[feature.benchmark.dependencies]
-# Cross-platform audio dependencies
-ffmpeg = "*"
+[feature.benchmark.system-requirements]
+cuda = "12"
 
 [environments]
 default = { solve-group = "default" }
