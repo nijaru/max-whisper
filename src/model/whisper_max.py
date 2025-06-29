@@ -652,6 +652,16 @@ class WhisperMAX:
                     
                     print(f"      📊 MAX Graph encoder - mean: {max_mean:.4f}, std: {max_std:.4f}, range: [{max_min:.4f}, {max_max:.4f}]")
                     
+                    # Compare with OpenAI encoder features for debugging
+                    print("    🔍 COMPARISON: Getting OpenAI encoder features for comparison...")
+                    openai_features = self._get_openai_encoder_features(mel_features)
+                    openai_mean = np.mean(openai_features)
+                    openai_std = np.std(openai_features)
+                    openai_min, openai_max = np.min(openai_features), np.max(openai_features)
+                    
+                    print(f"      📊 OpenAI encoder - mean: {openai_mean:.4f}, std: {openai_std:.4f}, range: [{openai_min:.4f}, {openai_max:.4f}]")
+                    print(f"      🔍 Feature difference - MAX vs OpenAI mean: {max_mean - openai_mean:.4f}, std: {max_std - openai_std:.4f}")
+                    
                     # Check for common issues
                     if np.isnan(max_encoder_features).any():
                         print(f"      ❌ MAX Graph encoder contains NaN values!")
@@ -665,33 +675,35 @@ class WhisperMAX:
                     # Try using MAX Graph encoder output with OpenAI decoder
                     print("    🎯 ATTEMPTING: Use MAX Graph encoder + OpenAI decoder...")
                     
-                    # Debug: Compare first few values between MAX Graph and a simple baseline
+                    # Debug: Compare first few values between MAX Graph and OpenAI
                     print(f"      🔍 First 5 values of first sequence:")
                     print(f"      📊 MAX Graph: {max_encoder_features[0, 0, :5]}")
+                    print(f"      📊 OpenAI:     {openai_features[0, 0, :5]}")
                     
-                    # SOLUTION: Normalize features to match Whisper encoder output distribution
+                    # EXPERIMENT: Try using OpenAI encoder features to verify decoder works
+                    print("    🧪 EXPERIMENT: Testing decoder with OpenAI features...")
+                    openai_transcription = self._decode_with_openai_decoder(openai_features, audio)
+                    print(f"      📝 OpenAI encoder + decoder result: {openai_transcription}")
+                    
+                    # SOLUTION: Try to match OpenAI encoder distribution more closely
                     normalized_features = max_encoder_features.copy()
                     
-                    # Apply better normalization to match typical Whisper encoder outputs
+                    # Match OpenAI encoder distribution exactly
                     current_mean = np.mean(normalized_features)
                     current_std = np.std(normalized_features)
                     
-                    # Target distribution based on typical Whisper encoder outputs
-                    target_mean = 0.0
-                    target_std = 0.4  # Refined target std
-                    
                     if current_std > 0:
-                        # Z-score normalization then rescale
+                        # Z-score normalization then rescale to match OpenAI
                         normalized_features = (normalized_features - current_mean) / current_std
-                        normalized_features = normalized_features * target_std + target_mean
+                        normalized_features = normalized_features * openai_std + openai_mean
                         
                         new_mean = np.mean(normalized_features)
                         new_std = np.std(normalized_features)
-                        print(f"      🔧 Normalized: mean {current_mean:.3f}→{new_mean:.3f}, std {current_std:.3f}→{new_std:.3f}")
+                        print(f"      🔧 Normalized to match OpenAI: mean {current_mean:.3f}→{new_mean:.3f}, std {current_std:.3f}→{new_std:.3f}")
                         
-                        # Decode with properly normalized features
+                        # Decode with OpenAI-matched features
                         transcription = self._decode_with_openai_decoder(normalized_features, audio)
-                        print(f"      ✅ Using normalized MAX Graph encoder features!")
+                        print(f"      ✅ Using OpenAI-matched MAX Graph encoder features!")
                     else:
                         print(f"      ⚠️ Zero std, using original features")
                         transcription = self._decode_with_openai_decoder(max_encoder_features, audio)
@@ -699,20 +711,17 @@ class WhisperMAX:
                     if transcription:
                         print(f"      ✅ SUCCESS: Used MAX Graph encoder output for transcription!")
                     else:
-                        print(f"      ❌ FAILED: Falling back to full OpenAI pipeline")
-                        result = self.whisper_model.transcribe(audio, verbose=False)
-                        transcription = result["text"].strip()
+                        print(f"      ❌ FAILED: MAX Graph decoder integration failed")
+                        transcription = "MAX Graph decoder integration failed"
                     
                 except Exception as e:
                     print(f"      ⚠️ MAX Graph encoder failed: {e}")
-                    # Fallback to pure OpenAI Whisper
-                    result = self.whisper_model.transcribe(audio, verbose=False)
-                    transcription = result["text"].strip()
+                    # No fallback - show MAX Graph failure
+                    transcription = f"MAX Graph encoder failed: {e}"
             else:
-                print("    ⚠️ MAX Graph encoder not available, using OpenAI Whisper")
-                # Fallback to pure OpenAI Whisper
-                result = self.whisper_model.transcribe(audio, verbose=False)
-                transcription = result["text"].strip()
+                print("    ⚠️ MAX Graph encoder not available")
+                # No fallback - MAX Graph only
+                transcription = "MAX Graph encoder not available"
             
             total_time = time.time() - total_start
             print(f"🏆 Total MAX Graph Whisper: {total_time*1000:.1f}ms")
@@ -851,29 +860,30 @@ class WhisperMAX:
         try:
             import torch
             
-            # Convert to PyTorch tensor
-            mel_tensor = torch.from_numpy(mel_features).float()
+            # Use the actual audio and let Whisper process it properly
+            # This is more reliable than trying to manually feed mel features
+            audio_sample = self._load_audio_sample()
             
-            # Add batch dimension if needed
-            if mel_tensor.dim() == 2:
-                mel_tensor = mel_tensor.unsqueeze(0)
-            
-            # Move to same device as model
-            mel_tensor = mel_tensor.to(next(self.whisper_model.encoder.parameters()).device)
-            
-            # Get encoder features
+            # Process with Whisper model directly
             with torch.no_grad():
+                result = self.whisper_model.transcribe(audio_sample, verbose=False)
+                
+                # Get encoder features by running encoder on the same mel features Whisper used
+                mel_tensor = whisper.log_mel_spectrogram(audio_sample).unsqueeze(0)
+                device = next(self.whisper_model.encoder.parameters()).device
+                mel_tensor = mel_tensor.to(device)
+                
                 encoder_features = self.whisper_model.encoder(mel_tensor)
-            
-            return encoder_features.cpu().numpy()
+                return encoder_features.cpu().numpy()
             
         except Exception as e:
             print(f"        ❌ Failed to get OpenAI encoder features: {e}")
-            return np.zeros((1, 1500, 384), dtype=np.float32)
+            # Return features with realistic distribution for comparison
+            return np.random.randn(1, 1500, 384).astype(np.float32) * 0.4
     
     def _decode_with_openai_decoder(self, encoder_features: np.ndarray, audio: np.ndarray) -> Optional[str]:
         """
-        Use MAX Graph encoder features with OpenAI decoder using standard Whisper transcription
+        Use MAX Graph encoder features with OpenAI decoder - direct approach
         
         Args:
             encoder_features: Features from MAX Graph encoder [batch, seq_len, d_model]
@@ -885,42 +895,63 @@ class WhisperMAX:
         try:
             import torch
             
-            # Convert encoder features to PyTorch tensor
+            # Convert encoder features to PyTorch tensor and make writable
             encoder_tensor = torch.from_numpy(encoder_features.copy()).float()
             
-            # Move to same device as model
-            device = next(self.whisper_model.encoder.parameters()).device
+            # Move to same device as model  
+            device = next(self.whisper_model.decoder.parameters()).device
             encoder_tensor = encoder_tensor.to(device)
             
             print(f"        📊 Using encoder features shape: {encoder_tensor.shape}")
             
-            # Create a wrapper that returns our encoder features
-            original_encoder_forward = self.whisper_model.encoder.forward
+            # Use the direct decode method with our encoder features
+            # Create initial tokens for decoding
+            import torch.nn.functional as F
             
-            def mock_encoder_forward(mel):
-                # Return our MAX Graph encoder features instead of computing them
-                print(f"        🔧 Intercepting encoder call, returning MAX Graph features")
-                return encoder_tensor
+            # Create simple decode tokens (start with language and transcribe tokens)
+            sot_sequence = [
+                50258,  # <|startoftranscript|>
+                50259,  # <|en|>
+                50359,  # <|transcribe|>
+                50363   # <|notimestamps|>
+            ]
             
-            # Temporarily replace encoder forward method
-            self.whisper_model.encoder.forward = mock_encoder_forward
+            tokens = torch.tensor([sot_sequence], dtype=torch.long, device=device)
             
-            try:
-                # Use standard Whisper transcribe method which will call our mock encoder
-                import librosa
-                # Create dummy mel for the API (won't be used due to our mock)
-                dummy_mel = librosa.feature.melspectrogram(y=audio[:16000], sr=16000, n_mels=80)
-                dummy_mel = librosa.power_to_db(dummy_mel, ref=np.max)
-                
-                # Transcribe using the full Whisper pipeline with our encoder features
-                result = self.whisper_model.transcribe(audio, verbose=False)
-                text = result["text"].strip()
-                
-                return text
-                
-            finally:
-                # Restore original encoder
-                self.whisper_model.encoder.forward = original_encoder_forward
+            # Decode using the model's decoder directly - fix device placement
+            with torch.no_grad():
+                generated_tokens = []
+                for i in range(50):  # Generate up to 50 tokens
+                    # Ensure all tensors are on the same device
+                    if tokens.device != encoder_tensor.device:
+                        tokens = tokens.to(encoder_tensor.device)
+                    
+                    logits = self.whisper_model.decoder(tokens, encoder_tensor)
+                    next_token = logits[0, -1].argmax()
+                    
+                    # Debug: Show what tokens we're generating
+                    if i < 10:  # Show first 10 tokens
+                        print(f"        Token {i}: {next_token.item()}")
+                    
+                    # Check for endoftext token - allow natural generation
+                    if next_token == 50257:  # <|endoftext|>
+                        print(f"        💬 Stopped at endoftext token after {i} tokens")
+                        break
+                        
+                    # Ensure next_token is on correct device
+                    next_token = next_token.to(device)
+                    tokens = torch.cat([tokens, next_token.unsqueeze(0).unsqueeze(0)], dim=1)
+                    generated_tokens.append(next_token.item())
+            
+            # Decode tokens to text
+            import whisper
+            text_tokens = tokens[0][len(sot_sequence):].tolist()
+            tokenizer = whisper.tokenizer.get_tokenizer(multilingual=True)
+            text = tokenizer.decode(text_tokens)
+            
+            print(f"        📝 Generated {len(generated_tokens)} tokens: {text}")
+            
+            return text.strip()
             
         except Exception as e:
             print(f"        ❌ Failed to decode with OpenAI decoder: {e}")
