@@ -1,3 +1,0 @@
-[submodule "external/modular"]
-	path = external/modular
-	url = git@github.com:modular/modular.git
