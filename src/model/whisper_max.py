@@ -873,7 +873,7 @@ class WhisperMAX:
     
     def _decode_with_openai_decoder(self, encoder_features: np.ndarray, audio: np.ndarray) -> Optional[str]:
         """
-        Use MAX Graph encoder features with OpenAI decoder
+        Use MAX Graph encoder features with OpenAI decoder using standard Whisper transcription
         
         Args:
             encoder_features: Features from MAX Graph encoder [batch, seq_len, d_model]
@@ -885,48 +885,42 @@ class WhisperMAX:
         try:
             import torch
             
-            # Convert encoder features to PyTorch tensor and make writable
+            # Convert encoder features to PyTorch tensor
             encoder_tensor = torch.from_numpy(encoder_features.copy()).float()
             
-            # Move to same device as model  
-            device = next(self.whisper_model.decoder.parameters()).device
+            # Move to same device as model
+            device = next(self.whisper_model.encoder.parameters()).device
             encoder_tensor = encoder_tensor.to(device)
             
             print(f"        📊 Using encoder features shape: {encoder_tensor.shape}")
             
-            # Use the direct decode method with our encoder features
-            # Create initial tokens for decoding
-            import torch.nn.functional as F
+            # Create a wrapper that returns our encoder features
+            original_encoder_forward = self.whisper_model.encoder.forward
             
-            # Create simple decode tokens (start with language and transcribe tokens)
-            sot_sequence = [
-                50258,  # <|startoftranscript|>
-                50259,  # <|en|>
-                50359,  # <|transcribe|>
-                50363   # <|notimestamps|>
-            ]
+            def mock_encoder_forward(mel):
+                # Return our MAX Graph encoder features instead of computing them
+                print(f"        🔧 Intercepting encoder call, returning MAX Graph features")
+                return encoder_tensor
             
-            tokens = torch.tensor([sot_sequence], dtype=torch.long, device=device)
+            # Temporarily replace encoder forward method
+            self.whisper_model.encoder.forward = mock_encoder_forward
             
-            # Decode using the model's decoder directly
-            with torch.no_grad():
-                # Use encoder features with decoder
-                for i in range(200):  # Max 200 tokens for longer transcription
-                    logits = self.whisper_model.decoder(tokens, encoder_tensor)
-                    next_token = logits[0, -1].argmax()
-                    
-                    if next_token == 50257:  # <|endoftext|>
-                        break
-                        
-                    tokens = torch.cat([tokens, next_token.unsqueeze(0).unsqueeze(0)], dim=1)
-            
-            # Decode tokens to text
-            import whisper
-            text_tokens = tokens[0][len(sot_sequence):].tolist()
-            tokenizer = whisper.tokenizer.get_tokenizer(multilingual=True)
-            text = tokenizer.decode(text_tokens)
-            
-            return text.strip()
+            try:
+                # Use standard Whisper transcribe method which will call our mock encoder
+                import librosa
+                # Create dummy mel for the API (won't be used due to our mock)
+                dummy_mel = librosa.feature.melspectrogram(y=audio[:16000], sr=16000, n_mels=80)
+                dummy_mel = librosa.power_to_db(dummy_mel, ref=np.max)
+                
+                # Transcribe using the full Whisper pipeline with our encoder features
+                result = self.whisper_model.transcribe(audio, verbose=False)
+                text = result["text"].strip()
+                
+                return text
+                
+            finally:
+                # Restore original encoder
+                self.whisper_model.encoder.forward = original_encoder_forward
             
         except Exception as e:
             print(f"        ❌ Failed to decode with OpenAI decoder: {e}")
