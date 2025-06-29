@@ -76,8 +76,12 @@ pixi run -e benchmark python scripts/extract_whisper_weights.py
 ## 📁 Essential Files
 
 ```
-├── STATUS.md                          # ⭐ Project status and achievements
 ├── README.md                          # Project overview (this file)
+├── docs/                              # ⭐ Documentation
+│   ├── STATUS.md                      # Project status and achievements
+│   ├── SUMMARY.md                     # Project summary for evaluation
+│   ├── MAX_GRAPH_STATUS.md           # MAX Graph implementation analysis
+│   └── NEXT_STEPS.md                 # Future development options
 ├── src/model/
 │   └── max_whisper_fixed.py           # ✅ Working implementation (5.5x speedup)
 ├── benchmarks/
@@ -89,7 +93,7 @@ pixi run -e benchmark python scripts/extract_whisper_weights.py
     └── modular_video.wav              # Test audio (161.5s)
 ```
 
-**📊 For Current Status**: Check `STATUS.md` for latest progress and capabilities
+**📊 For Current Status**: Check `docs/STATUS.md` for latest progress and capabilities
 
 ## 🎯 Strategic Value
 
@@ -107,8 +111,8 @@ pixi run -e benchmark python scripts/extract_whisper_weights.py
 ## 📚 Documentation
 
 ### Core Documentation
-- **[STATUS.md](STATUS.md)** - Complete project status and achievements
-- **[SUMMARY.md](SUMMARY.md)** - Project summary for evaluation
+- **[docs/STATUS.md](docs/STATUS.md)** - Complete project status and achievements
+- **[docs/SUMMARY.md](docs/SUMMARY.md)** - Project summary for evaluation
 - **[comprehensive_results.md](comprehensive_results.md)** - Latest benchmark results
 
 ### Quick Reference
