@@ -138,6 +138,6 @@ judge-demo:
 
 # Quick GPU performance check
 gpu-check:
-	@echo "🔍 GPU Performance Check"
-	@echo "========================"
-	$(PIXI_ENV) python -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}'); print(f'GPU count: {torch.cuda.device_count()}'); print(f'GPU name: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"N/A\"}')"
+	@echo "🔍 GPU & Environment Check"
+	@echo "==========================="
+	$(PIXI_ENV) python gpu_check.py
