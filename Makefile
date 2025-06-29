@@ -13,7 +13,13 @@ PIXI_ENV = pixi run -e benchmark
 # Suppress make directory messages
 MAKEFLAGS += --no-print-directory
 
-.PHONY: help demo benchmark test clean
+# Extract positional arguments from command line
+ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
+MODEL_ARG := $(if $(filter tiny small base,$(ARGS)),$(filter tiny small base,$(ARGS)),$(MODEL_SIZE))
+AUDIO_ARG := $(if $(filter-out tiny small base,$(ARGS)),$(filter-out tiny small base,$(ARGS)),$(AUDIO_FILE))
+
+# Define phony targets including model sizes
+.PHONY: help demo benchmark test clean tiny small base cpu gpu max fast
 
 # Default target
 all: help
@@ -22,56 +28,65 @@ help:
 	@echo "🚀 Modular Hackathon - Whisper MAX Graph Implementation"
 	@echo "======================================================="
 	@echo ""
+	@echo "🚀 QUICK START:"
+	@echo "  tiny                   - Full demo with tiny model (fastest)"
+	@echo "  small                  - Full demo with small model (recommended)"
+	@echo "  base                   - Full demo with base model (best quality)"
+	@echo ""
 	@echo "🎯 MAIN COMMANDS:"
-	@echo "  demo          - All 4 implementations (default: small model)"
-	@echo "  benchmark     - Performance analysis with detailed results"
+	@echo "  demo [model] [file]    - All 4 implementations"
+	@echo "  benchmark [model]      - Performance analysis with detailed results"
 	@echo ""
 	@echo "🔧 INDIVIDUAL TESTS:"
-	@echo "  cpu           - CPU baseline only"
-	@echo "  gpu           - GPU accelerated only"
-	@echo "  max           - MAX Graph integration only"
-	@echo "  fast          - MAX Graph fast only"
+	@echo "  cpu [model] [file]     - CPU baseline only"
+	@echo "  gpu [model] [file]     - GPU accelerated only"
+	@echo "  max [model] [file]     - MAX Graph integration only"
+	@echo "  fast [model] [file]    - MAX Graph fast only"
 	@echo ""
 	@echo "🛠️ UTILITIES:"
-	@echo "  gpu-check     - Verify GPU setup"
-	@echo "  clean         - Clean up files"
+	@echo "  gpu-check              - Verify GPU setup"
+	@echo "  clean                  - Clean up files"
 	@echo ""
 	@echo "💡 EXAMPLES:"
-	@echo "  make demo                    # All 4 tests, small model"
-	@echo "  make demo MODEL_SIZE=tiny    # All 4 tests, tiny model"
-	@echo "  make cpu MODEL_SIZE=base     # CPU test only, base model"
-	@echo "  make gpu                     # GPU test only, small model"
+	@echo "  make small             # Quick demo (recommended start)"
+	@echo "  make demo tiny         # All 4 tests, tiny model"
+	@echo "  make cpu base          # CPU test only, base model"
+	@echo "  make fast small my.wav # Fast test, small model, custom file"
 
 # Main demo - all 4 implementations with TUI
 demo:
-	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE)
+	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG)
 
 # Individual implementation tests
 cpu:
-	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE) --tests cpu
+	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG) --tests cpu
 
 gpu:
-	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE) --tests gpu
+	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG) --tests gpu
 
 max:
-	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE) --tests max
+	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG) --tests max
 
 fast:
-	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE) --tests fast
+	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG) --tests fast
 
 # Detailed benchmark analysis  
 benchmark:
-	@$(PIXI_ENV) python benchmark_all.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE)
+	@$(PIXI_ENV) python benchmark_all.py --model-size $(MODEL_ARG) --audio-file $(AUDIO_ARG)
 
-# Model size convenience targets
-demo-tiny:
-	@$(MAKE) demo MODEL_SIZE=tiny
+# Direct model size commands (run full demo with that model)
+tiny:
+	@$(PIXI_ENV) python scripts/tui_demo.py tiny $(AUDIO_FILE)
 
-demo-small:
-	@$(MAKE) demo MODEL_SIZE=small
+small:
+	@$(PIXI_ENV) python scripts/tui_demo.py small $(AUDIO_FILE)
 
-demo-base:
-	@$(MAKE) demo MODEL_SIZE=base
+base:
+	@$(PIXI_ENV) python scripts/tui_demo.py base $(AUDIO_FILE)
+
+# Catch-all rule for audio files and unknown targets
+%:
+	@:
 
 # Clean up generated files
 clean:

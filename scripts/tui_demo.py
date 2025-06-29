@@ -240,10 +240,14 @@ class ModularDemo:
 
 def main():
     parser = argparse.ArgumentParser(description="Modular TUI Demo")
-    parser.add_argument('--model-size', default='tiny', choices=['tiny', 'small', 'base'],
-                       help='Model size to test')
-    parser.add_argument('--audio-file',
+    
+    # Positional arguments
+    parser.add_argument('model_size', nargs='?', default='small', choices=['tiny', 'small', 'base'],
+                       help='Model size to test (default: small)')
+    parser.add_argument('audio_file', nargs='?',
                        help='Audio file to use (default: audio_samples/modular_video.wav)')
+    
+    # Optional arguments
     parser.add_argument('--tests', nargs='+', choices=['cpu', 'gpu', 'max', 'fast'],
                        help='Which tests to run (default: all)')
     parser.add_argument('--demo-type', choices=['quick', 'judge', 'full'], default='full',
