@@ -1,146 +1,86 @@
-# 🎤 max-whisper: High-Performance Speech Recognition with MAX Graph
+# max-whisper: Speech Recognition with MAX Graph
 
-[![Performance](https://img.shields.io/badge/Speedup-2.4x-brightgreen)](https://github.com/nijaru/max-whisper)
-[![Quality](https://img.shields.io/badge/Quality-Perfect%20%E2%9C%85-brightgreen)](https://github.com/nijaru/max-whisper)
-[![Platform](https://img.shields.io/badge/Platform-MAX%20Graph-blue)](https://github.com/nijaru/max-whisper)
+**Modular Hackathon 2025 Submission**
 
-**🏆 Modular Hackathon 2025 Submission**
+I tried to accelerate OpenAI's Whisper speech recognition using MAX Graph. It doesn't work - the MAX Graph version fails to do proper speech recognition.
 
-## 🎯 What We Built
+## What Actually Works vs What Doesn't
 
-We created a high-performance speech recognition system that demonstrates how MAX Graph can accelerate AI workloads. Starting with OpenAI's Whisper model, we built four progressively optimized implementations that achieve **2.4x speedup** while maintaining **perfect transcription quality**.
+| Component | CPU Version | GPU Version | MAX Graph Version |
+|-----------|-------------|-------------|-------------------|
+| **Speech Recognition** | ✅ Works | ✅ Works | ❌ **BROKEN** |
+| **Text Output** | ✅ Full transcript | ✅ Full transcript | ❌ Single words only |
 
-The breakthrough was developing a hybrid approach that combines MAX Graph's tensor acceleration with PyTorch's ecosystem. Our fastest implementation eliminates unnecessary weight conversions, streamlines the processing pipeline, and uses direct tensor operations that bypass costly memory transfers.
+**Reality check:** Only CPU and GPU versions actually do speech recognition. MAX Graph version fails - it compiles and runs but only outputs single words before stopping.
 
-### Performance Results
+## Quick Start
 
-| Implementation | Platform | Speed | Quality | Key Innovation |
-|---------------|----------|-------|---------|----------------|
-| **CPU Baseline** | OpenAI Whisper | 3.6s | Perfect ✅ | Reference implementation |
-| **GPU Accelerated** | CUDA + PyTorch | 2.0s | Perfect ✅ | CUDA optimization |
-| **MAX Graph** | MAX Graph + PyTorch | 2.1s | Perfect ✅ | Attention layer replacement |
-| **MAX Graph Fast** | Optimized MAX Graph | 1.5s | Perfect ✅ | **Streamlined processing** |
-
-*Tested on Fedora server with NVIDIA RTX 4090, 161.5s technical audio*
-
-## 🚀 Quick Start
-
-### Installation and Basic Demo
 ```bash
-# Clone and setup (one-time)
 git clone https://github.com/nijaru/max-whisper
 cd max-whisper
-make install         # Automated pixi + dependency installation
-
-# Run demo with all 4 implementations
-make                 # Recommended demo (small model)
+make install    # Setup environment
+make demo      # See current state - CPU/GPU work, MAX Graph doesn't
 ```
 
-### Command Overview
+## What I Built
+
+Three implementations:
+- `whisper_cpu.py` - baseline OpenAI Whisper 
+- `whisper_gpu.py` - CUDA accelerated version
+- `whisper_max.py` - MAX Graph encoder version
+
+## MAX Graph Implementation Details
+
+### What I Built (But Doesn't Work for Speech Recognition)
+- **MAX Graph encoder** - Compiles and runs without errors
+- **Weight extraction** - Got 65 tensors from Whisper tiny model
+- **Basic integration** - MAX Graph connects to PyTorch decoder
+
+### What's Broken
+- **Speech recognition** - Only produces 1-2 words then stops
+- **No working transcription** - Can't transcribe audio properly
+- **Integration issues** - MAX Graph encoder outputs don't work with decoder
+
+## The Problem
+
+When I connect the MAX Graph encoder to Whisper's decoder, it only generates single words like "The" or "I" before hitting the end-of-text token. The encoder produces valid tensors with reasonable statistics, but they don't contain the semantic information the decoder needs.
+
+This suggests either:
+- Subtle math differences that compound across transformer layers
+- Missing implementation details in the encoder  
+- Incompatibility between MAX Graph tensors and PyTorch decoder expectations
+
+## What I Learned
+
+MAX Graph tensor operations compile and run, but building working AI pipelines is much harder than I expected. Even though the encoder produces valid tensors, something about the integration with PyTorch models breaks the speech recognition.
+
+Getting the math exactly right in complex AI models is difficult. Small differences can break everything even if individual components seem to work.
+
+## Try It Yourself
+
 ```bash
-# Model size shortcuts (full demo)
-make tiny            # Fastest demo (tiny model)
-make small           # Recommended demo (small model) 
-make base            # Best quality demo (base model)
+# Setup
+make install        # Install dependencies
+make env-check      # Verify environment
 
-# Individual implementation tests
-make cpu tiny        # Just CPU baseline
-make gpu small       # Just GPU accelerated
-make max base        # Just MAX Graph integration
-make fast small      # Just MAX Graph optimized
+# See the problem
+make demo          # Run all three - you'll see MAX Graph fails
+make max           # Just run broken MAX Graph version
 
-# Analysis and utilities
-make benchmark       # Complete performance analysis
-make env-check       # Verify environment setup
-make gpu-check       # Check GPU compatibility
-make help           # Show all available commands
+# Compare working versions
+make cpu           # Working CPU baseline
+make gpu           # Working GPU version
 ```
 
-## 📊 How We Achieved 2.4x Speedup
+## Project Structure
 
-### Progressive Optimization Strategy
-
-**CPU to GPU (1.8x improvement)**  
-Standard CUDA optimization using PyTorch's built-in GPU acceleration. This establishes our GPU performance baseline.
-
-**MAX Graph Integration (competitive with CUDA)**  
-We replaced Whisper's attention layers with MAX Graph implementations while keeping the rest in PyTorch. This hybrid approach proves MAX Graph can match CUDA performance for transformer operations.
-
-**MAX Graph Fast (2.4x total speedup)**  
-The breakthrough came from optimizing the entire pipeline:
-
-- **Eliminated weight conversion overhead** - Direct processing instead of PyTorch→MAX Graph copying
-- **Streamlined tensor operations** - Minimal-overhead MAX Graph operations with focused computations  
-- **Optimized memory management** - Reduced allocations and transfers
-- **Simplified processing pipeline** - Removed unnecessary intermediate steps
-
-This isn't just faster MAX Graph operations - it's a fundamentally more efficient architecture designed for MAX Graph from the ground up.
-
-## 🛠️ Technical Architecture
-
-### Four Implementation Strategy
-1. **CPU Baseline** (`whisper_cpu.py`) - Pure OpenAI Whisper for quality reference
-2. **GPU Accelerated** (`whisper_gpu.py`) - CUDA optimization showing standard GPU performance  
-3. **MAX Graph Integration** (`whisper_max.py`) - Hybrid architecture with attention layer replacement
-4. **MAX Graph Fast** (`whisper_max_fast.py`) - Fully optimized pipeline designed for maximum performance
-
-### Key Innovations
-- **Hybrid Architecture**: Successfully combines MAX Graph acceleration with PyTorch compatibility
-- **Progressive Optimization**: Clear path from CPU baseline to cutting-edge acceleration
-- **Quality Preservation**: All implementations produce identical transcription output
-
-### Project Structure
 ```
-├── src/model/           # Four implementations
-│   ├── whisper_cpu.py      # CPU baseline (3.6s)
-│   ├── whisper_gpu.py      # GPU accelerated (2.0s, 1.8x)
-│   ├── whisper_max.py      # MAX Graph integration (2.1s, 1.7x)  
-│   └── whisper_max_fast.py # MAX Graph optimized (1.5s, 2.4x)
-├── scripts/tui_demo.py  # Professional demo interface
-├── benchmark_all.py     # Complete performance analysis
-└── audio_samples/       # Test audio (161.5s technical content)
+├── src/model/           
+│   ├── whisper_cpu.py      # ✅ CPU baseline - works
+│   ├── whisper_gpu.py      # ✅ GPU accelerated - works  
+│   └── whisper_max.py      # ❌ MAX Graph encoder - broken
+├── benchmark_all.py     # Performance testing
+└── audio_samples/       # Test audio
 ```
 
-## 🏆 Hackathon Submission Details
-
-### Reproducible Results
-All results are immediately reproducible with one-command setup. Benchmarks use identical methodology across implementations with the same 161.5-second audio input on documented hardware (Fedora server with NVIDIA RTX 4090).
-
-### Correctness Validation
-- **Quality verification**: All implementations produce identical English transcription
-- **Performance validation**: Comprehensive benchmarking with detailed analysis
-- **Environment validation**: Automated checks for dependencies and GPU setup
-
-### Impact Statement
-**Problem**: Integrating new acceleration platforms like MAX Graph into existing ML workflows typically requires complete rewrites.
-
-**Solution**: We developed a hybrid architecture proving MAX Graph can integrate with PyTorch ecosystems, achieving 2.4x speedup while maintaining perfect quality.
-
-**Broader Impact**: This approach serves as a template for accelerating other transformer models, showing you don't need to rebuild everything to get MAX Graph benefits.
-
-### MAX Graph Integration Experience
-**What made it easy:**
-- Tensor interoperability between PyTorch and MAX Graph
-- Familiar GPU acceleration patterns
-- Flexible integration allowing targeted layer replacement
-
-**Roadblocks and solutions:**
-- *Challenge*: Weight conversion overhead → *Solution*: Streamlined pipeline eliminating conversions
-- *Challenge*: Quality preservation → *Solution*: Careful validation against reference implementation
-
-**Remaining work:**
-- Expand MAX Graph coverage to more Whisper components
-- Scale optimization to larger models
-- Package as production service
-
-## 📚 Additional Documentation
-
-- **[docs/TECHNICAL_DEEP_DIVE.md](docs/TECHNICAL_DEEP_DIVE.md)** - Implementation architecture and code details
-
----
-
-**Demo Status**: Production ready with clean TUI interface  
-**Innovation**: Hybrid MAX Graph + PyTorch architecture achieving 2.4x speedup  
-**Quality**: Perfect transcription maintained across all implementations  
-
-*Modular Hackathon 2025 - Demonstrating practical MAX Graph acceleration*
+Built during the Modular Hackathon 2025 weekend.
