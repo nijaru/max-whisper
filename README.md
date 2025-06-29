@@ -1,6 +1,6 @@
 # 🎤 MAX Graph Whisper: High-Performance Speech Recognition
 
-[![Performance](https://img.shields.io/badge/Speedup-4.7x-brightgreen)](https://github.com/nijaru/modular-hackathon)
+[![Performance](https://img.shields.io/badge/Speedup-2.4x-brightgreen)](https://github.com/nijaru/modular-hackathon)
 [![Quality](https://img.shields.io/badge/Quality-Perfect%20%E2%9C%85-brightgreen)](https://github.com/nijaru/modular-hackathon)
 [![Platform](https://img.shields.io/badge/Platform-MAX%20Graph-blue)](https://github.com/nijaru/modular-hackathon)
 [![Demo](https://img.shields.io/badge/Demo-Judge%20Ready-orange)](https://github.com/nijaru/modular-hackathon)
@@ -16,10 +16,12 @@ This project demonstrates high-performance speech recognition using the Modular 
 
 | Implementation | Platform | Performance | Quality | Purpose |
 |---------------|----------|-------------|---------|---------|
-| **CPU Baseline** | OpenAI Whisper | 3.5s | Perfect ✅ | Reference Implementation |
-| **GPU Accelerated** | OpenAI + CUDA | 1.0s (3.5x) | Perfect ✅ | Production Optimization |
-| **MAX Graph Integration** | MAX Graph Attention | 1.4s (2.5x) | Perfect ✅ | **Competitive with CUDA** |
-| **MAX Graph Fast** | Ultra-Optimized | 0.7s (5.0x) | Perfect ✅ | **Maximum Performance** |
+| **CPU Baseline** | OpenAI Whisper | 3.6s | Perfect ✅ | Reference Implementation |
+| **GPU Accelerated** | OpenAI + CUDA | 2.0s (1.8x) | Perfect ✅ | Production Optimization |
+| **MAX Graph Integration** | MAX Graph Hybrid | 2.1s (1.7x) | Perfect ✅ | **Competitive with CUDA** |
+| **MAX Graph Fast** | Ultra-Optimized | 1.5s (2.4x) | Perfect ✅ | **Maximum Performance** |
+
+*Performance results using Whisper small model on 161.5s technical audio*
 
 **Test Audio**: `audio_samples/modular_video.wav` (161.5 seconds of technical content)
 
@@ -71,19 +73,19 @@ make help
 
 ## 📊 Performance Results
 
-**Latest Benchmark Results**:
-- **CPU Baseline**: 3.5s - Perfect transcription (reference implementation)
-- **GPU Accelerated**: 1.0s - 3.5x speedup (CUDA optimization)
-- **MAX Graph Integration**: 1.4s - 2.5x speedup (**easily competitive with CUDA**)
-- **MAX Graph Fast**: 0.7s - 5.0x speedup (**exceeds CUDA performance**)
+**Latest Benchmark Results** *(Whisper small model)*:
+- **CPU Baseline**: 3.6s - Perfect transcription (reference implementation)
+- **GPU Accelerated**: 2.0s - 1.8x speedup (CUDA optimization)
+- **MAX Graph Integration**: 2.1s - 1.7x speedup (**competitive with CUDA**)
+- **MAX Graph Fast**: 1.5s - 2.4x speedup (**exceeds CUDA performance**)
 
 **Key Achievement**: All implementations produce identical, perfect English transcription of actual audio content.
 
 ### 🎯 What Makes This Demo Compelling
 
-**MAX Graph Competitiveness**: The MAX Graph integration (`whisper_max.py`) demonstrates that MAX Graph can easily achieve performance competitive with CUDA (1.4s vs 1.0s) through sophisticated attention layer replacement with minimal optimization effort.
+**MAX Graph Competitiveness**: The MAX Graph integration (`whisper_max.py`) demonstrates that MAX Graph can achieve performance competitive with CUDA (2.1s vs 2.0s) through meaningful tensor operations and hybrid processing.
 
-**MAX Graph Excellence**: The ultra-optimized version (`whisper_max_fast.py`) shows what's possible when MAX Graph is fully optimized, achieving 5.0x speedup and significantly exceeding CUDA performance.
+**MAX Graph Excellence**: The ultra-optimized version (`whisper_max_fast.py`) shows what's possible when MAX Graph is fully optimized, achieving 2.4x speedup and exceeding CUDA performance.
 
 **Perfect Quality**: Every implementation maintains identical, perfect transcription quality, proving that MAX Graph acceleration doesn't compromise output quality.
 

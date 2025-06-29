@@ -3,7 +3,7 @@
 ## 🎯 Current Status & Priority
 
 **Project**: Whisper Speech Recognition with MAX Graph  
-**Status**: ✅ PRODUCTION READY - Four complete implementations with 5.0x performance improvement  
+**Status**: ✅ PRODUCTION READY - Four complete implementations with 2.4x performance improvement  
 **Current Priority**: Hackathon demo and judge presentation
 
 ## 📊 FOUR-IMPLEMENTATION SHOWCASE
@@ -11,10 +11,12 @@
 ### ✅ All Implementations Complete and Working
 The project has four complete implementations demonstrating progressive optimization:
 
-1. **whisper_cpu** - CPU Baseline (3.5s, reference implementation)
-2. **whisper_gpu** - GPU Accelerated (1.0s, 3.5x speedup)  
-3. **whisper_max** - MAX Graph Integration (1.4s, 2.5x speedup - **competitive with CUDA**)
-4. **whisper_max_fast** - MAX Graph Ultra-Optimized (0.7s, 5.0x speedup - **exceeds CUDA**)
+1. **whisper_cpu** - CPU Baseline (3.6s, reference implementation)
+2. **whisper_gpu** - GPU Accelerated (2.0s, 1.8x speedup)  
+3. **whisper_max** - MAX Graph Integration (2.1s, 1.7x speedup - **competitive with CUDA**)
+4. **whisper_max_fast** - MAX Graph Ultra-Optimized (1.5s, 2.4x speedup - **exceeds CUDA**)
+
+*Performance results using Whisper small model on 161.5s technical audio*
 
 ## 🗃️ CURRENT CLEAN FILE STRUCTURE
 
@@ -85,38 +87,38 @@ pixi run -e benchmark python benchmark_all.py --model-size base --audio-file cus
 - **Purpose**: Reference implementation and performance baseline
 - **Platform**: Pure OpenAI Whisper on CPU
 - **Quality**: Perfect transcription (ground truth)
-- **Performance**: 3.5s (baseline timing)
+- **Performance**: 3.6s (baseline timing)
 - **Approach**: Standard OpenAI Whisper without modifications
 
 ### 2. GPU Accelerated (whisper_gpu.py)  
 - **Purpose**: Production-ready CUDA optimization
 - **Platform**: OpenAI Whisper + CUDA acceleration
 - **Quality**: Perfect transcription (identical to CPU)
-- **Performance**: 1.0s (3.5x speedup over CPU baseline)
+- **Performance**: 2.0s (1.8x speedup over CPU baseline)
 - **Approach**: CUDA device optimization with cuDNN enhancements
 
 ### 3. MAX Graph Integration (whisper_max.py)
 - **Purpose**: Demonstrate MAX Graph competitive performance with CUDA
-- **Platform**: Sophisticated PyTorch + MAX Graph hybrid (attention replacement)
+- **Platform**: MAX Graph tensor operations with hybrid processing
 - **Quality**: Perfect transcription (matches OpenAI Whisper baseline)
-- **Performance**: 1.4s (2.5x speedup - **easily competitive with CUDA**)
-- **Approach**: **Real attention layer surgery** - replaces PyTorch attention with MAX Graph operations
+- **Performance**: 2.1s (1.7x speedup - **competitive with CUDA**)
+- **Approach**: **MAX Graph tensor operations** - meaningful tensor processing with reliable transcription
 
 ### 4. MAX Graph Ultra-Optimized (whisper_max_fast.py)
-- **Purpose**: Maximum performance demonstrating what's possible with full optimization
-- **Platform**: Ultra-optimized MAX Graph with every feasible enhancement
+- **Purpose**: Maximum performance demonstrating what's possible with optimization
+- **Platform**: Ultra-optimized MAX Graph with minimal overhead
 - **Quality**: Perfect transcription (identical to all other versions)
-- **Performance**: 0.7s (5.0x speedup - **exceeds CUDA performance**)
-- **Approach**: **Every feasible optimization** - vectorized ops, parallel processing, memory optimization, async execution
+- **Performance**: 1.5s (2.4x speedup - **exceeds CUDA performance**)
+- **Approach**: **Optimized MAX Graph operations** - minimal overhead with maximum performance
 
 ## 📊 ACTUAL PERFORMANCE RESULTS
 
 | Implementation | Platform | Quality | Performance | Purpose |
 |---------------|----------|---------|-------------|---------|
-| whisper_cpu | OpenAI CPU | Perfect ✅ | 3.5s (baseline) | Reference |
-| whisper_gpu | OpenAI + CUDA | Perfect ✅ | 1.0s (3.5x) | Production |
-| whisper_max | MAX Graph Integration | Perfect ✅ | 1.4s (2.5x) | **Competitive with CUDA** |
-| whisper_max_fast | MAX Graph Ultra-Optimized | Perfect ✅ | 0.7s (5.0x) | **Exceeds CUDA Performance** |
+| whisper_cpu | OpenAI CPU | Perfect ✅ | 3.6s (baseline) | Reference |
+| whisper_gpu | OpenAI + CUDA | Perfect ✅ | 2.0s (1.8x) | Production |
+| whisper_max | MAX Graph Hybrid | Perfect ✅ | 2.1s (1.7x) | **Competitive with CUDA** |
+| whisper_max_fast | MAX Graph Ultra-Optimized | Perfect ✅ | 1.5s (2.4x) | **Exceeds CUDA Performance** |
 
 ## 🔄 DEVELOPMENT WORKFLOW
 
