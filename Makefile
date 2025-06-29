@@ -130,7 +130,7 @@ dev-setup:
 judge-demo:
 	@echo "👨‍⚖️ JUDGE DEMO - Complete Performance Showcase"
 	@echo "================================================"
-	$(PIXI_ENV) python judge_demo.py
+	$(PIXI_ENV) python scripts/judge_demo.py
 
 # Alternative judge demo (manual commands)
 judge-demo-manual:
@@ -151,4 +151,10 @@ judge-demo-manual:
 gpu-check:
 	@echo "🔍 GPU & Environment Check"
 	@echo "==========================="
-	$(PIXI_ENV) python gpu_check.py
+	$(PIXI_ENV) python scripts/gpu_check.py
+
+# Performance visualization
+perf-chart:
+	@echo "📊 Performance Visualization"
+	@echo "============================"
+	$(PIXI_ENV) python scripts/create_perf_chart.py

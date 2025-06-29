@@ -67,12 +67,17 @@ make help
 ## 📊 Performance Results
 
 **Latest Benchmark Results**:
-- **CPU Baseline**: 3.46s - Perfect transcription (reference)
-- **GPU Accelerated**: 0.99s - 3.5x speedup, perfect quality
-- **MAX Graph Integration**: 1.04s - 3.3x speedup, demonstrates platform capabilities
-- **MAX Graph Fast**: 0.88s - 3.9x speedup, maximum performance achieved
+- **CPU Baseline**: 3.56s - Perfect transcription (reference)
+- **GPU Accelerated**: 0.98s - 3.6x speedup, perfect quality
+- **MAX Graph Integration**: 1.04s - 3.4x speedup, demonstrates platform capabilities
+- **MAX Graph Fast**: 0.76s - 4.7x speedup, maximum performance achieved
 
 **Key Achievement**: All implementations produce identical, perfect English transcription of actual audio content.
+
+**Performance Visualization**:
+```bash
+make perf-chart  # ASCII charts showing speedup comparison
+```
 
 ## 🛠️ Installation & Setup
 
