@@ -12,7 +12,7 @@ An exploration of accelerating OpenAI's Whisper speech recognition using MAX Gra
 | **Text Output** | ✅ Complete audio analysis | ✅ Complete audio analysis | ⚠️ Single words only |
 | **Integration** | ✅ Native implementation | ✅ CUDA acceleration | ✅ Compiles and runs |
 
-**Current progress:** Successfully built working CPU and GPU baselines, plus a MAX Graph encoder that compiles and processes audio but produces limited transcription output. The technical foundation is solid - the challenge lies in the mathematical precision required for complex AI model integration.
+**Current progress:** Working CPU/GPU baselines produce full transcription, while MAX Graph encoder compiles and executes successfully but generates limited output ("the" instead of full text). Technical integration is successful - the challenge is achieving the mathematical precision needed for semantic speech recognition.
 
 ## Quick Start
 
@@ -39,10 +39,11 @@ Three implementations:
 - **Working decoder integration** - MAX Graph features successfully drive PyTorch decoder
 - **End-to-end pipeline** - Audio → MAX Graph encoder → PyTorch decoder → text output
 
-### Current Limitations
-- **Transcription quality** - Produces single words instead of full text
-- **Feature compatibility** - Encoder output doesn't fully match PyTorch decoder expectations
-- **Mathematical precision** - Subtle differences compound across transformer layers
+### Current Limitations  
+- **Limited transcription** - Outputs "the" instead of full speech recognition
+- **Feature distribution mismatch** - MAX Graph encoder mean=7.8 vs OpenAI mean=-0.0006  
+- **Decoder integration complexity** - Cross-framework tensor compatibility challenges
+- **Semantic encoding gap** - Features lack linguistic richness needed for speech recognition
 
 ## The Challenge
 
