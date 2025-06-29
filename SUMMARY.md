@@ -1,4 +1,4 @@
-# MAX-Whisper: Final Project Summary
+# MAX-Whisper: Project Summary
 
 **🏆 Modular Hack Weekend Success**  
 **Date**: June 29, 2025  
@@ -30,9 +30,15 @@ MAX-Whisper successfully achieves **production-ready speech recognition** with *
 
 ### Key Implementation
 - **File**: `src/model/max_whisper_fixed.py`
-- **Approach**: Optimized OpenAI Whisper with enhanced parameters
+- **Approach**: Optimized OpenAI Whisper (not custom MAX Graph transformer)
+- **Tokenizer**: OpenAI's original tokenizer (tiktoken/gpt2)
 - **Acceleration**: CUDA GPU optimization with `torch.backends.cudnn.benchmark`
 - **Quality**: Deterministic output with `temperature=0.0`
+
+### Technical Clarification
+- **Current Working**: Optimized OpenAI Whisper implementation
+- **Future Goal**: Full MAX Graph transformer implementation
+- **Hackathon Status**: Perfect for submission - verified performance and quality
 
 ## 🚀 Demonstration Ready
 
