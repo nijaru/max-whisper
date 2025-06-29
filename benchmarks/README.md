@@ -1,38 +1,40 @@
 # Benchmarks Directory
 
-Organized benchmark scripts for different purposes and audiences.
+Purpose-driven benchmark scripts for testing and demonstrating MAX-Whisper.
 
-## 🎯 Main Demo Scripts
+## 🎯 Main Benchmark Scripts
 
-### `complete_demo.py` - **Primary Judge Demo**
-- **Purpose**: Complete demonstration for hackathon judges
-- **Tests**: All 3 pipelines (OpenAI, Faster-Whisper, MAX-Whisper) with real audio
-- **Output**: Judge-friendly results table + comprehensive JSON
-- **Usage**: `pixi run -e benchmark python benchmarks/complete_demo.py`
-- **Audience**: Judges, stakeholders, demo presentations
+### `benchmark_all_models.py` - **Complete Model Comparison**
+- **Purpose**: Compare all speech recognition models with real audio
+- **Tests**: OpenAI Whisper, Faster-Whisper, MAX-Whisper (hybrid + trained weights)
+- **Output**: Performance table + comprehensive JSON results
+- **Usage**: `pixi run -e benchmark python benchmarks/benchmark_all_models.py`
+- **Audience**: Judges, stakeholders, performance evaluation
 
-### `verification_benchmark.py` - **Technical Verification**
-- **Purpose**: Honest performance and quality verification
-- **Tests**: Detailed analysis with actual outputs captured
-- **Output**: Verification results with quality assessments
-- **Usage**: `pixi run -e benchmark python benchmarks/verification_benchmark.py`
-- **Audience**: Technical reviewers, performance validation
+### `quality_assessment.py` - **Output Quality Verification**
+- **Purpose**: Verify transcription quality and assess production readiness
+- **Tests**: Honest quality comparison with captured text outputs
+- **Output**: Quality scores, keyword matching, production readiness assessment
+- **Usage**: `pixi run -e benchmark python benchmarks/quality_assessment.py`
+- **Audience**: Technical reviewers, quality assurance teams
 
-## 🚀 Specialized Demos
+## 🚀 Specialized Demonstrations
 
-### `final_phase4_complete.py` - **Phase 4 Story**
-- **Purpose**: Shows Phase 4A + 4B development story
-- **Tests**: Trained weights breakthrough + hybrid production approach
-- **Output**: Achievement narrative with technical details
-- **Usage**: `pixi run -e benchmark python benchmarks/final_phase4_complete.py`
-- **Audience**: Technical stakeholders interested in development journey
+### `max_whisper_showcase.py` - **MAX-Whisper Innovation Demo**
+- **Purpose**: Showcase MAX-Whisper's dual approach (hybrid + trained weights)
+- **Tests**: Technical breakthrough demonstration with performance narrative
+- **Output**: Innovation story with technical achievements
+- **Usage**: `pixi run -e benchmark python benchmarks/max_whisper_showcase.py`
+- **Audience**: Technical stakeholders, innovation showcase
 
-### `phase4_quality_progress.py` - **Quality Tracking**
-- **Purpose**: Track quality improvements during Phase 4 development
+## 🔧 Development Scripts
+
+### `_dev_quality_tracking.py` - **Development Quality Tracking**
+- **Purpose**: Track quality improvements during development (dev use only)
 - **Tests**: Before/after comparisons of quality fixes
 - **Output**: Progress assessment and recommendations
-- **Usage**: `pixi run -e benchmark python benchmarks/phase4_quality_progress.py`
-- **Audience**: Development team, quality assurance
+- **Usage**: `pixi run -e benchmark python benchmarks/_dev_quality_tracking.py`
+- **Audience**: Development team (temporary/internal use)
 
 ## 📊 Generated Results
 
@@ -44,20 +46,20 @@ All benchmarks save results to `results/benchmarks/`:
 ## 🎪 Quick Demo Commands
 
 ```bash
-# 🏆 Main judge demo (5 minutes)
-pixi run -e benchmark python benchmarks/complete_demo.py
+# 🏆 Complete model comparison (primary demo)
+pixi run -e benchmark python benchmarks/benchmark_all_models.py
 
-# 🔍 Technical verification (detailed)
-pixi run -e benchmark python benchmarks/verification_benchmark.py
+# 🔍 Quality assessment and verification
+pixi run -e benchmark python benchmarks/quality_assessment.py
 
-# 🚀 Phase 4 development story
-pixi run -e benchmark python benchmarks/final_phase4_complete.py
+# 🚀 MAX-Whisper innovation showcase
+pixi run -e benchmark python benchmarks/max_whisper_showcase.py
 ```
 
 ## 📁 File Organization
 
-- **complete_demo.py**: Comprehensive, judge-friendly
-- **verification_benchmark.py**: Technical, honest assessment
-- **final_phase4_complete.py**: Development narrative
-- **phase4_quality_progress.py**: Quality tracking
-- **README.md**: This organization guide
+- **benchmark_all_models.py**: Complete model comparison with real audio
+- **quality_assessment.py**: Output quality verification and scoring
+- **max_whisper_showcase.py**: MAX-Whisper innovation demonstration
+- **_dev_quality_tracking.py**: Development quality tracking (internal)
+- **README.md**: Benchmark directory documentation

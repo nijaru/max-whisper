@@ -39,7 +39,7 @@ pixi run -e benchmark python src/model/max_whisper_hybrid.py
 pixi run -e benchmark python src/model/max_whisper_trained_cpu.py
 
 # 📊 COMPLETE COMPARISON: All models side-by-side
-pixi run -e benchmark python benchmarks/final_phase4_complete.py
+pixi run -e benchmark python benchmarks/benchmark_all_models.py
 ```
 
 **Expected Output**: Production-quality transcription + technical innovation demonstration
