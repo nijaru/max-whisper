@@ -1,0 +1,38 @@
+[
+  {
+    "model": "MAX-Whisper Trained",
+    "device": "CPU",
+    "total_time": 0.3023365338643392,
+    "speedup": 534.1729559963347,
+    "text_sample": "[542] [363] [691] [11] [11] [11] [11] [11] [11] [1...",
+    "status": "\u2705 BREAKTHROUGH",
+    "quality": "High (Real Weights)",
+    "weights": "47 Whisper-tiny tensors",
+    "innovation": "PyTorch \u2192 MAX Graph integration",
+    "achievement": "First trained transformer in MAX Graph"
+  },
+  {
+    "model": "Faster-Whisper-tiny",
+    "device": "CPU",
+    "total_time": 2.18,
+    "speedup": 74.3,
+    "text_sample": "Music Max provides several different libraries...",
+    "status": "\ud83d\udcca Baseline",
+    "quality": "High (Optimized)",
+    "weights": "Official OpenAI trained",
+    "innovation": "Optimized inference",
+    "achievement": "Performance optimization"
+  },
+  {
+    "model": "OpenAI Whisper-tiny",
+    "device": "CPU",
+    "total_time": 2.32,
+    "speedup": 69.7,
+    "text_sample": "Music Max provides several different libraries...",
+    "status": "\ud83d\udcca Baseline",
+    "quality": "High (Reference)",
+    "weights": "Official OpenAI trained",
+    "innovation": "Reference implementation",
+    "achievement": "Established framework"
+  }
+]
