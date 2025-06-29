@@ -29,8 +29,20 @@ try:
     WHISPER_AVAILABLE = True
     print("✅ Whisper transformers available")
 except ImportError:
-    print("❌ Whisper transformers not available")
-    WHISPER_AVAILABLE = False
+    try:
+        # Fallback - try OpenAI whisper instead
+        import whisper
+        WHISPER_AVAILABLE = True
+        print("✅ OpenAI Whisper available")
+        # Create a dummy config class for compatibility
+        class WhisperConfig:
+            def __init__(self):
+                pass
+        WhisperEncoderLayer = object  # Dummy class
+    except ImportError:
+        print("❌ No Whisper implementation available")
+        WHISPER_AVAILABLE = False
+        WhisperConfig = object  # Dummy for imports
 
 
 class MaxGraphWhisperAttention(nn.Module):
@@ -75,13 +87,18 @@ class MaxGraphWhisperAttention(nn.Module):
         
         # MAX Graph session for tensor operations
         if MAX_AVAILABLE:
-            self.max_session = engine.InferenceSession()
-            try:
+            if accelerator_count() > 0:
+                max_driver_device = Accelerator()
                 self.max_device = DeviceRef.GPU()
-                print(f"      ✅ MAX Graph attention layer {layer_idx} using GPU")
-            except:
+                device_name = "GPU"
+            else:
+                max_driver_device = CPU()
                 self.max_device = DeviceRef.CPU()
-                print(f"      ✅ MAX Graph attention layer {layer_idx} using CPU")
+                device_name = "CPU"
+            
+            self.max_session = engine.InferenceSession(devices=[max_driver_device])
+            self.max_driver_device = max_driver_device
+            print(f"      ✅ MAX Graph attention layer {layer_idx} using {device_name}")
 
     def max_graph_attention_kernel(self, Q: torch.Tensor, K: torch.Tensor, V: torch.Tensor) -> torch.Tensor:
         """Real MAX Graph attention kernel using actual computation graphs"""
@@ -129,9 +146,9 @@ class MaxGraphWhisperAttention(nn.Module):
             V_np = V.detach().cpu().numpy().astype(np.float32)
             
             inputs = [
-                Tensor.from_numpy(Q_np),
-                Tensor.from_numpy(K_np),
-                Tensor.from_numpy(V_np)
+                Tensor.from_numpy(Q_np).to(self.max_driver_device),
+                Tensor.from_numpy(K_np).to(self.max_driver_device),
+                Tensor.from_numpy(V_np).to(self.max_driver_device)
             ]
             
             # Execute on MAX Graph
@@ -211,37 +228,32 @@ class WhisperMAX:
     """
     
     def __init__(self, model_size="tiny", use_gpu=True):
-        if not MAX_AVAILABLE or not WHISPER_AVAILABLE:
-            print("❌ Required dependencies not available")
-            self.available = False
-            return
+        if not MAX_AVAILABLE:
+            raise RuntimeError("MAX Graph not available - use pixi run -e benchmark")
+        if not WHISPER_AVAILABLE:
+            raise RuntimeError("Whisper not available")
             
         self.available = True
         self.model_size = model_size
         
-        # Device setup
-        self.device = torch.device("cuda" if torch.cuda.is_available() and use_gpu else "cpu")
-        print(f"🚀 PyTorch device: {self.device}")
+        print(f"🚀 Initializing MAX Graph Whisper {model_size}")
         
-        # MAX Graph setup
-        try:
-            # Choose device based on availability and preference
-            if use_gpu and accelerator_count() > 0:
-                self.max_driver_device = Accelerator()
-                self.max_device = DeviceRef.GPU()
-                device_name = "GPU"
-            else:
-                self.max_driver_device = CPU()
-                self.max_device = DeviceRef.CPU()
-                device_name = "CPU"
-            
-            self.max_session = engine.InferenceSession(devices=[self.max_driver_device])
-            print(f"✅ MAX Graph device ready: {device_name}")
-        except Exception as e:
-            print(f"⚠️ MAX Graph setup failed: {e}")
+        # MAX Graph device setup (primary)
+        if use_gpu and accelerator_count() > 0:
+            self.max_driver_device = Accelerator()
+            self.max_device = DeviceRef.GPU()
+            device_name = "GPU"
+        else:
             self.max_driver_device = CPU()
             self.max_device = DeviceRef.CPU()
-            self.max_session = engine.InferenceSession(devices=[self.max_driver_device])
+            device_name = "CPU"
+        
+        self.max_session = engine.InferenceSession(devices=[self.max_driver_device])
+        print(f"✅ MAX Graph device ready: {device_name}")
+        
+        # PyTorch device setup (for decoder integration)
+        self.torch_device = torch.device("cuda" if torch.cuda.is_available() and use_gpu else "cpu")
+        print(f"✅ PyTorch device ready: {self.torch_device}")
         
         # Load the baseline OpenAI Whisper model for reference and weights
         self.whisper_model = None
@@ -260,7 +272,7 @@ class WhisperMAX:
             import whisper
             
             # Load the OpenAI Whisper model
-            self.whisper_model = whisper.load_model(self.model_size, device=self.device)
+            self.whisper_model = whisper.load_model(self.model_size, device=self.torch_device)
             print(f"✅ OpenAI Whisper {self.model_size} loaded")
             
             # Extract weights for MAX Graph usage
