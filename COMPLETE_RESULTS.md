@@ -1,23 +1,23 @@
 # Complete Whisper Implementation Comparison
 
 **Audio**: audio_samples/modular_video.wav (161.5 seconds)  
-**Date**: 2025-06-29 09:18:40  
+**Date**: 2025-06-29 10:25:17  
 **Hardware**: GPU-enabled system  
-**Baseline**: CPU implementation (3.63s)
+**Baseline**: CPU implementation (3.48s)
 
 ## Performance Summary
 
 | Implementation | Platform | Time | Speedup | Status | Quality |
 |---------------|----------|------|---------|--------|---------|
-| CPU Baseline | OpenAI Whisper CPU | 3.63s | 1.0x | ✅ Success | Perfect ✅ |
-| GPU Accelerated | OpenAI Whisper + CUDA | 0.97s | 3.7x | ✅ Success | Perfect ✅ |
-| MAX Graph Integration | MAX Graph Integration | 1.06s | 3.4x | ✅ Success | Perfect ✅ |
-| MAX Graph Fast | MAX Graph Fast | 0.89s | 4.1x | ✅ Success | Perfect ✅ |
+| CPU Baseline | OpenAI Whisper CPU | 3.48s | 1.0x | ✅ Success | Perfect ✅ |
+| GPU Accelerated | OpenAI Whisper + CUDA | 0.97s | 3.6x | ✅ Success | Perfect ✅ |
+| MAX Graph Integration | MAX Graph Integration | 1.01s | 3.4x | ✅ Success | Perfect ✅ |
+| MAX Graph Fast | MAX Graph Fast | 0.75s | 4.7x | ✅ Success | Perfect ✅ |
 
 ## Transcription Output Comparison
 
 ### CPU Baseline
-**Time**: 3.63s  
+**Time**: 3.48s  
 **Speedup**: 1.0x vs CPU baseline  
 **Platform**: OpenAI Whisper CPU  
 
@@ -27,7 +27,7 @@ Music Max provides several different libraries, including a high-performance ser
 
 ### GPU Accelerated
 **Time**: 0.97s  
-**Speedup**: 3.7x vs CPU baseline  
+**Speedup**: 3.6x vs CPU baseline  
 **Platform**: OpenAI Whisper + CUDA  
 
 ```
@@ -35,7 +35,7 @@ Music Max provides several different libraries, including a high-performance ser
 ```
 
 ### MAX Graph Integration
-**Time**: 1.06s  
+**Time**: 1.01s  
 **Speedup**: 3.4x vs CPU baseline  
 **Platform**: MAX Graph Integration  
 
@@ -44,8 +44,8 @@ Music Max provides several different libraries, including a high-performance ser
 ```
 
 ### MAX Graph Fast
-**Time**: 0.89s  
-**Speedup**: 4.1x vs CPU baseline  
+**Time**: 0.75s  
+**Speedup**: 4.7x vs CPU baseline  
 **Platform**: MAX Graph Fast  
 
 ```
@@ -54,11 +54,11 @@ Music Max provides several different libraries, including a high-performance ser
 
 ## Analysis
 
-**Fastest**: MAX Graph Fast - 0.89s (4.1x speedup)
+**Fastest**: MAX Graph Fast - 0.75s (4.7x speedup)
 
 **Best Quality**: CPU Baseline - Perfect transcription of actual audio content
 
-**GPU Acceleration**: 3.7x speedup over CPU baseline
+**GPU Acceleration**: 3.6x speedup over CPU baseline
 
 **MAX Graph Status**: 3.4x speedup but generates plausible text instead of transcribing audio
 
