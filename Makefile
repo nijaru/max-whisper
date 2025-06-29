@@ -19,10 +19,12 @@ MODEL_ARG := $(if $(filter tiny small base,$(ARGS)),$(filter tiny small base,$(A
 AUDIO_ARG := $(if $(filter-out tiny small base,$(ARGS)),$(filter-out tiny small base,$(ARGS)),$(AUDIO_FILE))
 
 # Define phony targets including model sizes
-.PHONY: help demo benchmark test clean tiny small base cpu gpu max fast
+.PHONY: help demo benchmark test clean tiny small base cpu gpu max fast env-check gpu-check
 
-# Default target
-all: help
+# Default target - run recommended demo
+all:
+	@echo "🚀 Starting recommended demo (small model)..."
+	@$(PIXI_ENV) python scripts/tui_demo.py small $(AUDIO_FILE)
 
 help:
 	@echo "🚀 Modular Hackathon - Whisper MAX Graph Implementation"
@@ -44,40 +46,49 @@ help:
 	@echo "  fast [model] [file]    - MAX Graph fast only"
 	@echo ""
 	@echo "🛠️ UTILITIES:"
+	@echo "  env-check              - Check pixi environment"
 	@echo "  gpu-check              - Verify GPU setup"
 	@echo "  clean                  - Clean up files"
 	@echo ""
 	@echo "💡 EXAMPLES:"
-	@echo "  make small             # Quick demo (recommended start)"
-	@echo "  make demo tiny         # All 4 tests, tiny model"
-	@echo "  make cpu base          # CPU test only, base model"
+	@echo "  make                   # Run recommended demo (same as 'make small')"
+	@echo "  make tiny              # Quick demo with tiny model"
+	@echo "  make demo base         # All 4 tests, base model"
+	@echo "  make cpu tiny          # CPU test only, tiny model"
 	@echo "  make fast small my.wav # Fast test, small model, custom file"
 
 # Main demo - all 4 implementations with TUI
 demo:
+	@echo "🚀 Starting full demo with $(MODEL_ARG) model..."
 	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG)
 
 # Individual implementation tests
 cpu:
+	@echo "🔧 Running CPU test with $(MODEL_ARG) model..."
 	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG) --tests cpu
 
 gpu:
+	@echo "⚡ Running GPU test with $(MODEL_ARG) model..."
 	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG) --tests gpu
 
 max:
+	@echo "🎯 Running MAX Graph test with $(MODEL_ARG) model..."
 	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG) --tests max
 
 fast:
+	@echo "🚀 Running MAX Graph Fast test with $(MODEL_ARG) model..."
 	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG) --tests fast
 
 # Detailed benchmark analysis  
 benchmark:
+	@echo "📊 Running comprehensive benchmark with $(MODEL_ARG) model..."
 	@$(PIXI_ENV) python benchmark_all.py --model-size $(MODEL_ARG) --audio-file $(AUDIO_ARG)
 
 # Direct model size commands (run full demo with that model)
 # Only run if they're the primary target, not secondary arguments
 tiny:
 ifeq ($(word 1,$(MAKECMDGOALS)),tiny)
+	@echo "🚀 Starting tiny model demo (fastest)..."
 	@$(PIXI_ENV) python scripts/tui_demo.py tiny $(AUDIO_FILE)
 else
 	@true
@@ -85,6 +96,7 @@ endif
 
 small:
 ifeq ($(word 1,$(MAKECMDGOALS)),small)
+	@echo "🚀 Starting small model demo (recommended)..."
 	@$(PIXI_ENV) python scripts/tui_demo.py small $(AUDIO_FILE)
 else
 	@true
@@ -92,6 +104,7 @@ endif
 
 base:
 ifeq ($(word 1,$(MAKECMDGOALS)),base)
+	@echo "🚀 Starting base model demo (best quality)..."
 	@$(PIXI_ENV) python scripts/tui_demo.py base $(AUDIO_FILE)
 else
 	@true
@@ -111,6 +124,15 @@ clean:
 	rm -rf src/model/__pycache__
 	@echo "✅ Cleanup complete"
 
-# GPU compatibility check
+# Environment and compatibility checks
+env-check:
+	@echo "🔍 Checking environment..."
+	@command -v pixi >/dev/null 2>&1 || { echo "❌ pixi not found. Please install pixi first."; exit 1; }
+	@echo "✅ pixi found"
+	@pixi info >/dev/null 2>&1 || { echo "❌ pixi environment not ready"; exit 1; }
+	@echo "✅ pixi environment ready"
+	@echo "✅ Environment check complete"
+
 gpu-check:
+	@echo "🔍 Checking GPU setup..."
 	@$(PIXI_ENV) python scripts/gpu_check.py
