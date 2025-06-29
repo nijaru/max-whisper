@@ -31,7 +31,7 @@ Total: 4/4 tests passed
 ### 2. View Benchmark Results
 ```bash
 # Display comprehensive benchmark comparison
-cat benchmark_results_table.txt
+cat results/benchmarks/benchmark_results_table.txt
 ```
 
 **Expected Output:**
@@ -94,7 +94,7 @@ pixi run -e benchmark python demos/enhanced_comparison.py
 pixi run -e benchmark python benchmarks/comprehensive_comparison.py
 
 # View detailed results
-cat benchmark_results.json | python -m json.tool
+cat results/benchmarks/benchmark_results.json | python -m json.tool
 ```
 
 ## 📊 Current Benchmark Results
@@ -141,9 +141,9 @@ cat benchmark_results.json | python -m json.tool
 ./scripts/run_comprehensive_benchmark.sh
 
 # Results saved to:
-# - benchmark_results.json (machine readable)
-# - benchmark_results_table.txt (human readable)
-# - benchmark_results_markdown.md (for documentation)
+# - results/benchmarks/benchmark_results.json (machine readable)
+# - results/benchmarks/benchmark_results_table.txt (human readable)
+# - results/benchmarks/benchmark_results_markdown.md (for documentation)
 ```
 
 ## 📁 Key Files for Evaluation

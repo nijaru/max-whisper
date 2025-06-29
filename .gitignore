@@ -195,3 +195,12 @@ cython_debug/
 # pixi environments
 .pixi
 *.egg-info
+
+# Results - keep important milestone results, ignore temporary/large files
+results/benchmarks/*.log
+results/demos/*.tmp
+results/tests/temp_*
+# But track important results:
+!results/benchmarks/benchmark_results*.txt
+!results/benchmarks/benchmark_results*.json
+!results/benchmarks/benchmark_results*.md

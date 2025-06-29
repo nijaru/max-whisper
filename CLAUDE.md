@@ -148,9 +148,9 @@ pixi run -e benchmark python demos/integrate_real_tokenizer.py
 ./scripts/run_comprehensive_benchmark.sh
 
 # Generates results in multiple formats:
-# - benchmark_results/benchmark_results_table.txt (human readable)
-# - benchmark_results/benchmark_results.json (machine readable)
-# - benchmark_results/benchmark_results_markdown.md (for docs)
+# - results/benchmarks/benchmark_results_table.txt (human readable)
+# - results/benchmarks/benchmark_results.json (machine readable)
+# - results/benchmarks/benchmark_results_markdown.md (for docs)
 ```
 
 ### Cloud Deployment (For Maximum Performance)
@@ -167,7 +167,7 @@ pixi run -e benchmark python benchmarks/real_audio_comparison.py
 # 5-minute quick demo (for judges)
 source scripts/setup_cuda_env.sh
 pixi run -e default python tests/test_everything.py
-cat benchmark_results/benchmark_results_table.txt
+cat results/benchmarks/benchmark_results_table.txt
 
 # 15-minute comprehensive demo  
 ./scripts/run_comprehensive_benchmark.sh

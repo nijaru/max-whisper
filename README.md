@@ -76,7 +76,7 @@ export PATH="$HOME/.pixi/bin:$PATH"
 pixi run -e default python tests/test_everything.py
 
 # 3. View benchmark results
-cat benchmark_results/benchmark_results_table.txt
+cat results/benchmarks/benchmark_results_table.txt
 
 # 4. Live demonstrations
 pixi run -e benchmark python demos/demo_trained_weights_simple.py

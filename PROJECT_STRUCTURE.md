@@ -91,6 +91,11 @@ modular-hackathon/
 ├── whisper_weights/             # Trained model weights
 │   └── whisper_tiny_weights.npz # ⭐ 47 extracted tensors
 │
+├── results/                     # ⭐ Organized results and outputs
+│   ├── benchmarks/              # Benchmark comparison results
+│   ├── demos/                   # Demonstration outputs
+│   └── tests/                   # Test results and validation
+│
 └── archive/                     # Archived development files
     ├── start_real_implementation.py
     └── hello.mojo
