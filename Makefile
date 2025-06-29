@@ -22,73 +22,48 @@ help:
 	@echo "🚀 Modular Hackathon - Whisper MAX Graph Implementation"
 	@echo "======================================================="
 	@echo ""
-	@echo "🎯 QUICK START:"
-	@echo "  demo          - Clean TUI demo (all 4 implementations)"
-	@echo "  judge         - Complete judge demo (small model, production-scale)"
-	@echo "  benchmark     - Full performance benchmark with analysis"
+	@echo "🎯 MAIN COMMANDS:"
+	@echo "  demo          - All 4 implementations (default: small model)"
+	@echo "  benchmark     - Performance analysis with detailed results"
 	@echo ""
-	@echo "🎭 TUI DEMOS:"
-	@echo "  demo-tui      - Modular TUI demo (configurable)"
-	@echo "  demo-quick    - Quick TUI demo (CPU + GPU only)"  
-	@echo "  demo-gpu-only - GPU implementation only"
-	@echo "  demo-max-only - MAX Graph implementations only"
-	@echo ""
-	@echo "🔧 INDIVIDUAL TARGETS:"
-	@echo "  demo-cpu      - CPU baseline (OpenAI Whisper)"
-	@echo "  demo-gpu      - GPU accelerated (CUDA optimization)"
-	@echo "  demo-max      - MAX Graph integration (attention replacement)"
-	@echo "  demo-fast     - MAX Graph ultra-optimized (maximum performance)"
-	@echo ""
-	@echo "🏆 MODEL SIZES:"
-	@echo "  demo-tiny     - Fastest demos for quick testing"
-	@echo "  demo-small    - Production-relevant (default for 'make demo')"
-	@echo "  demo-base     - Full-scale, most impressive for judges"
-	@echo ""
-	@echo "📈 BENCHMARKS:"
-	@echo "  benchmark-tiny   - Quick benchmark analysis"
-	@echo "  benchmark-small  - Production-scale benchmark (default for 'make judge')"
-	@echo "  benchmark-base   - Full-scale performance analysis"
+	@echo "🔧 INDIVIDUAL TESTS:"
+	@echo "  cpu           - CPU baseline only"
+	@echo "  gpu           - GPU accelerated only"
+	@echo "  max           - MAX Graph integration only"
+	@echo "  fast          - MAX Graph fast only"
 	@echo ""
 	@echo "🛠️ UTILITIES:"
-	@echo "  gpu-check     - Verify GPU and environment setup"
-	@echo "  perf-chart    - Generate performance visualization"
-	@echo "  clean         - Clean up generated files"
+	@echo "  gpu-check     - Verify GPU setup"
+	@echo "  clean         - Clean up files"
 	@echo ""
 	@echo "💡 EXAMPLES:"
-	@echo "  make demo                    # Production demo with small model"
-	@echo "  make judge                   # Judge demo with small model"
-	@echo "  make demo-fast MODEL_SIZE=base AUDIO_FILE=my_audio.wav"
+	@echo "  make demo                    # All 4 tests, small model"
+	@echo "  make demo MODEL_SIZE=tiny    # All 4 tests, tiny model"
+	@echo "  make cpu MODEL_SIZE=base     # CPU test only, base model"
+	@echo "  make gpu                     # GPU test only, small model"
 
-# Run all demos sequentially (small model by default for production performance)
+# Main demo - all 4 implementations with TUI
 demo:
-	@echo "🎬 Production Demo - All 4 Implementations (Small Model)"
-	@echo "========================================================"
-	@$(MAKE) _run_demo_grid MODEL_SIZE=small
+	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE)
 
-# Individual demos
-demo-cpu:
-	@echo "🔧 CPU Baseline Demo (model: $(MODEL_SIZE))"
-	$(PIXI_ENV) python src/model/whisper_cpu.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE)
+# Individual implementation tests
+cpu:
+	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE) --tests cpu
 
-demo-gpu:
-	@echo "⚡ GPU Accelerated Demo (model: $(MODEL_SIZE))"
-	$(PIXI_ENV) python src/model/whisper_gpu.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE)
+gpu:
+	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE) --tests gpu
 
-demo-max:
-	@echo "🎯 MAX Graph Integration Demo (model: $(MODEL_SIZE))"
-	$(PIXI_ENV) python src/model/whisper_max.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE)
+max:
+	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE) --tests max
 
-demo-fast:
-	@echo "🚀 MAX Graph Fast Demo (model: $(MODEL_SIZE))"
-	$(PIXI_ENV) python src/model/whisper_max_fast.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE)
+fast:
+	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE) --tests fast
 
-# Complete benchmark
+# Detailed benchmark analysis  
 benchmark:
-	@echo "📊 Complete Benchmark (model: $(MODEL_SIZE))"
-	@echo "============================================="
-	$(PIXI_ENV) python benchmark_all.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE)
+	@$(PIXI_ENV) python benchmark_all.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE)
 
-# Model-specific demos
+# Model size convenience targets
 demo-tiny:
 	@$(MAKE) demo MODEL_SIZE=tiny
 
@@ -97,35 +72,6 @@ demo-small:
 
 demo-base:
 	@$(MAKE) demo MODEL_SIZE=base
-
-# Model-specific benchmarks
-benchmark-tiny:
-	@$(MAKE) benchmark MODEL_SIZE=tiny
-
-benchmark-small:
-	@$(MAKE) benchmark MODEL_SIZE=small
-
-benchmark-base:
-	@$(MAKE) benchmark MODEL_SIZE=base
-
-# Quick test using TUI (just CPU and GPU for speed)
-test:
-	@echo "🧪 Quick Test (CPU + GPU only)"
-	@echo "==============================="
-	@$(PIXI_ENV) python scripts/tui_demo.py --model-size tiny --demo-type quick
-
-# TUI demos with different configurations
-demo-tui:
-	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE)
-
-demo-quick:
-	@$(PIXI_ENV) python scripts/tui_demo.py --model-size tiny --demo-type quick
-
-demo-gpu-only:
-	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --tests gpu
-
-demo-max-only:
-	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --tests max fast
 
 # Clean up generated files
 clean:
@@ -137,43 +83,6 @@ clean:
 	rm -rf src/model/__pycache__
 	@echo "✅ Cleanup complete"
 
-# Development helpers
-dev-setup:
-	@echo "🔧 Setting up development environment..."
-	pixi install
-	@echo "✅ Development environment ready"
-
-# Judge demo - production-scale with small model
-judge:
-	@echo "👨‍⚖️ JUDGE DEMO - Production-Scale Performance (Small Model)"
-	@echo "============================================================="
-	@$(MAKE) _run_demo_grid MODEL_SIZE=small
-	@echo ""
-	@echo "🏆 Judge Demo Complete - Key Achievements:"
-	@echo "   ✅ MAX Graph easily matches CUDA performance (~1.4s vs ~1.0s)"
-	@echo "   ✅ Ultra-optimization achieves 4.8x speedup over CPU baseline"
-	@echo "   ✅ Perfect transcription quality across all implementations"
-	@echo "   ✅ Production-scale small model demonstrates real-world relevance"
-
-# Legacy judge demos (kept for compatibility)
-judge-demo:
-	@$(MAKE) judge
-
-judge-demo-manual:
-	@$(MAKE) judge
-
-# Internal target - run demo with TUI interface
-_run_demo_grid:
-	@$(PIXI_ENV) python scripts/tui_demo.py --model-size $(MODEL_SIZE) --audio-file $(AUDIO_FILE) --demo-type judge
-
-# Quick GPU performance check
+# GPU compatibility check
 gpu-check:
-	@echo "🔍 GPU & Environment Check"
-	@echo "==========================="
-	$(PIXI_ENV) python scripts/gpu_check.py
-
-# Performance visualization
-perf-chart:
-	@echo "📊 Performance Visualization"
-	@echo "============================"
-	$(PIXI_ENV) python scripts/create_perf_chart.py
+	@$(PIXI_ENV) python scripts/gpu_check.py

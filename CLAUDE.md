@@ -55,7 +55,7 @@ make benchmark                # Complete benchmark with analysis
 make benchmark-small          # Production-relevant (small model)
 make benchmark-base           # Full-scale performance (base model)
 
-# For judges - impressive showcase
+# For judges - production showcase
 make judge                    # Judge demo (small model, production-scale)
 make gpu-check                # Verify GPU setup
 
@@ -79,7 +79,7 @@ pixi run -e benchmark python benchmark_all.py --model-size base --audio-file cus
 ### Model Size Options
 - **tiny**: Fastest demos and testing (default)
 - **small**: Better quality, production-relevant performance  
-- **base**: Production-scale, impressive for judges
+- **base**: Production-scale performance evaluation
 
 ## 🎯 IMPLEMENTATION APPROACHES
 

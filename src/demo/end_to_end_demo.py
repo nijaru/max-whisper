@@ -35,7 +35,7 @@ class PerformanceDashboard:
         self.start_time = time.time()
     
     def display_header(self):
-        """Display impressive demo header."""
+        """Display demo header."""
         print("\n" + "🔥" * 25)
         print("🚀 MAX-WHISPER LIVE HACKATHON DEMO 🚀")
         print("🔥" * 25)

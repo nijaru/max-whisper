@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Create performance comparison chart for impressive visuals
+Create performance comparison chart for clear visuals
 """
 
 import json

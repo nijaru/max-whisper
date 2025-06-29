@@ -231,7 +231,7 @@ Quality: All implementations produce identical transcription
 
 ### **Judge-Ready Demo Commands**
 ```bash
-# Complete impressive TUI demo (recommended for judges)
+# Complete TUI demo (recommended for judges)
 make demo
 
 # Quick TUI demo (CPU + GPU only, fast showcase)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Demo visualization helpers for impressive judge presentations
+Demo visualization helpers for clean judge presentations
 """
 
 try:
@@ -88,7 +88,7 @@ def show_max_graph_breakdown(max_graph_time: float, total_time: float):
     console.print(breakdown_table)
 
 def show_demo_header(title: str, model_size: str = "tiny"):
-    """Show impressive demo header"""
+    """Show demo header"""
     if not RICH_AVAILABLE:
         print(f"🚀 {title} (model: {model_size})")
         print("=" * 60)
@@ -99,7 +99,7 @@ def show_demo_header(title: str, model_size: str = "tiny"):
     console.print(panel)
 
 def show_final_summary(fastest_name: str, fastest_time: float, speedup: float):
-    """Show final impressive summary"""
+    """Show final summary"""
     if not RICH_AVAILABLE:
         print(f"\n🎯 Best Performance: {fastest_name}")
         print(f"   Time: {fastest_time:.2f}s")
