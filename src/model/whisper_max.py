@@ -388,20 +388,25 @@ class WhisperMAX:
             
             # Add attention layer weights for all transformer blocks (full architecture)
             for layer_idx in range(n_audio_layer):  # Use all 4 layers for full Whisper architecture
-                # Attention weights
+                # Attention weights with biases
                 input_types.extend([
-                    TensorType(DType.float32, (n_audio_state, n_audio_state), device=self.max_device),  # query
-                    TensorType(DType.float32, (n_audio_state, n_audio_state), device=self.max_device),  # key  
-                    TensorType(DType.float32, (n_audio_state, n_audio_state), device=self.max_device),  # value
-                    TensorType(DType.float32, (n_audio_state, n_audio_state), device=self.max_device),  # out
+                    TensorType(DType.float32, (n_audio_state, n_audio_state), device=self.max_device),  # query_weight
+                    TensorType(DType.float32, (n_audio_state,), device=self.max_device),               # query_bias
+                    TensorType(DType.float32, (n_audio_state, n_audio_state), device=self.max_device),  # key_weight
+                    TensorType(DType.float32, (n_audio_state, n_audio_state), device=self.max_device),  # value_weight
+                    TensorType(DType.float32, (n_audio_state,), device=self.max_device),               # value_bias
+                    TensorType(DType.float32, (n_audio_state, n_audio_state), device=self.max_device),  # out_weight
+                    TensorType(DType.float32, (n_audio_state,), device=self.max_device),               # out_bias
                     # Layer norm weights
                     TensorType(DType.float32, (n_audio_state,), device=self.max_device),  # attn_ln_weight
                     TensorType(DType.float32, (n_audio_state,), device=self.max_device),  # attn_ln_bias
                     TensorType(DType.float32, (n_audio_state,), device=self.max_device),  # mlp_ln_weight 
                     TensorType(DType.float32, (n_audio_state,), device=self.max_device),  # mlp_ln_bias
-                    # MLP weights
-                    TensorType(DType.float32, (n_audio_state * 4, n_audio_state), device=self.max_device), # mlp_fc1
-                    TensorType(DType.float32, (n_audio_state, n_audio_state * 4), device=self.max_device), # mlp_fc2
+                    # MLP weights with biases
+                    TensorType(DType.float32, (n_audio_state * 4, n_audio_state), device=self.max_device), # mlp_fc1_weight
+                    TensorType(DType.float32, (n_audio_state * 4,), device=self.max_device),             # mlp_fc1_bias
+                    TensorType(DType.float32, (n_audio_state, n_audio_state * 4), device=self.max_device), # mlp_fc2_weight
+                    TensorType(DType.float32, (n_audio_state,), device=self.max_device),                # mlp_fc2_bias
                 ])
             
             with Graph("whisper_max_encoder_full", input_types=input_types) as graph:
@@ -420,16 +425,33 @@ class WhisperMAX:
                 # Transpose mel: [batch, n_mels, seq_len] -> [batch, seq_len, n_mels]
                 mel_transposed = ops.transpose(mel_input, 1, 2)
                 
-                # Conv1d layer 1: Apply convolution with stride and padding
-                # Simplified conv1d using matmul approach
-                conv1_weight_2d = conv1_weight[:, :, 1]  # Use middle kernel for simplicity
-                x = ops.matmul(mel_transposed, ops.transpose(conv1_weight_2d, 0, 1))
+                # Conv1d layer 1: Proper convolution simulation
+                # Whisper uses 1D conv with kernel_size=3, so we need to process all 3 positions
+                # For now, use a weighted combination of all kernel positions instead of just middle
+                conv1_k0 = conv1_weight[:, :, 0]  # Left kernel
+                conv1_k1 = conv1_weight[:, :, 1]  # Middle kernel  
+                conv1_k2 = conv1_weight[:, :, 2]  # Right kernel
+                
+                # Apply each kernel and combine (simplified conv1d approximation)
+                x0 = ops.matmul(mel_transposed, ops.transpose(conv1_k0, 0, 1))
+                x1 = ops.matmul(mel_transposed, ops.transpose(conv1_k1, 0, 1)) 
+                x2 = ops.matmul(mel_transposed, ops.transpose(conv1_k2, 0, 1))
+                
+                # Combine all kernel outputs (approximates conv1d)
+                x = ops.add(ops.add(x0, x1), x2)
                 x = ops.add(x, conv1_bias)
                 x = ops.gelu(x)  # GELU activation
                 
-                # Conv1d layer 2: Second convolution  
-                conv2_weight_2d = conv2_weight[:, :, 1]  # Use middle kernel
-                x = ops.matmul(x, ops.transpose(conv2_weight_2d, 0, 1))
+                # Conv1d layer 2: Apply same fix
+                conv2_k0 = conv2_weight[:, :, 0]
+                conv2_k1 = conv2_weight[:, :, 1]
+                conv2_k2 = conv2_weight[:, :, 2]
+                
+                x0 = ops.matmul(x, ops.transpose(conv2_k0, 0, 1))
+                x1 = ops.matmul(x, ops.transpose(conv2_k1, 0, 1))
+                x2 = ops.matmul(x, ops.transpose(conv2_k2, 0, 1))
+                
+                x = ops.add(ops.add(x0, x1), x2)
                 x = ops.add(x, conv2_bias) 
                 x = ops.gelu(x)  # GELU activation
                 
@@ -439,17 +461,22 @@ class WhisperMAX:
                 print(f"      🔧 Building transformer layers...")
                 # Build transformer blocks  
                 for layer_idx in range(n_audio_layer):  # Build all 4 layers for full Whisper architecture
-                    # Get layer weights
+                    # Get layer weights with biases
                     attn_query_weight = inputs[input_idx]; input_idx += 1
+                    attn_query_bias = inputs[input_idx]; input_idx += 1
                     attn_key_weight = inputs[input_idx]; input_idx += 1
                     attn_value_weight = inputs[input_idx]; input_idx += 1
+                    attn_value_bias = inputs[input_idx]; input_idx += 1
                     attn_out_weight = inputs[input_idx]; input_idx += 1
+                    attn_out_bias = inputs[input_idx]; input_idx += 1
                     attn_ln_weight = inputs[input_idx]; input_idx += 1
                     attn_ln_bias = inputs[input_idx]; input_idx += 1
                     mlp_ln_weight = inputs[input_idx]; input_idx += 1
                     mlp_ln_bias = inputs[input_idx]; input_idx += 1
                     mlp_fc1_weight = inputs[input_idx]; input_idx += 1
+                    mlp_fc1_bias = inputs[input_idx]; input_idx += 1
                     mlp_fc2_weight = inputs[input_idx]; input_idx += 1
+                    mlp_fc2_bias = inputs[input_idx]; input_idx += 1
                     
                     # Self-attention block with residual connection
                     residual = x
@@ -457,10 +484,10 @@ class WhisperMAX:
                     # Pre-layer norm
                     x_norm = ops.layer_norm(x, attn_ln_weight, attn_ln_bias, epsilon=1e-5)
                     
-                    # Multi-head self-attention
+                    # Multi-head self-attention with biases
                     x_attn = self._build_max_attention_block(
-                        x_norm, attn_query_weight, attn_key_weight, attn_value_weight, 
-                        attn_out_weight, n_audio_head
+                        x_norm, attn_query_weight, attn_query_bias, attn_key_weight, 
+                        attn_value_weight, attn_value_bias, attn_out_weight, attn_out_bias, n_audio_head
                     )
                     
                     # Residual connection
@@ -472,10 +499,12 @@ class WhisperMAX:
                     # Pre-layer norm  
                     x_norm = ops.layer_norm(x, mlp_ln_weight, mlp_ln_bias, epsilon=1e-5)
                     
-                    # MLP: Linear -> GELU -> Linear
+                    # MLP: Linear -> GELU -> Linear (with biases)
                     x_mlp = ops.matmul(x_norm, ops.transpose(mlp_fc1_weight, 0, 1))
+                    x_mlp = ops.add(x_mlp, mlp_fc1_bias)
                     x_mlp = ops.gelu(x_mlp)
                     x_mlp = ops.matmul(x_mlp, ops.transpose(mlp_fc2_weight, 0, 1))
+                    x_mlp = ops.add(x_mlp, mlp_fc2_bias)
                     
                     # Residual connection
                     x = ops.add(residual, x_mlp)
@@ -494,7 +523,7 @@ class WhisperMAX:
             traceback.print_exc()
             self.max_encoder = None
     
-    def _build_max_attention_block(self, hidden_states, query_weight, key_weight, value_weight, out_weight, num_heads):
+    def _build_max_attention_block(self, hidden_states, query_weight, query_bias, key_weight, value_weight, value_bias, out_weight, out_bias, num_heads):
         """Build multi-head self-attention block using MAX Graph operations"""
         # Get dimensions - use fixed values since we know the Whisper tiny architecture
         batch_size = 1  # Fixed for now
@@ -502,10 +531,12 @@ class WhisperMAX:
         d_model = 384    # Fixed d_model for tiny
         head_dim = 64    # Fixed head_dim for tiny (384/6)
         
-        # Linear projections: Q, K, V
+        # Linear projections: Q, K, V (with biases)
         Q = ops.matmul(hidden_states, ops.transpose(query_weight, 0, 1))
+        Q = ops.add(Q, query_bias)
         K = ops.matmul(hidden_states, ops.transpose(key_weight, 0, 1)) 
         V = ops.matmul(hidden_states, ops.transpose(value_weight, 0, 1))
+        V = ops.add(V, value_bias)
         
         # Reshape to [batch, seq_len, num_heads, head_dim] then transpose to [batch, num_heads, seq_len, head_dim]
         Q_reshaped = ops.reshape(Q, (batch_size, seq_len, num_heads, head_dim))
@@ -536,8 +567,9 @@ class WhisperMAX:
         attention_transposed = ops.transpose(attention_output, 1, 2)  # [batch, seq_len, num_heads, head_dim]
         attention_concat = ops.reshape(attention_transposed, (batch_size, seq_len, d_model))
         
-        # Final linear projection
+        # Final linear projection (with bias)
         output = ops.matmul(attention_concat, ops.transpose(out_weight, 0, 1))
+        output = ops.add(output, out_bias)
         
         return output
     
@@ -797,16 +829,25 @@ class WhisperMAX:
                     print(f"        ⚠️ Using fallback random weight: {key}")
                     return fallback_init(*fallback_shape).astype(np.float32)
             
-            # Add weights for all 4 transformer layers
+            # Add weights for all 4 transformer layers (with biases in correct order)
             for layer_idx in range(4):
+                # Get attention weights and biases
                 attn_query = get_weight_with_logging(f'layer_{layer_idx}_attn_query', 
                     (d_model, d_model), lambda *s: np.random.randn(*s) * 0.02)
+                attn_query_bias = get_weight_with_logging(f'layer_{layer_idx}_attn_query_bias',
+                    (d_model,), lambda *s: np.zeros(*s))
                 attn_key = get_weight_with_logging(f'layer_{layer_idx}_attn_key',
                     (d_model, d_model), lambda *s: np.random.randn(*s) * 0.02)
                 attn_value = get_weight_with_logging(f'layer_{layer_idx}_attn_value',
                     (d_model, d_model), lambda *s: np.random.randn(*s) * 0.02)
+                attn_value_bias = get_weight_with_logging(f'layer_{layer_idx}_attn_value_bias',
+                    (d_model,), lambda *s: np.zeros(*s))
                 attn_out = get_weight_with_logging(f'layer_{layer_idx}_attn_out',
                     (d_model, d_model), lambda *s: np.random.randn(*s) * 0.02)
+                attn_out_bias = get_weight_with_logging(f'layer_{layer_idx}_attn_out_bias',
+                    (d_model,), lambda *s: np.zeros(*s))
+                
+                # Get layer norm weights
                 attn_ln_weight = get_weight_with_logging(f'layer_{layer_idx}_attn_ln_weight',
                     (d_model,), lambda *s: np.ones(*s))
                 attn_ln_bias = get_weight_with_logging(f'layer_{layer_idx}_attn_ln_bias',
@@ -815,22 +856,34 @@ class WhisperMAX:
                     (d_model,), lambda *s: np.ones(*s))
                 mlp_ln_bias = get_weight_with_logging(f'layer_{layer_idx}_mlp_ln_bias',
                     (d_model,), lambda *s: np.zeros(*s))
+                
+                # Get MLP weights and biases
                 mlp_fc1 = get_weight_with_logging(f'layer_{layer_idx}_mlp_fc1',
                     (d_model * 4, d_model), lambda *s: np.random.randn(*s) * 0.02)
+                mlp_fc1_bias = get_weight_with_logging(f'layer_{layer_idx}_mlp_fc1_bias',
+                    (d_model * 4,), lambda *s: np.zeros(*s))
                 mlp_fc2 = get_weight_with_logging(f'layer_{layer_idx}_mlp_fc2',
                     (d_model, d_model * 4), lambda *s: np.random.randn(*s) * 0.02)
+                mlp_fc2_bias = get_weight_with_logging(f'layer_{layer_idx}_mlp_fc2_bias',
+                    (d_model,), lambda *s: np.zeros(*s))
                 
+                # Add tensors in correct order matching graph input_types
                 weight_tensors.extend([
                     Tensor.from_numpy(attn_query.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(attn_query_bias.astype(np.float32)).to(self.max_driver_device),
                     Tensor.from_numpy(attn_key.astype(np.float32)).to(self.max_driver_device),
                     Tensor.from_numpy(attn_value.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(attn_value_bias.astype(np.float32)).to(self.max_driver_device),
                     Tensor.from_numpy(attn_out.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(attn_out_bias.astype(np.float32)).to(self.max_driver_device),
                     Tensor.from_numpy(attn_ln_weight.astype(np.float32)).to(self.max_driver_device),
                     Tensor.from_numpy(attn_ln_bias.astype(np.float32)).to(self.max_driver_device),
                     Tensor.from_numpy(mlp_ln_weight.astype(np.float32)).to(self.max_driver_device),
                     Tensor.from_numpy(mlp_ln_bias.astype(np.float32)).to(self.max_driver_device),
                     Tensor.from_numpy(mlp_fc1.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(mlp_fc1_bias.astype(np.float32)).to(self.max_driver_device),
                     Tensor.from_numpy(mlp_fc2.astype(np.float32)).to(self.max_driver_device),
+                    Tensor.from_numpy(mlp_fc2_bias.astype(np.float32)).to(self.max_driver_device),
                 ])
             
             # Execute MAX Graph encoder with all tensors
@@ -883,7 +936,7 @@ class WhisperMAX:
     
     def _decode_with_openai_decoder(self, encoder_features: np.ndarray, audio: np.ndarray) -> Optional[str]:
         """
-        Use MAX Graph encoder features with OpenAI decoder - direct approach
+        Use MAX Graph encoder features with OpenAI decoder - monkey patch approach
         
         Args:
             encoder_features: Features from MAX Graph encoder [batch, seq_len, d_model]
@@ -895,63 +948,31 @@ class WhisperMAX:
         try:
             import torch
             
-            # Convert encoder features to PyTorch tensor and make writable
-            encoder_tensor = torch.from_numpy(encoder_features.copy()).float()
+            # Convert encoder features to PyTorch tensor
+            max_encoder_tensor = torch.from_numpy(encoder_features.copy()).float()
+            device = next(self.whisper_model.encoder.parameters()).device
+            max_encoder_tensor = max_encoder_tensor.to(device)
             
-            # Move to same device as model  
-            device = next(self.whisper_model.decoder.parameters()).device
-            encoder_tensor = encoder_tensor.to(device)
+            print(f"        📊 Using encoder features shape: {max_encoder_tensor.shape}")
             
-            print(f"        📊 Using encoder features shape: {encoder_tensor.shape}")
+            # SOLUTION: Monkey patch the encoder to return our MAX Graph features
+            original_forward = self.whisper_model.encoder.forward
             
-            # Use the direct decode method with our encoder features
-            # Create initial tokens for decoding
-            import torch.nn.functional as F
+            def custom_encoder_forward(x):
+                # Ignore the input and return our MAX Graph features
+                return max_encoder_tensor
             
-            # Create simple decode tokens (start with language and transcribe tokens)
-            sot_sequence = [
-                50258,  # <|startoftranscript|>
-                50259,  # <|en|>
-                50359,  # <|transcribe|>
-                50363   # <|notimestamps|>
-            ]
+            # Temporarily replace the encoder
+            self.whisper_model.encoder.forward = custom_encoder_forward
             
-            tokens = torch.tensor([sot_sequence], dtype=torch.long, device=device)
-            
-            # Decode using the model's decoder directly - fix device placement
-            with torch.no_grad():
-                generated_tokens = []
-                for i in range(50):  # Generate up to 50 tokens
-                    # Ensure all tensors are on the same device
-                    if tokens.device != encoder_tensor.device:
-                        tokens = tokens.to(encoder_tensor.device)
-                    
-                    logits = self.whisper_model.decoder(tokens, encoder_tensor)
-                    next_token = logits[0, -1].argmax()
-                    
-                    # Debug: Show what tokens we're generating
-                    if i < 10:  # Show first 10 tokens
-                        print(f"        Token {i}: {next_token.item()}")
-                    
-                    # Check for endoftext token - allow natural generation
-                    if next_token == 50257:  # <|endoftext|>
-                        print(f"        💬 Stopped at endoftext token after {i} tokens")
-                        break
-                        
-                    # Ensure next_token is on correct device
-                    next_token = next_token.to(device)
-                    tokens = torch.cat([tokens, next_token.unsqueeze(0).unsqueeze(0)], dim=1)
-                    generated_tokens.append(next_token.item())
-            
-            # Decode tokens to text
-            import whisper
-            text_tokens = tokens[0][len(sot_sequence):].tolist()
-            tokenizer = whisper.tokenizer.get_tokenizer(multilingual=True)
-            text = tokenizer.decode(text_tokens)
-            
-            print(f"        📝 Generated {len(generated_tokens)} tokens: {text}")
-            
-            return text.strip()
+            try:
+                # Now use normal Whisper transcription - it will use our MAX Graph encoder features
+                result = self.whisper_model.transcribe(audio, verbose=False)
+                return result["text"].strip()
+                
+            finally:
+                # Always restore original encoder
+                self.whisper_model.encoder.forward = original_forward
             
         except Exception as e:
             print(f"        ❌ Failed to decode with OpenAI decoder: {e}")
