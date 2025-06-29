@@ -369,21 +369,21 @@ class WhisperMAX:
             # Whisper tiny model dimensions
             n_mels = 80
             n_audio_state = 384  # d_model
-            n_audio_ctx = 1500   # max sequence length
+            n_audio_ctx = 3000   # input mel sequence length (gets downsampled to 1500)
             n_audio_head = 6     # number of attention heads
             n_audio_layer = 4    # number of transformer layers
             
             # Build comprehensive input types for all weights
             input_types = [
-                # Audio features
+                # Audio features (input mel spectrogram)
                 TensorType(DType.float32, (1, n_mels, n_audio_ctx), device=self.max_device),
                 # Conv layers
                 TensorType(DType.float32, (n_audio_state, n_mels, 3), device=self.max_device),  # conv1_weight
                 TensorType(DType.float32, (n_audio_state,), device=self.max_device),            # conv1_bias
                 TensorType(DType.float32, (n_audio_state, n_audio_state, 3), device=self.max_device), # conv2_weight  
                 TensorType(DType.float32, (n_audio_state,), device=self.max_device),            # conv2_bias
-                # Positional embedding
-                TensorType(DType.float32, (n_audio_ctx, n_audio_state), device=self.max_device), # pos_embed
+                # Positional embedding (for final sequence length after downsampling)
+                TensorType(DType.float32, (1500, n_audio_state), device=self.max_device), # pos_embed
             ]
             
             # Add attention layer weights for all transformer blocks (full architecture)
@@ -462,11 +462,17 @@ class WhisperMAX:
                 x = ops.add(x, conv2_bias)
                 x = ops.gelu(x)  # GELU activation
                 
-                # TODO: Proper stride=2 implementation
-                # For now, keep the sequence length the same to test the core convolution
-                # In a real implementation, Conv2 stride=2 would halve the sequence length
+                # Implement stride=2 downsampling: take every 2nd element
+                # Shape: [batch=1, seq_len=1500, d_model=384] -> [batch=1, seq_len=750, d_model=384]
+                # Use ops.slice_tensor with correct syntax: [slice_batch, slice_seq, slice_features]
+                x = ops.slice_tensor(x, [
+                    slice(None),        # Keep all batch elements
+                    slice(None, None, 2), # Downsample sequence by stride=2 (every 2nd element)
+                    slice(None)         # Keep all feature dimensions
+                ])
                 
-                # Add positional embeddings
+                # Add positional embeddings (already correct size: 1500)
+                # pos_embed shape: [seq_len=1500, d_model=384] matches x after downsampling
                 x = ops.add(x, pos_embed)
                 
                 print(f"      🔧 Building transformer layers...")
@@ -538,7 +544,7 @@ class WhisperMAX:
         """Build multi-head self-attention block using MAX Graph operations"""
         # Get dimensions - use fixed values since we know the Whisper tiny architecture
         batch_size = 1  # Fixed for now
-        seq_len = 1500   # Fixed sequence length
+        seq_len = 1500   # Final sequence length after stride=2 downsampling (3000 -> 1500)
         d_model = 384    # Fixed d_model for tiny
         head_dim = 64    # Fixed head_dim for tiny (384/6)
         
@@ -802,14 +808,14 @@ class WhisperMAX:
         try:
             # Prepare input features
             n_mels, seq_len = mel_features.shape
-            max_seq_len = 1500
+            input_seq_len = 3000  # Input mel sequence length
             d_model = 384
             
-            # Pad or truncate to fixed size
-            if seq_len > max_seq_len:
-                mel_features = mel_features[:, :max_seq_len]
+            # Pad or truncate to fixed size (3000 for input)
+            if seq_len > input_seq_len:
+                mel_features = mel_features[:, :input_seq_len]
             else:
-                pad_width = max_seq_len - seq_len
+                pad_width = input_seq_len - seq_len
                 mel_features = np.pad(mel_features, ((0, 0), (0, pad_width)), mode='constant')
             
             # Add batch dimension: [n_mels, seq_len] -> [1, n_mels, seq_len]
@@ -828,7 +834,7 @@ class WhisperMAX:
             conv2_bias = self.weights.get('conv2_bias',
                 np.zeros(384).astype(np.float32))
             pos_embed = self.weights.get('positional_embedding', 
-                np.random.randn(max_seq_len, 384).astype(np.float32) * 0.02)
+                np.random.randn(1500, 384).astype(np.float32) * 0.02)  # Final output length
             
             weight_tensors.extend([
                 Tensor.from_numpy(mel_batch.astype(np.float32)).to(self.max_driver_device),
@@ -916,8 +922,8 @@ class WhisperMAX:
             print(f"      ❌ MAX Graph encoding failed: {e}")
             import traceback
             traceback.print_exc()
-            # Return dummy features as fallback
-            return np.random.randn(1, min(mel_features.shape[1], 1500), 384).astype(np.float32)
+            # Return dummy features as fallback (with correct output length)
+            return np.random.randn(1, 1500, 384).astype(np.float32)  # Standard Whisper output shape
 
     
     def _get_openai_encoder_features(self, mel_features: np.ndarray) -> np.ndarray:
