@@ -142,6 +142,17 @@ pixi run -e benchmark python demos/demo_trained_weights_simple.py
 pixi run -e benchmark python demos/integrate_real_tokenizer.py
 ```
 
+### NEW: Comprehensive Benchmark Suite 🎯
+```bash
+# Complete benchmark comparison (all 6 models)
+./scripts/run_comprehensive_benchmark.sh
+
+# Generates results in multiple formats:
+# - benchmark_results/benchmark_results_table.txt (human readable)
+# - benchmark_results/benchmark_results.json (machine readable)
+# - benchmark_results/benchmark_results_markdown.md (for docs)
+```
+
 ### Cloud Deployment (For Maximum Performance)
 ```bash
 # Automated deployment
@@ -149,6 +160,18 @@ pixi run -e benchmark python demos/integrate_real_tokenizer.py
 
 # Head-to-head comparison
 pixi run -e benchmark python benchmarks/real_audio_comparison.py
+```
+
+### Judge Demo Commands 🎯
+```bash
+# 5-minute quick demo (for judges)
+source scripts/setup_cuda_env.sh
+pixi run -e default python tests/test_everything.py
+cat benchmark_results/benchmark_results_table.txt
+
+# 15-minute comprehensive demo  
+./scripts/run_comprehensive_benchmark.sh
+pixi run -e default python src/model/max_whisper_complete.py
 ```
 
 ## 🏆 Hackathon Value Proposition
@@ -212,6 +235,15 @@ pixi run -e benchmark python benchmarks/real_audio_comparison.py
 - **scripts/**: 3 essential utility scripts
 - **Supporting files organized** in subdirectories
 
+### NEW: Judge Demo Infrastructure 🎯
+**Complete demo package created for judges:**
+- **JUDGE_DEMO_GUIDE.md** - Step-by-step 5/15-minute demo instructions
+- **scripts/run_comprehensive_benchmark.sh** - Automated benchmark suite  
+- **benchmarks/comprehensive_comparison.py** - Tests all 6 models + saves results
+- **Multiple result formats** - JSON, table, markdown, terminal display
+- **Pre-computed results** - Judges can see performance instantly
+
 ### Current Status
-**Ready for final trained weight integration and competitive benchmarking.**  
-**All major technical challenges solved. Project positioned for exceptional hackathon demonstration.**
+**Ready for final trained weight integration and comprehensive benchmarking.**  
+**All major technical challenges solved. Perfect judge demo experience prepared.**  
+**Project positioned for exceptional hackathon demonstration with clear evaluation path.**

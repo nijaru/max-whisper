@@ -7,44 +7,45 @@
 ## 🎯 Priority Levels
 
 ### 🔥 CRITICAL (Must Complete - 4 hours)
-**Goal**: Working head-to-head comparison with trained weights
+**Goal**: Complete comprehensive benchmark comparison with trained weights
 
 #### 1. Complete Trained Weights Integration (2 hours)
 **Status**: GPU working + 47 tensors extracted → Ready for final integration  
-**Current**: Random weights giving token sequences  
-**Goal**: Trained weights producing meaningful transcriptions  
+**Current**: Random weights giving token sequences (3.6x speedup)  
+**Goal**: Trained weights producing meaningful transcriptions (400x target)  
 
 **Specific Tasks**:
-- Modify `max_whisper_complete.py` to load extracted weights
-- Replace random weight initialization with trained tensors
+- Modify `src/model/max_whisper_complete.py` to load extracted weights
+- Replace random weight initialization with trained tensors from `whisper_weights/whisper_tiny_weights.npz`
 - Test token-to-text generation with real tokenizer
-- Validate on synthetic audio first, then real audio
+- Validate transcription quality on real audio
 
-**Expected Result**: Meaningful transcription output instead of random tokens
+**Expected Result**: MAX-Whisper achieving 400x speedup with meaningful output
 
-#### 2. Head-to-Head Comparison (1 hour)
-**Status**: All 3 models working independently → Ready for fair comparison  
-**Goal**: Demonstrate MAX-Whisper competitive or superior performance  
+#### 2. Comprehensive Benchmark Suite (1.5 hours)
+**Status**: All models working independently → Ready for complete comparison  
+**Goal**: Test all 6 models (CPU/GPU variants) on same real audio  
 
 **Specific Tasks**:
-- Run `benchmarks/real_audio_comparison.py` with all 3 models
+- Complete `benchmarks/comprehensive_comparison.py` implementation
+- Test MAX-Whisper (trained), MAX-Whisper (random), OpenAI CPU/GPU, Faster-Whisper CPU/GPU
 - Use same 161.5s Modular video for fair comparison
-- Measure: processing time, speedup, transcription quality
-- Document: performance tables and quality examples
+- Save results in JSON, table, and markdown formats
+- Implement `scripts/run_comprehensive_benchmark.sh`
 
-**Expected Result**: MAX-Whisper showing competitive speed + quality vs baselines
+**Expected Result**: Complete performance comparison showing MAX-Whisper leadership
 
-#### 3. Results Documentation (1 hour)
-**Status**: Framework ready → Need final performance analysis  
-**Goal**: Compelling hackathon presentation materials  
+#### 3. Judge Demo Package (0.5 hours)
+**Status**: Framework ready → Need final demo materials  
+**Goal**: Perfect judge evaluation experience  
 
 **Specific Tasks**:
-- Create performance comparison tables (speed + quality)
-- Document transcription examples from all 3 models
-- Analyze strategic impact: MAX Graph vs PyTorch ecosystem
-- Update README.md with final results
+- Create pre-computed benchmark results table for instant viewing
+- Update `JUDGE_DEMO_GUIDE.md` with exact expected outputs
+- Test complete demo flow from judge perspective
+- Ensure all commands work flawlessly
 
-**Expected Result**: Professional presentation-ready materials showing MAX Graph success
+**Expected Result**: Judges can see impressive results in under 5 minutes
 
 ### 🚀 HIGH IMPACT (Should Complete - 6 hours)
 
