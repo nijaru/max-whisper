@@ -1,75 +1,32 @@
-# MAX-Whisper Documentation
+# Documentation
 
-**Comprehensive documentation for the MAX-Whisper speech recognition system**
+This directory contains the core documentation for the Whisper MAX Graph project.
 
-## 🎯 Essential Documentation (For Judges & Users)
+## 📁 Documentation Files
 
-### Quick Start
-- **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Complete installation and setup instructions
-- **[API_REFERENCE.md](API_REFERENCE.md)** - Technical specifications and usage examples
+### Core Status & Progress
+- **[STATUS.md](STATUS.md)** - Current project status and achievements
+- **[HACKATHON.md](HACKATHON.md)** - Hackathon submission details and evaluation criteria
 
-### Project Status  
-- **[CURRENT_STATUS.md](CURRENT_STATUS.md)** - Current technical achievements and performance results
+### Technical Documentation
+- **[TECHNICAL_SPEC.md](TECHNICAL_SPEC.md)** - Technical specifications and implementation details
+- **[MAX_GRAPH_NOTES.md](MAX_GRAPH_NOTES.md)** - Notes on MAX Graph implementation and getting it fully working
 
-### Navigation
-- **[README.md](README.md)** - This documentation index
+## 🎯 Quick Reference
 
-## 📁 Supporting Documentation
+### Current Status
+The project has three working implementations:
+- **whisper_cpu.py** - CPU baseline for reference
+- **whisper_gpu.py** - GPU-accelerated production version
+- **whisper_max.py** - MAX Graph platform demonstration
 
-### Setup Variants
-- **[setup/](setup/)** - Platform-specific setup guides and deployment options
-  - `fedora_setup_guide.md` - Fedora Linux setup
-  - `lambda_ai_deployment.md` - Cloud deployment
-  - `benchmarking_guide.md` - Performance testing
+### Next Steps
+1. **Fix whisper_max.py** to perform actual speech recognition (not just text generation) using MAX Graph + OpenAI tokenizer for correct results
+2. **Create whisper_max_fast.py** - Copy working whisper_max.py and optimize with platform-specific tricks for maximum performance
+3. **Benchmark all implementations** with fair comparison showing CPU → GPU → MAX Graph progression
 
-### Development History
-- **[development/](development/)** - Development progress and planning documentation
-  - Project planning and strategy documents
-  - Implementation progress tracking
-  - Development conversation history
-
-### Technical Specifications
-- **[specs/](specs/)** - Original technical specifications and architecture docs
-  - `TECHNICAL_SPEC.md` - Complete technical requirements
-  - `max_whisper_spec.md` - Model architecture specification
-
-## 🚀 For New Users
-
-**Start here for quick project understanding:**
-
-1. **[../README.md](../README.md)** - Project overview and achievements
-2. **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Install and run the system
-3. **[CURRENT_STATUS.md](CURRENT_STATUS.md)** - See what's working now
-4. **[API_REFERENCE.md](API_REFERENCE.md)** - Technical details and usage
-
-## 🏆 For Hackathon Judges
-
-**Core evaluation materials:**
-
-- **Project Overview**: [../README.md](../README.md) - Key achievements and impact
-- **Technical Status**: [CURRENT_STATUS.md](CURRENT_STATUS.md) - Current working system details
-- **Setup Instructions**: [SETUP_GUIDE.md](SETUP_GUIDE.md) - How to reproduce results
-- **Technical Reference**: [API_REFERENCE.md](API_REFERENCE.md) - Implementation details
-
-## 📊 Current Project State
-
-**Status**: 🎉 **COMPLETE WORKING SYSTEM**
-- ✅ GPU-accelerated transformer working end-to-end
-- ✅ 4/4 component tests passing with CUDA acceleration  
-- ✅ Production pipeline operational (trained weights + real tokenizer)
-- ✅ Performance validated (3.6x real-time speedup demonstrated)
-
-**For latest technical details**: See [CURRENT_STATUS.md](CURRENT_STATUS.md)
-
-## 🛠️ Documentation Standards
-
-### Essential Docs (docs/ root)
-- **Concise**: Focus on key information for project evaluation
-- **Current**: Reflect the latest working system status
-- **Actionable**: Clear instructions for setup and usage
-- **Professional**: Ready for hackathon presentation
-
-### Supporting Docs (subdirectories)  
-- **Comprehensive**: Complete context and development history
-- **Organized**: Grouped by purpose (setup, development, specs)
-- **Archived**: Historical information preserved but organized
+### Key Files
+- **[STATUS.md](STATUS.md)** - Current project status and achievements
+- **[MAX_GRAPH_NOTES.md](MAX_GRAPH_NOTES.md)** - Implementation notes for getting MAX Graph fully working
+- **[DEMO_GUIDE.md](DEMO_GUIDE.md)** - Hackathon demonstration guide for judges
+- **[TECHNICAL_SPEC.md](TECHNICAL_SPEC.md)** - Technical specifications and architecture
