@@ -664,7 +664,37 @@ class WhisperMAX:
                     
                     # Try using MAX Graph encoder output with OpenAI decoder
                     print("    🎯 ATTEMPTING: Use MAX Graph encoder + OpenAI decoder...")
-                    transcription = self._decode_with_openai_decoder(max_encoder_features, audio)
+                    
+                    # Debug: Compare first few values between MAX Graph and a simple baseline
+                    print(f"      🔍 First 5 values of first sequence:")
+                    print(f"      📊 MAX Graph: {max_encoder_features[0, 0, :5]}")
+                    
+                    # SOLUTION: Normalize features to match Whisper encoder output distribution
+                    normalized_features = max_encoder_features.copy()
+                    
+                    # Apply better normalization to match typical Whisper encoder outputs
+                    current_mean = np.mean(normalized_features)
+                    current_std = np.std(normalized_features)
+                    
+                    # Target distribution based on typical Whisper encoder outputs
+                    target_mean = 0.0
+                    target_std = 0.4  # Refined target std
+                    
+                    if current_std > 0:
+                        # Z-score normalization then rescale
+                        normalized_features = (normalized_features - current_mean) / current_std
+                        normalized_features = normalized_features * target_std + target_mean
+                        
+                        new_mean = np.mean(normalized_features)
+                        new_std = np.std(normalized_features)
+                        print(f"      🔧 Normalized: mean {current_mean:.3f}→{new_mean:.3f}, std {current_std:.3f}→{new_std:.3f}")
+                        
+                        # Decode with properly normalized features
+                        transcription = self._decode_with_openai_decoder(normalized_features, audio)
+                        print(f"      ✅ Using normalized MAX Graph encoder features!")
+                    else:
+                        print(f"      ⚠️ Zero std, using original features")
+                        transcription = self._decode_with_openai_decoder(max_encoder_features, audio)
                     
                     if transcription:
                         print(f"      ✅ SUCCESS: Used MAX Graph encoder output for transcription!")
@@ -881,7 +911,7 @@ class WhisperMAX:
             # Decode using the model's decoder directly
             with torch.no_grad():
                 # Use encoder features with decoder
-                for i in range(100):  # Max 100 tokens
+                for i in range(200):  # Max 200 tokens for longer transcription
                     logits = self.whisper_model.decoder(tokens, encoder_tensor)
                     next_token = logits[0, -1].argmax()
                     
