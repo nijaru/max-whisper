@@ -19,8 +19,8 @@ We've built a high-performance speech recognition system demonstrating the progr
 ### **Phase 1: Quick Overview (2 minutes)**
 
 ```bash
-# Show complete benchmark results
-pixi run -e benchmark python benchmark_all.py
+# Show complete benchmark results (easy command)
+make benchmark
 ```
 
 **Narration**: 
@@ -44,7 +44,10 @@ MAX Graph Fast: 0.88s (3.9x) ✅ Success
 #### **Show MAX Graph Operations**
 ```bash
 # Demonstrate MAX Graph integration
-pixi run -e benchmark python src/model/whisper_max.py
+make demo-max
+
+# Show fastest implementation
+make demo-fast
 ```
 
 **Highlight in Output**:
@@ -162,7 +165,7 @@ Quality: All implementations produce identical transcription
 ### **Required Setup**
 - CUDA-compatible GPU system
 - Pixi package manager installed  
-- Project dependencies installed (`pixi install -e benchmark`)
+- Project dependencies installed (`make dev-setup`)
 - Terminal ready with project directory
 
 ### **Backup Plans**
@@ -197,8 +200,56 @@ Quality: All implementations produce identical transcription
 3. **Platform Advancement**: Showcases MAX Graph capabilities
 4. **Production Deployment**: Ready for immediate practical use
 
+## 📊 Quick Demo Commands Reference
+
+### **Judge-Ready Demo Commands**
+```bash
+# Complete impressive demo (recommended for judges)
+make judge-demo
+
+# Quick all-implementations demo
+make demo
+
+# Individual implementation testing
+make demo-cpu      # CPU baseline (~3.5s)
+make demo-gpu      # GPU accelerated (~1.0s)  
+make demo-max      # MAX Graph integration (~1.0s)
+make demo-fast     # MAX Graph optimized (~0.9s)
+
+# Production-scale demos
+make demo MODEL_SIZE=small    # Better quality
+make benchmark-small          # Small model benchmark
+make benchmark-base           # Production scale
+```
+
+### **Setup and Environment Check**
+```bash
+# Setup development environment
+make dev-setup
+
+# Quick GPU compatibility check
+make gpu-check
+
+# Get help with all commands
+make help
+```
+
+### **Emergency Fallbacks (if demo fails)**
+```bash
+# Show existing results
+cat COMPLETE_RESULTS.md
+
+# Quick CPU-only test
+make demo-cpu
+
+# Clean and retry
+make clean && make demo
+```
+
 ---
 
 **🎯 Demo Objective**: Demonstrate that MAX Graph enables significant performance improvements in real AI applications while maintaining perfect quality and production readiness.
 
-**🏆 Success Metrics**: 3.9x performance improvement + Perfect quality + Meaningful MAX Graph usage + Professional implementation**
+**🏆 Success Metrics**: 3.9x performance improvement + Perfect quality + Meaningful MAX Graph usage + Professional implementation
+
+**🚀 Easy Commands**: All functionality accessible through simple `make` commands for judge-friendly demonstration

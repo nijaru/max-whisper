@@ -20,25 +20,48 @@ This project demonstrates high-performance speech recognition using the Modular 
 
 ## 🚀 Quick Demo
 
-### Complete Performance Comparison
+### Easy Demo Commands (Makefile)
 ```bash
-# Run comprehensive benchmark (recommended for demo)
-pixi run -e benchmark python benchmark_all.py
+# Complete demo - all 4 implementations
+make demo
+
+# Better quality demo with larger model
+make demo MODEL_SIZE=small
+
+# Judge-ready impressive demo
+make judge-demo
+
+# Complete benchmark comparison
+make benchmark
 ```
 
 ### Individual Implementation Testing
 ```bash
-# CPU baseline (reference quality)
-pixi run -e benchmark python src/model/whisper_cpu.py
+# Individual demos
+make demo-cpu        # CPU baseline (reference quality)
+make demo-gpu        # GPU accelerated (production ready)  
+make demo-max        # MAX Graph integration (platform demo)
+make demo-fast       # MAX Graph optimized (maximum performance)
 
-# GPU accelerated (production ready)
-pixi run -e benchmark python src/model/whisper_gpu.py
+# Benchmarks with different model sizes
+make benchmark-tiny  # Fast testing
+make benchmark-small # Better quality
+make benchmark-base  # Production scale
+```
 
-# MAX Graph integration (platform demo)
-pixi run -e benchmark python src/model/whisper_max.py
+### Advanced Usage
+```bash
+# Custom audio files
+make demo AUDIO_FILE=my_audio.wav
 
-# MAX Graph optimized (maximum performance)
-pixi run -e benchmark python src/model/whisper_max_fast.py
+# Production-scale testing
+make benchmark MODEL_SIZE=base AUDIO_FILE=long_presentation.wav
+
+# GPU compatibility check
+make gpu-check
+
+# Help and options
+make help
 ```
 
 ## 📊 Performance Results

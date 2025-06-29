@@ -34,38 +34,51 @@ The project has four complete implementations demonstrating progressive optimiza
 
 ## 🚀 CURRENT WORKING COMMANDS
 
-### Complete Benchmark (All Three Versions)
+### Easy Demo & Benchmark Commands (Makefile)
 ```bash
-# CPU baseline (requires benchmark environment)
-pixi run -e benchmark python src/model/whisper_cpu.py
+# Quick demo (all 4 implementations with tiny model)
+make demo
 
-# GPU accelerated (requires benchmark environment)  
-pixi run -e benchmark python src/model/whisper_gpu.py
+# Demo with different model sizes
+make demo MODEL_SIZE=small    # Better quality
+make demo MODEL_SIZE=base     # Production-ready
 
-# MAX Graph hybrid (requires benchmark environment for OpenAI access)
-pixi run -e benchmark python src/model/whisper_max.py
+# Individual demos
+make demo-cpu                 # CPU baseline only
+make demo-gpu                 # GPU accelerated only
+make demo-max                 # MAX Graph integration
+make demo-fast                # MAX Graph fast
 
-# Advanced MAX Graph (requires benchmark environment)
-pixi run -e benchmark python src/model/whisper_max_advanced.py
+# Complete benchmarks
+make benchmark                # Tiny model benchmark
+make benchmark-small          # Small model benchmark
+make benchmark-base           # Base model benchmark
 
-# Complete benchmark comparison (all four implementations)
-pixi run -e benchmark python benchmark_all.py
+# For judges - impressive showcase
+make judge-demo               # Complete performance story
+make gpu-check                # Verify GPU setup
+
+# Custom audio files
+make demo AUDIO_FILE=my_audio.wav
+make benchmark MODEL_SIZE=small AUDIO_FILE=custom.wav
 ```
 
-### Individual Testing
+### Direct Python Commands (Alternative)
 ```bash
-# Test CPU baseline
-pixi run -e benchmark python src/model/whisper_cpu.py
+# Individual demos with CLI arguments
+pixi run -e benchmark python src/model/whisper_cpu.py --model-size small
+pixi run -e benchmark python src/model/whisper_gpu.py --model-size base
+pixi run -e benchmark python src/model/whisper_max.py --audio-file my_audio.wav
+pixi run -e benchmark python src/model/whisper_max_fast.py --model-size small
 
-# Test GPU acceleration
-pixi run -e benchmark python src/model/whisper_gpu.py
-
-# Test MAX Graph hybrid
-pixi run -e benchmark python src/model/whisper_max.py
-
-# Test Advanced MAX Graph
-pixi run -e benchmark python src/model/whisper_max_advanced.py
+# Complete benchmark with options
+pixi run -e benchmark python benchmark_all.py --model-size base --audio-file custom.wav
 ```
+
+### Model Size Options
+- **tiny**: Fastest demos and testing (default)
+- **small**: Better quality, production-relevant performance  
+- **base**: Production-scale, impressive for judges
 
 ## 🎯 IMPLEMENTATION REQUIREMENTS
 
@@ -110,20 +123,33 @@ pixi run -e benchmark python src/model/whisper_max_advanced.py
 
 ### Testing All Four Versions
 ```bash
-# 1. Test CPU baseline
-pixi run -e benchmark python src/model/whisper_cpu.py
+# Quick test (tiny model)
+make test
 
-# 2. Test GPU acceleration  
-pixi run -e benchmark python src/model/whisper_gpu.py
+# Complete demo workflow
+make demo
 
-# 3. Test MAX Graph integration
-pixi run -e benchmark python src/model/whisper_max.py
+# Production-scale testing
+make demo MODEL_SIZE=small
+make benchmark-small
 
-# 4. Test MAX Graph fast optimized
-pixi run -e benchmark python src/model/whisper_max_fast.py
+# Judge presentation
+make judge-demo
+```
 
-# 5. Generate complete comparison
-pixi run -e benchmark python benchmark_all.py
+### Development Commands
+```bash
+# Setup development environment
+make dev-setup
+
+# Clean generated files
+make clean
+
+# Check GPU compatibility
+make gpu-check
+
+# Get help
+make help
 ```
 
 ### Environment Requirements
