@@ -21,8 +21,7 @@ class ModularDemo:
     AVAILABLE_TESTS = {
         "cpu": {"name": "CPU Baseline", "script": "whisper_cpu", "desc": "OpenAI Whisper"},
         "gpu": {"name": "GPU Accelerated", "script": "whisper_gpu", "desc": "CUDA + PyTorch"},
-        "max": {"name": "MAX Graph", "script": "whisper_max", "desc": "MAX Graph Hybrid"},
-        "fast": {"name": "MAX Graph Fast", "script": "whisper_max_fast", "desc": "Ultra-Optimized"}
+        "max": {"name": "MAX Graph", "script": "whisper_max", "desc": "MAX Graph Encoder"}
     }
     
     def __init__(self, model_size: str = "tiny", audio_file: str = None, tests: List[str] = None):
@@ -31,7 +30,7 @@ class ModularDemo:
         
         # Configure which tests to run
         if tests is None:
-            tests = ["cpu", "gpu", "max", "fast"]  # Default: all tests
+            tests = ["cpu", "gpu", "max"]  # Default: all tests
         
         # Build test list
         self.tests = []

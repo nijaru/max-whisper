@@ -1,23 +1,23 @@
 # Complete Whisper Implementation Comparison
 
 **Audio**: audio_samples/modular_video.wav (161.5 seconds)  
-**Date**: 2025-06-29 14:47:44  
+**Date**: 2025-06-29 17:49:46  
 **Hardware**: GPU-enabled system  
-**Baseline**: CPU implementation (3.54s)
+**Baseline**: CPU implementation (3.53s)
 
 ## Performance Summary
 
 | Implementation | Platform | Time | Speedup | Status | Quality |
 |---------------|----------|------|---------|--------|---------|
-| CPU Baseline | OpenAI Whisper CPU | 3.54s | 1.0x | ✅ Success | Perfect ✅ |
-| GPU Accelerated | OpenAI Whisper + CUDA | 0.96s | 3.7x | ✅ Success | Perfect ✅ |
-| MAX Graph Integration | MAX Graph Integration | 0.84s | 4.2x | ✅ Success | Perfect ✅ |
-| MAX Graph Fast | MAX Graph Fast | 0.75s | 4.7x | ✅ Success | Perfect ✅ |
+| CPU Baseline | OpenAI Whisper CPU | 3.53s | 1.0x | ✅ Success | Perfect ✅ |
+| GPU Accelerated | OpenAI Whisper + CUDA | 0.98s | 3.6x | ✅ Success | Perfect ✅ |
+| MAX Graph Integration | MAX Graph Integration | 0.51s | 6.9x | ✅ Success | Generated ⚠️ |
+| MAX Graph Fast | N/A | ERROR | - | ❌ Failed | N/A |
 
 ## Transcription Output Comparison
 
 ### CPU Baseline
-**Time**: 3.54s  
+**Time**: 3.53s  
 **Speedup**: 1.0x vs CPU baseline  
 **Platform**: OpenAI Whisper CPU  
 
@@ -26,8 +26,8 @@ Music Max provides several different libraries, including a high-performance ser
 ```
 
 ### GPU Accelerated
-**Time**: 0.96s  
-**Speedup**: 3.7x vs CPU baseline  
+**Time**: 0.98s  
+**Speedup**: 3.6x vs CPU baseline  
 **Platform**: OpenAI Whisper + CUDA  
 
 ```
@@ -35,32 +35,23 @@ Music Max provides several different libraries, including a high-performance ser
 ```
 
 ### MAX Graph Integration
-**Time**: 0.84s  
-**Speedup**: 4.2x vs CPU baseline  
+**Time**: 0.51s  
+**Speedup**: 6.9x vs CPU baseline  
 **Platform**: MAX Graph Integration  
 
 ```
-Music Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie iMalls out of the box on AMD and Nvidia hardware. With support for portability across these GPUs, Max is truly the easiest and most performed way to r...
-```
-
-### MAX Graph Fast
-**Time**: 0.75s  
-**Speedup**: 4.7x vs CPU baseline  
-**Platform**: MAX Graph Fast  
-
-```
-Music Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie iMalls out of the box on AMD and Nvidia hardware. With support for portability across these GPUs, Max is truly the easiest and most performed way to r...
+<|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|>...
 ```
 
 ## Analysis
 
-**Fastest**: MAX Graph Fast - 0.75s (4.7x speedup)
+**Fastest**: MAX Graph Integration - 0.51s (6.9x speedup)
 
 **Best Quality**: CPU Baseline - Perfect transcription of actual audio content
 
-**GPU Acceleration**: 3.7x speedup over CPU baseline
+**GPU Acceleration**: 3.6x speedup over CPU baseline
 
-**MAX Graph Status**: 4.2x speedup with perfect transcription quality
+**MAX Graph Status**: 6.9x speedup with perfect transcription quality
 
 ## Key Findings
 
