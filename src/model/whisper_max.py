@@ -386,8 +386,8 @@ class WhisperMAX:
                 TensorType(DType.float32, (n_audio_ctx, n_audio_state), device=self.max_device), # pos_embed
             ]
             
-            # Add attention layer weights for first two transformer blocks (expand gradually)
-            for layer_idx in range(min(2, n_audio_layer)):  # Use first 2 layers for better quality
+            # Add attention layer weights for all transformer blocks (full architecture)
+            for layer_idx in range(n_audio_layer):  # Use all 4 layers for full Whisper architecture
                 # Attention weights
                 input_types.extend([
                     TensorType(DType.float32, (n_audio_state, n_audio_state), device=self.max_device),  # query
@@ -438,7 +438,7 @@ class WhisperMAX:
                 
                 print(f"      🔧 Building transformer layers...")
                 # Build transformer blocks  
-                for layer_idx in range(min(2, n_audio_layer)):  # Build first 2 layers for better quality
+                for layer_idx in range(n_audio_layer):  # Build all 4 layers for full Whisper architecture
                     # Get layer weights
                     attn_query_weight = inputs[input_idx]; input_idx += 1
                     attn_key_weight = inputs[input_idx]; input_idx += 1
@@ -642,11 +642,25 @@ class WhisperMAX:
                     print(f"      ⚡ MAX Graph encoder processing: {max_time*1000:.1f}ms")
                     print(f"      📊 MAX Graph encoder output shape: {max_encoder_features.shape}")
                     
-                    # PHASE 1: Debug tensor compatibility
-                    # Compare MAX Graph output vs OpenAI encoder output
-                    print("    🔍 Debugging encoder output compatibility...")
-                    openai_encoder_features = self._get_openai_encoder_features(mel_db)
-                    print(f"      📊 OpenAI encoder output shape: {openai_encoder_features.shape}")
+                    # PHASE 1: Debug MAX Graph encoder output quality
+                    print("    🔍 Analyzing MAX Graph encoder output...")
+                    
+                    # Debug actual values of MAX Graph encoder
+                    max_mean = np.mean(max_encoder_features)
+                    max_std = np.std(max_encoder_features)
+                    max_min, max_max = np.min(max_encoder_features), np.max(max_encoder_features)
+                    
+                    print(f"      📊 MAX Graph encoder - mean: {max_mean:.4f}, std: {max_std:.4f}, range: [{max_min:.4f}, {max_max:.4f}]")
+                    
+                    # Check for common issues
+                    if np.isnan(max_encoder_features).any():
+                        print(f"      ❌ MAX Graph encoder contains NaN values!")
+                    elif np.isinf(max_encoder_features).any():
+                        print(f"      ❌ MAX Graph encoder contains Inf values!")
+                    elif max_std < 0.001:
+                        print(f"      ⚠️ MAX Graph encoder has very low variance - might be stuck at constant values")
+                    else:
+                        print(f"      ✅ MAX Graph encoder values look reasonable!")
                     
                     # Try using MAX Graph encoder output with OpenAI decoder
                     print("    🎯 ATTEMPTING: Use MAX Graph encoder + OpenAI decoder...")
@@ -744,8 +758,8 @@ class WhisperMAX:
                     print(f"        ⚠️ Using fallback random weight: {key}")
                     return fallback_init(*fallback_shape).astype(np.float32)
             
-            # Add weights for first 2 transformer layers
-            for layer_idx in range(2):
+            # Add weights for all 4 transformer layers
+            for layer_idx in range(4):
                 attn_query = get_weight_with_logging(f'layer_{layer_idx}_attn_query', 
                     (d_model, d_model), lambda *s: np.random.randn(*s) * 0.02)
                 attn_key = get_weight_with_logging(f'layer_{layer_idx}_attn_key',
