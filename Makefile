@@ -75,14 +75,21 @@ benchmark:
 	@$(PIXI_ENV) python benchmark_all.py --model-size $(MODEL_ARG) --audio-file $(AUDIO_ARG)
 
 # Direct model size commands (run full demo with that model)
+# Only run if they're the primary target, not secondary arguments
 tiny:
+ifeq ($(word 1,$(MAKECMDGOALS)),tiny)
 	@$(PIXI_ENV) python scripts/tui_demo.py tiny $(AUDIO_FILE)
+endif
 
 small:
+ifeq ($(word 1,$(MAKECMDGOALS)),small)
 	@$(PIXI_ENV) python scripts/tui_demo.py small $(AUDIO_FILE)
+endif
 
 base:
+ifeq ($(word 1,$(MAKECMDGOALS)),base)
 	@$(PIXI_ENV) python scripts/tui_demo.py base $(AUDIO_FILE)
+endif
 
 # Catch-all rule for audio files and unknown targets
 %:
