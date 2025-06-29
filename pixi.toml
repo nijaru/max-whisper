@@ -30,6 +30,7 @@ torchaudio = "*"
 librosa = "*"
 soundfile = "*"
 yt-dlp = "*"
+tiktoken = "*"
 
 [feature.benchmark.dependencies]
 # Cross-platform audio dependencies
