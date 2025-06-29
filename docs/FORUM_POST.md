@@ -4,6 +4,12 @@
 
 I'm excited to share my hackathon project demonstrating practical MAX Graph acceleration for AI workloads. I built a high-performance speech recognition system using OpenAI's Whisper model, achieving **2.4x speedup** while maintaining **perfect transcription quality**.
 
+## 💡 Personal Motivation
+
+Last year, I built a transcription web app using Go and Python with OpenAI Whisper, but the memory and CPU requirements were quite high - especially when handling multiple concurrent requests. This hackathon project emerged from my interest in exploring how MAX Graph could address those resource constraints.
+
+I'm looking forward to refactoring that production application to use MAX Graph and possibly Mojo for even better performance and resource efficiency. The 2.4x speedup demonstrated here could significantly improve the user experience and reduce infrastructure costs.
+
 ## 🎯 What I Built
 
 Starting with OpenAI's Whisper model, I created four progressively optimized implementations that showcase how MAX Graph can integrate with existing ML workflows without requiring complete rewrites.
