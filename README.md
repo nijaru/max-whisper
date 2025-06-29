@@ -98,30 +98,57 @@ This isn't just faster MAX Graph operations - it's a fundamentally more efficien
 └── docs/               # Comprehensive documentation
 ```
 
-## 🏆 For Judges
+## 🏆 Hackathon Submission
 
-### 5-Minute Demo Flow
+### Reproducible Results
+```bash
+# One-command setup and verification
+make install         # Automated pixi + dependency installation
+make env-check      # Verify environment 
+make                # Run full demo (all 4 implementations)
+make benchmark      # Complete performance analysis
+```
+
+All results are immediately reproducible. Benchmarks use identical methodology across implementations with the same 161.5-second audio input.
+
+### Correctness and Testing
+- **Quality verification**: All implementations produce identical English transcription
+- **Performance validation**: Comprehensive benchmarking with detailed analysis
+- **Environment validation**: Automated checks for dependencies and GPU setup
+- **Error handling**: Graceful fallbacks and clear error messages
+
+### Impact of This Work
+**Problem**: Integrating new acceleration platforms like MAX Graph into existing ML workflows typically requires complete rewrites.
+
+**Solution**: We developed a hybrid architecture that proves MAX Graph can integrate with PyTorch ecosystems, achieving 2.4x speedup while maintaining perfect quality.
+
+**Broader Impact**: This approach could serve as a template for accelerating other transformer models, showing that you don't need to rebuild everything to get MAX Graph benefits.
+
+### What Made MAX Graph Easy
+- **Tensor interoperability** - Seamless conversion between PyTorch and MAX Graph
+- **Familiar acceleration patterns** - GPU operations felt natural coming from CUDA
+- **Flexible integration** - Could replace specific layers without full model rewrites
+
+### Roadblocks and Solutions
+- **Challenge**: Weight conversion overhead between frameworks
+- **Solution**: Streamlined pipeline eliminating unnecessary conversions
+- **Challenge**: Maintaining quality while optimizing performance  
+- **Solution**: Careful validation against reference implementation
+
+### Remaining Work
+- Expand MAX Graph coverage to more Whisper components
+- Scale optimization to larger models (medium, large)
+- Package as production service for real-world deployment
+
+### 5-Minute Judge Demo
 1. **Setup**: `make install` (if needed)
-2. **Visual Demo**: `make` - Shows all implementations with clean TUI
-3. **Performance Story**: CPU → GPU → MAX Graph → MAX Graph Fast
-4. **Technical Deep Dive**: Show actual MAX Graph tensor operations in code
+2. **Visual Demo**: `make` - Clean TUI showing all implementations
+3. **Performance Story**: Progressive optimization from CPU to MAX Graph Fast
+4. **Code Review**: Show actual MAX Graph tensor operations in `src/model/`
 
-### Key Evaluation Points
-- **Perfect Quality**: All implementations produce identical English transcription
-- **Real Performance**: 2.4x speedup on actual 161.5-second audio
-- **Meaningful MAX Graph Usage**: Extensive tensor operations and attention acceleration
-- **Production Ready**: Professional code with comprehensive testing and documentation
+## 📚 Additional Documentation
 
-### Hardware Context
-- Benchmarks run on NVIDIA RTX 4090
-- Performance will vary on different hardware
-- CPU/GPU versions work without MAX Graph for comparison
-
-## 📚 Documentation
-
-- **[docs/HACKATHON_DEMO.md](docs/HACKATHON_DEMO.md)** - Complete judge demo guide
-- **[docs/TECHNICAL_DEEP_DIVE.md](docs/TECHNICAL_DEEP_DIVE.md)** - Architecture details and implementation
-- **[FORUM_POST.md](FORUM_POST.md)** - Community presentation
+- **[docs/TECHNICAL_DEEP_DIVE.md](docs/TECHNICAL_DEEP_DIVE.md)** - Implementation architecture and code details
 
 ### Quick Commands Reference
 ```bash
