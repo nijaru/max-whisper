@@ -101,6 +101,15 @@ def test_max_full():
     os.chdir("benchmarks")
     return result
 
+def test_max_fixed():
+    """Test MAX-Whisper Fixed (Optimized)"""
+    os.chdir("..")
+    from model.max_whisper_fixed import MAXWhisperFixed
+    model = MAXWhisperFixed(use_gpu=True)
+    result = model.transcribe()
+    os.chdir("benchmarks")
+    return result
+
 def run_safe_benchmark():
     """Run safe comprehensive benchmark"""
     print("🚀 Safe Comprehensive MAX-Whisper Benchmark")
@@ -111,7 +120,8 @@ def run_safe_benchmark():
         ("OpenAI Whisper CPU", test_openai_cpu),
         ("OpenAI Whisper GPU", test_openai_gpu), 
         ("Faster-Whisper CPU", test_faster_whisper_cpu),
-        ("MAX-Whisper Full", test_max_full)
+        ("MAX-Whisper Optimized", test_max_fixed),
+        ("MAX-Whisper Experimental", test_max_full)
     ]
     
     results = []
