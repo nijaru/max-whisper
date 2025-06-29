@@ -24,7 +24,7 @@ MODEL_ARG := $(if $(filter tiny small base,$(ARGS)),$(filter tiny small base,$(A
 AUDIO_ARG := $(if $(filter-out tiny small base,$(ARGS)),$(filter-out tiny small base,$(ARGS)),$(AUDIO_FILE))
 
 # Define phony targets including model sizes
-.PHONY: help demo benchmark test clean tiny small base cpu gpu max fast install build env-check gpu-check
+.PHONY: help demo benchmark test clean tiny small base cpu gpu max install build env-check gpu-check
 
 # Default target - run recommended demo
 all:
@@ -42,14 +42,13 @@ help:
 	@echo "  base                   - Full demo with base model (best quality)"
 	@echo ""
 	@echo "🎯 MAIN COMMANDS:"
-	@echo "  demo [model] [file]    - All 4 implementations"
+	@echo "  demo [model] [file]    - All 3 implementations"
 	@echo "  benchmark [model]      - Performance analysis with detailed results"
 	@echo ""
 	@echo "🔧 INDIVIDUAL TESTS:"
 	@echo "  cpu [model] [file]     - CPU baseline only"
 	@echo "  gpu [model] [file]     - GPU accelerated only"
 	@echo "  max [model] [file]     - MAX Graph integration only"
-	@echo "  fast [model] [file]    - MAX Graph fast only"
 	@echo ""
 	@echo "🛠️ SETUP & UTILITIES:"
 	@echo "  install                - Install pixi and setup environment"
@@ -62,11 +61,11 @@ help:
 	@echo "  make install           # First-time setup (install pixi + dependencies)"
 	@echo "  make                   # Run recommended demo (after setup)"
 	@echo "  make tiny              # Quick demo with tiny model"
-	@echo "  make demo base         # All 4 tests, base model"
+	@echo "  make demo base         # All 3 tests, base model"
 	@echo "  make cpu tiny          # CPU test only, tiny model"
-	@echo "  make fast small my.wav # Fast test, small model, custom file"
+	@echo "  make max small my.wav  # MAX Graph test, small model, custom file"
 
-# Main demo - all 4 implementations with TUI
+# Main demo - all 3 implementations with TUI
 demo:
 	$(call check_env)
 	@echo "🚀 Starting full demo with $(MODEL_ARG) model..."
@@ -88,10 +87,7 @@ max:
 	@echo "🎯 Running MAX Graph test with $(MODEL_ARG) model..."
 	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG) --tests max
 
-fast:
-	$(call check_env)
-	@echo "🚀 Running MAX Graph Fast test with $(MODEL_ARG) model..."
-	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG) --tests fast
+# fast implementation removed
 
 # Detailed benchmark analysis  
 benchmark:
