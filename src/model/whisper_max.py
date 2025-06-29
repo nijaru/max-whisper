@@ -13,7 +13,7 @@ from torch import nn
 # MAX Graph imports
 try:
     from max import engine
-    from max.driver import Tensor
+    from max.driver import CPU, Accelerator, Device, Tensor, accelerator_count
     from max.dtype import DType
     from max.graph import DeviceRef, Graph, TensorType, ops
     MAX_AVAILABLE = True
@@ -225,13 +225,23 @@ class WhisperMAX:
         
         # MAX Graph setup
         try:
-            self.max_device = DeviceRef.GPU() if use_gpu else DeviceRef.CPU()
-            self.max_session = engine.InferenceSession()
-            print(f"✅ MAX Graph device ready: {'GPU' if use_gpu else 'CPU'}")
+            # Choose device based on availability and preference
+            if use_gpu and accelerator_count() > 0:
+                self.max_driver_device = Accelerator()
+                self.max_device = DeviceRef.GPU()
+                device_name = "GPU"
+            else:
+                self.max_driver_device = CPU()
+                self.max_device = DeviceRef.CPU()
+                device_name = "CPU"
+            
+            self.max_session = engine.InferenceSession(devices=[self.max_driver_device])
+            print(f"✅ MAX Graph device ready: {device_name}")
         except Exception as e:
             print(f"⚠️ MAX Graph setup failed: {e}")
+            self.max_driver_device = CPU()
             self.max_device = DeviceRef.CPU()
-            self.max_session = engine.InferenceSession()
+            self.max_session = engine.InferenceSession(devices=[self.max_driver_device])
         
         # Load the baseline OpenAI Whisper model for reference and weights
         self.whisper_model = None
@@ -553,16 +563,14 @@ class WhisperMAX:
             pos_embed = self.weights.get('positional_embedding', 
                 np.random.randn(max_seq_len, 384).astype(np.float32) * 0.02)
             
-            # Convert to MAX Graph tensors
-            inputs = [
-                Tensor.from_numpy(mel_batch.astype(np.float32)),
-                Tensor.from_numpy(conv1_weight.astype(np.float32)),
-                Tensor.from_numpy(conv1_bias.astype(np.float32)),
-                Tensor.from_numpy(pos_embed.astype(np.float32))
-            ]
+            # Convert to MAX Graph tensors and move to correct device
+            mel_tensor = Tensor.from_numpy(mel_batch.astype(np.float32)).to(self.max_driver_device)
+            conv1_weight_tensor = Tensor.from_numpy(conv1_weight.astype(np.float32)).to(self.max_driver_device)
+            conv1_bias_tensor = Tensor.from_numpy(conv1_bias.astype(np.float32)).to(self.max_driver_device)
+            pos_embed_tensor = Tensor.from_numpy(pos_embed.astype(np.float32)).to(self.max_driver_device)
             
-            # Execute MAX Graph encoder
-            outputs = self.max_encoder.execute(inputs)
+            # Execute MAX Graph encoder with individual tensors
+            outputs = self.max_encoder.execute(mel_tensor, conv1_weight_tensor, conv1_bias_tensor, pos_embed_tensor)
             encoder_features = outputs[0].to_numpy()
             
             return encoder_features
