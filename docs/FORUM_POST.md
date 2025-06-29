@@ -41,17 +41,17 @@ I replaced Whisper's attention layers with MAX Graph implementations while keepi
 The real breakthrough came from optimizing the entire pipeline:
 
 - **Eliminated weight conversion overhead** - Direct processing instead of costly PyTorch→MAX Graph copying
-- **Streamlined tensor operations** - Minimal-overhead MAX Graph operations with focused computations  
+- **Streamlined tensor operations** - Minimal-overhead MAX Graph operations with focused computations
 - **Optimized memory management** - Reduced allocations and transfers
 - **Simplified processing pipeline** - Removed unnecessary intermediate steps
 
-This isn't just faster MAX Graph operations - it's a fundamentally more efficient architecture designed for MAX Graph from the ground up.
+This isn't just faster MAX Graph operations - it's a more efficient architecture designed for MAX Graph from the ground up.
 
 ## 🛠️ Technical Approach
 
 ### Four Implementation Strategy
 1. **CPU Baseline** (`whisper_cpu.py`) - Pure OpenAI Whisper for quality reference
-2. **GPU Accelerated** (`whisper_gpu.py`) - CUDA optimization showing standard GPU performance  
+2. **GPU Accelerated** (`whisper_gpu.py`) - CUDA optimization showing standard GPU performance
 3. **MAX Graph Integration** (`whisper_max.py`) - Hybrid architecture with attention layer replacement
 4. **MAX Graph Fast** (`whisper_max_fast.py`) - Fully optimized pipeline designed for maximum performance
 
@@ -69,11 +69,6 @@ This isn't just faster MAX Graph operations - it's a fundamentally more efficien
 - **Tensor interoperability** between PyTorch and MAX Graph was seamless
 - **Familiar GPU acceleration patterns** made the transition natural coming from CUDA
 - **Flexible integration** allowed targeted layer replacement without full model rewrites
-
-### Challenges and Breakthroughs
-The biggest challenge was weight conversion overhead between frameworks. Early implementations spent significant time converting weights between PyTorch and MAX Graph formats.
-
-The solution came from rethinking the architecture entirely - instead of faster conversions, I eliminated them through a streamlined pipeline that uses MAX Graph operations directly.
 
 ### Impact and Future Applications
 **Problem solved**: Integrating new acceleration platforms like MAX Graph into existing ML workflows typically requires complete rewrites, creating a barrier to adoption.
@@ -101,40 +96,14 @@ All results use identical methodology across implementations:
 ├── src/model/           # Four implementations
 │   ├── whisper_cpu.py      # CPU baseline (3.6s)
 │   ├── whisper_gpu.py      # GPU accelerated (2.0s, 1.8x)
-│   ├── whisper_max.py      # MAX Graph integration (2.1s, 1.7x)  
+│   ├── whisper_max.py      # MAX Graph integration (2.1s, 1.7x)
 │   └── whisper_max_fast.py # MAX Graph optimized (1.5s, 2.4x)
 ├── scripts/tui_demo.py  # Professional demo interface
 ├── benchmark_all.py     # Complete performance analysis
 └── audio_samples/       # Test audio (161.5s technical content)
 ```
 
-## 💬 Discussion Questions for the Community
-
-I'd love to hear your thoughts on these broader questions:
-
-1. **Hybrid vs. Full Rewrite**: When adopting new acceleration platforms, do you prefer hybrid approaches that integrate with existing code, or complete reimplementations? What are the tradeoffs you've experienced?
-
-2. **Performance vs. Ecosystem Compatibility**: How important is maintaining compatibility with existing tools (PyTorch, familiar APIs) when pursuing performance gains?
-
-3. **Practical Acceleration**: For speech recognition workloads, what performance improvements actually make the difference between research demos and production deployment?
-
-4. **Platform Integration Strategies**: What approaches have you found most effective for evaluating and integrating new AI acceleration platforms?
-
-## 🎯 Try It Yourself
-
-The project is designed for immediate testing and verification:
-
-```bash
-git clone https://github.com/nijaru/max-whisper
-cd max-whisper
-make install         # Automated setup
-make                # Run all 4 implementations with visual progress
-make benchmark      # Complete performance analysis
-```
-
-I'm excited to hear about your experiences with MAX Graph and how this hybrid architecture approach might apply to your own acceleration challenges. The full implementation, benchmarks, and documentation are available in the repository.
-
 ---
 
-**Built during Modular Hackathon 2025 weekend**  
+**Built during Modular Hackathon 2025 weekend**
 **Demonstrating practical MAX Graph acceleration for real-world AI workloads**
