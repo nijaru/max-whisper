@@ -93,7 +93,7 @@ max:
 benchmark:
 	$(call check_env)
 	@echo "📊 Running comprehensive benchmark with $(MODEL_ARG) model..."
-	@$(PIXI_ENV) python benchmark_all.py --model-size $(MODEL_ARG) --audio-file $(AUDIO_ARG)
+	@$(PIXI_ENV) python benchmarks/benchmark_all.py --model-size $(MODEL_ARG) --audio-file $(AUDIO_ARG)
 
 # Direct model size commands (run full demo with that model)
 # Only run if they're the primary target, not secondary arguments
@@ -134,8 +134,9 @@ clean:
 	rm -f COMPLETE_RESULTS*.md
 	rm -f *.pyc
 	rm -rf __pycache__
-	rm -rf src/__pycache__
-	rm -rf src/model/__pycache__
+	rm -rf max-whisper/__pycache__
+	rm -rf benchmarks/__pycache__
+	rm -rf examples/__pycache__
 	@echo "✅ Cleanup complete"
 
 # Installation and setup commands

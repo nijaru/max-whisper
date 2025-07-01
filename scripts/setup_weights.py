@@ -8,8 +8,8 @@ import os
 import sys
 from pathlib import Path
 
-# Add src to path for imports
-sys.path.append(str(Path(__file__).parent.parent / "src" / "model"))
+# Add max-whisper to path for imports
+sys.path.append(str(Path(__file__).parent.parent / "max-whisper"))
 
 try:
     from whisper_weight_extractor import WhisperWeightExtractor
@@ -64,7 +64,7 @@ def main():
     print("=" * 50)
     
     # Check if we're in the right directory
-    if not os.path.exists("src/model/whisper_weight_extractor.py"):
+    if not os.path.exists("max-whisper/whisper_weight_extractor.py"):
         print("❌ Please run this script from the project root directory")
         sys.exit(1)
     
@@ -82,7 +82,7 @@ def main():
     if success_count == len(model_sizes):
         print(f"🎉 Weight setup complete! Successfully processed {success_count} models")
         print("\n🚀 You can now run the MAX Graph Whisper implementations:")
-        print("   python src/model/whisper_max.py --model-size tiny")
+        print("   python max-whisper/whisper_max.py --model-size tiny")
         print("   make benchmark")
     else:
         print(f"⚠️ Partial success: {success_count}/{len(model_sizes)} models processed")

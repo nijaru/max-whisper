@@ -9,9 +9,18 @@ version = "0.1.0"
 [tasks]
 hello = "mojo hello.mojo"
 graph-test = "python -c 'import max.graph; print(\"MAX Graph ready\")'"
+test = "python -m pytest tests/ -v"
+test-max = "python tests/test_max_graph.py"
 
 [feature.benchmark.tasks]
-benchmark-test = "python -c 'import whisper; print(\"Whisper benchmark ready\")'"
+demo = "python scripts/tui_demo.py"
+benchmark = "python benchmarks/benchmark_runner.py"
+benchmark-json = "python benchmarks/benchmark_runner.py --json-output"
+benchmark-save = "python benchmarks/benchmark_runner.py --save-results benchmark_results.json"
+test-cpu = "python max-whisper/whisper_cpu.py --model-size tiny"
+test-gpu = "python max-whisper/whisper_gpu.py --model-size tiny"  
+test-max = "python max-whisper/whisper_max.py --model-size tiny"
+benchmark-legacy = "python benchmarks/benchmark_all.py"
 
 [dependencies]
 python = ">=3.9,<3.12"
@@ -42,6 +51,7 @@ faster-whisper = "*"
 soundfile = "*"
 rich = "*"
 psutil = "*"
+pytest = "*"
 
 [feature.benchmark.system-requirements]
 cuda = "12"

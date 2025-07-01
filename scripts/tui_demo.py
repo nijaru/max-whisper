@@ -312,7 +312,7 @@ class ModularDemo:
             # Build command
             cmd = [
                 "pixi", "run", "-e", "benchmark", "python",
-                f"src/model/{test['script']}.py",
+                f"max-whisper/{test['script']}.py",
                 "--model-size", self.model_size
             ]
             
