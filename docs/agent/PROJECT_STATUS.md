@@ -22,14 +22,24 @@
 - ✅ Device management (GPU/CPU)
 - ✅ Fast execution without errors
 
-## Current Blocker
-**Semantic Quality**: The encoder produces mathematically correct but semantically poor features. This results in the decoder generating repetitive tokens (e.g., `<|ml|>`) instead of meaningful speech transcription.
+## Current Focus: Semantic Quality Implementation
 
-## Immediate Priorities
-1. **Feature Analysis**: Compare MAX Graph encoder outputs with reference implementation
-2. **Operation Validation**: Verify numerical precision and operation fidelity
-3. **Weight Integration**: Ensure pretrained weights are correctly used
-4. **Debugging Pipeline**: Develop methods to isolate the semantic quality issue
+**Problem**: The encoder produces mathematically correct but semantically poor features. This results in the decoder generating repetitive tokens (e.g., `<|ml|>`) instead of meaningful speech transcription.
+
+**Strategic Plan**: 3-phase systematic approach (see `SEMANTIC_QUALITY_PLAN.md`)
+- **Phase 1**: Feature Analysis & Comparison (Week 1)
+- **Phase 2**: Precision Debugging & Fixes (Weeks 2-3)  
+- **Phase 3**: Validation & Optimization (Week 4)
+
+**Current Phase**: Phase 1 - Ready to begin feature extraction and comparison
+
+## Immediate Next Steps
+1. **Set up feature extraction** for all three implementations
+2. **Create comparison infrastructure** for numerical analysis
+3. **Run baseline comparison** to identify divergence points
+4. **Begin systematic debugging** based on findings
+
+**Documentation**: Track progress in `DEBUGGING_FINDINGS.md` and use Claude Code todos for specific tasks
 
 ## Test Environment
 - **Main Command**: `pixi run -e benchmark demo` (enhanced UI comparing all implementations)
