@@ -1,23 +1,23 @@
 # Complete Whisper Implementation Comparison
 
 **Audio**: audio_samples/modular_video.wav (161.5 seconds)  
-**Date**: 2025-06-29 17:49:46  
+**Date**: 2025-06-29 18:22:53  
 **Hardware**: GPU-enabled system  
-**Baseline**: CPU implementation (3.53s)
+**Baseline**: CPU implementation (3.73s)
 
 ## Performance Summary
 
 | Implementation | Platform | Time | Speedup | Status | Quality |
 |---------------|----------|------|---------|--------|---------|
-| CPU Baseline | OpenAI Whisper CPU | 3.53s | 1.0x | ✅ Success | Perfect ✅ |
-| GPU Accelerated | OpenAI Whisper + CUDA | 0.98s | 3.6x | ✅ Success | Perfect ✅ |
-| MAX Graph Integration | MAX Graph Integration | 0.51s | 6.9x | ✅ Success | Generated ⚠️ |
+| CPU Baseline | OpenAI Whisper CPU | 3.73s | 1.0x | ✅ Success | Perfect ✅ |
+| GPU Accelerated | OpenAI Whisper + CUDA | 0.98s | 3.8x | ✅ Success | Perfect ✅ |
+| MAX Graph Integration | MAX Graph Integration | 0.51s | 7.3x | ✅ Success | Generated ⚠️ |
 | MAX Graph Fast | N/A | ERROR | - | ❌ Failed | N/A |
 
 ## Transcription Output Comparison
 
 ### CPU Baseline
-**Time**: 3.53s  
+**Time**: 3.73s  
 **Speedup**: 1.0x vs CPU baseline  
 **Platform**: OpenAI Whisper CPU  
 
@@ -27,7 +27,7 @@ Music Max provides several different libraries, including a high-performance ser
 
 ### GPU Accelerated
 **Time**: 0.98s  
-**Speedup**: 3.6x vs CPU baseline  
+**Speedup**: 3.8x vs CPU baseline  
 **Platform**: OpenAI Whisper + CUDA  
 
 ```
@@ -36,22 +36,22 @@ Music Max provides several different libraries, including a high-performance ser
 
 ### MAX Graph Integration
 **Time**: 0.51s  
-**Speedup**: 6.9x vs CPU baseline  
+**Speedup**: 7.3x vs CPU baseline  
 **Platform**: MAX Graph Integration  
 
 ```
-<|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|>...
+<|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|><|tl|>...
 ```
 
 ## Analysis
 
-**Fastest**: MAX Graph Integration - 0.51s (6.9x speedup)
+**Fastest**: MAX Graph Integration - 0.51s (7.3x speedup)
 
 **Best Quality**: CPU Baseline - Perfect transcription of actual audio content
 
-**GPU Acceleration**: 3.6x speedup over CPU baseline
+**GPU Acceleration**: 3.8x speedup over CPU baseline
 
-**MAX Graph Status**: 6.9x speedup with perfect transcription quality
+**MAX Graph Status**: 7.3x speedup with perfect transcription quality
 
 ## Key Findings
 

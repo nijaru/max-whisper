@@ -1,8 +1,6 @@
 # max-whisper: Speech Recognition with MAX Graph
 
-**Modular Hackathon 2025 Submission**
-
-A technical exploration of integrating MAX Graph operations into OpenAI's Whisper speech recognition model. This project demonstrates real MAX Graph compilation, execution, and cross-framework integration with detailed analysis of what works and what doesn't.
+A technical exploration of integrating MAX Graph operations into OpenAI's Whisper speech recognition model. This project demonstrates real MAX Graph compilation, execution, and cross-framework integration with detailed analysis of implementation approaches.
 
 ## Project Status
 
@@ -10,38 +8,45 @@ A technical exploration of integrating MAX Graph operations into OpenAI's Whispe
 |---------------|--------|-------------|---------|------------------|
 | **CPU Baseline** | ✅ Working | ~10.6s | Perfect transcription | OpenAI Whisper reference |
 | **GPU Accelerated** | ✅ Working | ~1.9s (5.7x faster) | Perfect transcription | CUDA acceleration |
-| **MAX Graph** | ✅ Pipeline works | ~0.24s (44x faster) when working | Repetitive tokens | Complete architecture, semantic tuning needed |
+| **MAX Graph** | ⚠️ Architecture complete | ~0.24s encoder only | Incorrect output | Technical integration successful, semantic output needs work |
 
-**Current Reality:** MAX Graph implementation achieves complete architectural integration with zero fallbacks. All 65 pretrained weights work correctly, computation graphs compile and execute on GPU, and cross-framework integration is seamless. **Challenge:** Encoder features lack semantic richness for meaningful speech recognition.
+**Current Status:** The MAX Graph implementation demonstrates successful architectural integration - all components compile and execute without errors. However, the encoder produces repetitive tokens rather than meaningful transcription, indicating the need for further semantic optimization work.
 
 ## Quick Start
 
 ```bash
 git clone https://github.com/nijaru/max-whisper
 cd max-whisper
-make install    # Setup pixi environment
-make demo       # Compare all implementations
-make cpu        # Test working CPU version
-make gpu        # Test working GPU version  
-make max        # Test MAX Graph integration
+make install                           # Setup pixi environment
+pixi run -e benchmark demo             # Compare all implementations (enhanced UI)
+pixi run -e benchmark test-cpu         # Test CPU baseline only
+pixi run -e benchmark test-gpu         # Test GPU version only
+pixi run -e benchmark test-max         # Test MAX Graph version only
 ```
 
-## MAX Graph Implementation: What Actually Works
+### New Enhanced Commands
+```bash
+pixi run -e benchmark benchmark        # Structured benchmark with error handling
+pixi run -e benchmark benchmark-json   # JSON output for parsing/analysis
+pixi run test                          # Run comprehensive test suite
+```
 
-### ✅ **100% PROVEN WORKING**
+## MAX Graph Implementation Details
+
+### ✅ **Technical Integration Achievements**
 
 **Environment & Compilation:**
-- MAX Graph imports, device setup (GPU/CPU), graph compilation all work
-- No environment issues or dependency problems
+- MAX Graph imports, device setup (GPU/CPU), and graph compilation function correctly
+- Environment dependencies resolve without issues
 
 **Weight Extraction:**
-- All 65 pretrained weights extracted from Whisper tiny model
-- Correct shapes: conv1 (384,80,3), conv2 (384,384,3), attention weights, etc.
-- No missing or corrupted weights
+- Successfully extracts all 65 pretrained weights from Whisper tiny model
+- Maintains correct tensor shapes and data integrity
+- Integrates cleanly with MAX Graph tensor format
 
 **MAX Graph Operations:**
 ```python
-# These specific operations are 100% working:
+# These operations execute successfully:
 ops.matmul(a, b)           # Matrix multiplication 
 ops.transpose(x, 0, 1)     # Tensor transpose
 ops.layer_norm(x, ...)     # Layer normalization
@@ -49,33 +54,34 @@ ops.gelu(x)                # GELU activation
 ops.slice_tensor(x, [...]) # Tensor slicing
 ```
 
-**Cross-Framework Integration:**
-- MAX Graph encoder → PyTorch decoder pipeline works seamlessly
-- No shape errors, device mismatches, or tensor conversion failures
-- Fast execution: ~123ms encoder processing
+**Cross-Framework Pipeline:**
+- MAX Graph encoder → PyTorch decoder integration works without errors
+- Proper tensor conversions and device management
+- Encoder executes in ~123ms on GPU
 
-### ❓ **WHAT'S NOT WORKING**
+### ⚠️ **Current Limitations**
 
-**Semantic Quality:**
-- Encoder produces mathematically valid but semantically poor features
-- Results in repetitive tokens (`<|ml|>`) instead of transcription
-- Pipeline works end-to-end but lacks speech understanding
+**Output Quality:**
+- Encoder produces repetitive tokens (e.g., `<|ml|>`) instead of meaningful transcription
+- While mathematically valid, features lack the semantic richness needed for speech recognition
+- The technical pipeline functions correctly, but output quality requires significant improvement
 
-**Root Cause:**
-The gap between mathematical correctness and semantic understanding. MAX Graph operations work perfectly, but encoded features need optimization for linguistic richness.
+**Next Steps:**
+Further work is needed to bridge the gap between technical execution and semantic understanding in the encoder features.
 
 ## Key Technical Insights
 
-**What This Project Proves:**
-- MAX Graph can handle complex AI architectures (4-layer transformer with attention)
-- Cross-framework integration (MAX Graph → PyTorch) is robust and reliable
-- Weight extraction and integration from pretrained models works correctly
-- Compilation and execution performance is excellent (~123ms encoder)
+**What This Project Demonstrates:**
+- MAX Graph can successfully integrate with complex AI architectures (4-layer transformer with attention)
+- Cross-framework integration (MAX Graph → PyTorch) is technically feasible
+- Weight extraction and integration from pretrained models functions correctly
+- Compilation and execution performance shows promise (~123ms encoder)
 
-**The Frontier Challenge:**
-The project reveals the gap between "technically correct" and "semantically meaningful". While MAX Graph operations execute perfectly and produce valid tensors, achieving the semantic richness needed for speech recognition requires extremely precise feature engineering.
+**Current Challenge:**
+This project highlights the complexity of AI model acceleration beyond basic technical integration. While the architectural components work correctly, producing semantically meaningful output requires careful attention to feature representation and model fidelity.
 
-**This represents the cutting edge of AI acceleration:** bridging mathematical correctness with semantic understanding.
+**Learning Outcome:**
+Successfully implementing AI acceleration involves both technical integration (achieved) and semantic preservation (ongoing work needed).
 
 ## Implementation Details
 
@@ -88,7 +94,7 @@ Audio → Mel Spectrogram → MAX Graph Encoder → PyTorch Decoder → Text
 
 **File Structure:**
 ```
-src/model/
+max-whisper/
 ├── whisper_cpu.py      # ✅ CPU baseline (perfect transcription)
 ├── whisper_gpu.py      # ✅ GPU accelerated (perfect transcription)
 └── whisper_max.py      # ✅ MAX Graph integration (pipeline works)
@@ -106,19 +112,27 @@ This project proves MAX Graph can successfully accelerate complex AI models. The
 
 **Environment Setup:**
 ```bash
-make install        # Install pixi + dependencies
-make env-check      # Verify MAX Graph environment
-make gpu-check      # Check CUDA compatibility
+make install                    # Install pixi + dependencies  
+pixi run graph-test            # Verify MAX Graph environment
+make gpu-check                 # Check CUDA compatibility (legacy)
 ```
 
-**Testing:**
+**Testing & Benchmarking:**
 ```bash
-make demo           # Compare all implementations
-make benchmark      # Detailed performance analysis
-make cpu            # Test working CPU version
-make gpu            # Test working GPU version
-make max            # Test MAX Graph integration
+pixi run -e benchmark demo               # Interactive comparison (enhanced UI)
+pixi run -e benchmark benchmark          # Structured benchmarking
+pixi run -e benchmark benchmark-json     # JSON output for analysis
+pixi run test                           # Run comprehensive test suite
+pixi run -e benchmark test-cpu          # Test CPU implementation
+pixi run -e benchmark test-gpu          # Test GPU implementation  
+pixi run -e benchmark test-max          # Test MAX Graph implementation
 ```
+
+**New Capabilities:**
+- **Structured logging**: JSON output with performance metrics
+- **Error handling**: Robust error recovery and detailed reporting  
+- **Enhanced testing**: Comprehensive unit and integration tests
+- **Performance tracking**: Detailed timing and memory usage analysis
 
 **Documentation:**
 - `/docs/` - Detailed technical documentation
@@ -128,14 +142,16 @@ make max            # Test MAX Graph integration
 ## Repository Structure
 
 ```
-├── src/model/
+├── max-whisper/
 │   ├── whisper_cpu.py      # ✅ Reference implementation
 │   ├── whisper_gpu.py      # ✅ CUDA acceleration
 │   └── whisper_max.py      # ✅ MAX Graph encoder integration
-├── scripts/                # Demo and utility scripts
+├── benchmarks/             # Performance testing
+├── examples/               # Demo scripts
 ├── docs/                   # Technical documentation
-├── benchmark_all.py        # Performance testing
 └── audio_samples/          # Test audio files
 ```
 
-**Built during Modular Hackathon 2025** - A technical exploration of AI acceleration challenges and cross-framework integration.
+A technical exploration of AI acceleration challenges and cross-framework integration using MAX Graph.
+
+*Originally developed during the Modular Hack Weekend June 2025*
