@@ -1,34 +1,44 @@
 # Documentation
 
-This directory contains technical documentation for the max-whisper project.
+Technical documentation for the max-whisper project.
 
-## Files
+## Documentation Structure
 
 ### Core Documentation
-- **[TECHNICAL_STATUS.md](TECHNICAL_STATUS.md)** - Current accurate technical status of all implementations
-- **[PROVEN_WORKING.md](PROVEN_WORKING.md)** - Definitive list of what is 100% confirmed working
+- **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** - Complete technical guide covering all three implementations
 
-### Historical Documentation (Archive)
-- **[DEVELOPMENT_PROGRESS.md](DEVELOPMENT_PROGRESS.md)** - Development timeline and achievements
-- **[MAX_GRAPH_IMPLEMENTATION.md](MAX_GRAPH_IMPLEMENTATION.md)** - Implementation details and approaches
-- **[TECHNICAL_DEEP_DIVE.md](TECHNICAL_DEEP_DIVE.md)** - Detailed technical analysis
-- **[CURRENT_STATUS.md](CURRENT_STATUS.md)** - Previous status documentation
-- **[FORUM_POST.md](FORUM_POST.md)** - Community forum submission
+### Agent Documentation
+- **[agent/PROJECT_STATUS.md](agent/PROJECT_STATUS.md)** - Current state, blockers, and immediate priorities
+- **[agent/DEVELOPMENT_PLAN.md](agent/DEVELOPMENT_PLAN.md)** - Goals, roadmap, and next steps
+- **[agent/TECHNICAL_NOTES.md](agent/TECHNICAL_NOTES.md)** - Architecture details and investigation findings
+- **[agent/PROGRESS_LOG.md](agent/PROGRESS_LOG.md)** - Session-by-session progress tracking
+- **[agent/IMPROVEMENT_PLAN.md](agent/IMPROVEMENT_PLAN.md)** - Infrastructure and tooling improvements
+- **[agent/MOJO_CONVERSION_PLAN.md](agent/MOJO_CONVERSION_PLAN.md)** - Strategic Mojo conversion analysis
+- **[agent/CURRENT_STATE_ASSESSMENT.md](agent/CURRENT_STATE_ASSESSMENT.md)** - Project goals vs reality check
 
-## Quick Reference
+### Setup & Usage
+- **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Complete installation and usage guide
 
-**What Works 100%:**
-- MAX Graph environment setup and compilation
-- Weight extraction (65 tensors from Whisper tiny)
-- Core MAX Graph operations (ops.matmul, ops.layer_norm, etc.)
-- Cross-framework integration (MAX Graph → PyTorch)
-- CPU and GPU baseline implementations
+## Project Overview
 
-**What's Challenging:**
-- Semantic quality of MAX Graph encoder features
-- Meaningful speech recognition (currently repetitive tokens)
+### Three Implementations  
+1. **CPU Baseline** (`max-whisper/whisper_cpu.py`) - ✅ Working, perfect quality (~10.6s)
+2. **GPU Accelerated** (`max-whisper/whisper_gpu.py`) - ✅ Working, perfect quality (~1.9s)
+3. **MAX Graph Hybrid** (`max-whisper/whisper_max.py`) - ⚠️ Technical integration complete, output needs improvement
 
-**Performance:**
-- CPU: ~3.5s (perfect quality)
-- GPU: ~1.0s (perfect quality, 3.5x speedup)
-- MAX Graph: ~1.3s (123ms encoder, pipeline works, quality tuning needed)
+### Current Status
+MAX Graph implementation demonstrates successful architectural integration - all components compile and execute without errors. The encoder processes audio in ~123ms on GPU. However, semantic quality needs improvement as current output produces repetitive tokens rather than meaningful transcription.
+
+## Quick Commands
+```bash
+make install                           # Setup pixi environment  
+pixi run -e benchmark demo             # Compare all implementations (enhanced)
+pixi run -e benchmark test-cpu         # Test CPU baseline
+pixi run -e benchmark test-gpu         # Test GPU version
+pixi run -e benchmark test-max         # Test MAX Graph version
+pixi run -e benchmark benchmark-json   # JSON output for analysis
+pixi run test                          # Run comprehensive tests
+```
+
+## Key Achievement
+Complete cross-framework integration (MAX Graph encoder → PyTorch decoder) with proper device management and fast execution, demonstrating both technical success and the challenges of semantic preservation in AI acceleration.
