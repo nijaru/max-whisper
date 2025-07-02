@@ -61,15 +61,17 @@ Successfully extracts 65 weights from Whisper tiny model:
 4. **Performance**: Encoder execution is significantly faster than CPU baseline
 
 ### Current Status  
-**Major Architecture Fixed**: Replaced kernel averaging convolution approximation with proper Conv2D operations. Encoder now produces semantically meaningful features with correct bias and significantly improved variance.
+**Decoder Integration Fixed**: Corrected DecodingOptions with proper beam search parameters (beam_size=5, temperature=0.0, sample_len=448).
 
-**Remaining Issue**: Decoder output still needs optimization - variance at 1.708 vs target ~0.40, causing partial semantic quality issues.
+**Critical Issue Identified**: Conv2D-based Conv1D implementation produces semantically corrupted features despite matching statistics. Cosine similarity: -0.038 indicates structural rather than scale issues.
 
-### Hypotheses
-1. **Numerical Precision**: Slight differences in floating-point operations may accumulate
-2. **Operation Fidelity**: MAX Graph operations might not perfectly match OpenAI implementation
-3. **Weight Loading**: Potential issues in weight format conversion or loading
-4. **Feature Scale**: Encoder features may have different numerical ranges
+**Technical Finding**: Native Conv1DV1 unavailable in current MAX Graph version, forcing Conv2D→Conv1D conversion that corrupts feature relationships.
+
+### Root Cause Analysis
+1. **Convolution Issue**: Conv2D→Conv1D weight format or tensor layout corrupts semantic content
+2. **Statistics vs Semantics**: Features have correct variance (std: 1.708 vs 1.448) but wrong relationships  
+3. **Decoder Integration**: Fixed - proper beam search and sequence generation parameters
+4. **Performance**: Encoder execution excellent (~0.28s, 13x speedup)
 
 ## Key Reference Materials
 - `external/modular/examples/pytorch_custom_ops/whisper.py` - Modular's attention example
@@ -85,12 +87,12 @@ Successfully extracts 65 weights from Whisper tiny model:
 - **GPU Requirements**: CUDA-compatible hardware for full functionality
 
 ## Performance Baselines
-- CPU: ~10.6s total execution
-- GPU: ~1.9s total execution  
-- MAX Graph: ~98.5ms encoder (13.0x speedup), decoder integration in progress
+- CPU: ~3.6s total execution (2035 chars)
+- GPU: ~1.0s total execution (2035 chars, 3.6x speedup)
+- MAX Graph: ~0.28s encoder execution (13x speedup), semantic corruption issue
 
 ## Debugging Tools
-- Feature extraction and comparison utilities
-- Tensor statistics analysis
-- Device compatibility checking
-- Cross-framework validation methods
+- **`benchmarks/encoder_feature_debug.py`**: Systematic encoder feature comparison
+- **Feature Statistics**: Mean, std, cosine similarity, L2 norm analysis  
+- **Cross-framework Validation**: MAX Graph vs OpenAI Whisper feature extraction
+- **Tensor Analysis**: First-value comparison, difference patterns

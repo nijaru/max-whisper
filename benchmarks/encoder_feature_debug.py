@@ -89,6 +89,14 @@ def extract_openai_encoder_features(audio_path="audio_samples/modular_video.wav"
             if len(mel_features.shape) == 2:
                 mel_features = mel_features.unsqueeze(0)  # Add batch dimension
             
+            # Pad to 3000 frames to match Whisper's expected input length
+            target_frames = 3000
+            if mel_features.shape[-1] > target_frames:
+                mel_features = mel_features[:, :, :target_frames]
+            elif mel_features.shape[-1] < target_frames:
+                pad_frames = target_frames - mel_features.shape[-1]
+                mel_features = torch.nn.functional.pad(mel_features, (0, pad_frames))
+            
             device = next(model.encoder.parameters()).device
             mel_features = mel_features.to(device)
             

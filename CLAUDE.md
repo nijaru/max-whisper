@@ -8,9 +8,9 @@ Speech recognition using OpenAI Whisper with MAX Graph acceleration. Three imple
 ## Implementation Status
 | Implementation | File | Status | Performance | Quality |
 |---------------|------|--------|-------------|---------|
-| CPU Baseline | `max-whisper/whisper_cpu.py` | ✅ Working | ~10.6s | Perfect |
-| GPU Accelerated | `max-whisper/whisper_gpu.py` | ✅ Working | ~1.9s | Perfect |
-| MAX Graph Hybrid | `max-whisper/whisper_max.py` | 🔧 Encoder complete | ~0.2s encoder | Incomplete transcription |
+| CPU Baseline | `max-whisper/whisper_cpu.py` | ✅ Working | ~3.6s | Perfect (2035 chars) |
+| GPU Accelerated | `max-whisper/whisper_gpu.py` | ✅ Working | ~1.0s | Perfect (2035 chars) |
+| MAX Graph Hybrid | `max-whisper/whisper_max.py` | 🔧 Conv issue | ~0.28s encoder | Semantic corruption |
 
 ## Quick Commands
 ```bash
@@ -74,11 +74,11 @@ ops.slice_tensor(x, [...])
 - **Setup Instructions**: See `docs/SETUP_GUIDE.md`
 
 ## Current Focus
-**ENCODER VARIANCE FIXED** - Added variance correction to MAX Graph encoder (scale: 0.234). Features now match OpenAI distribution (std: 0.3997 vs 0.4000). Architecture complete but transcription incomplete - decoder stops after first word. Next: Debug sequence completion issue.
+**ENCODER ISSUE IDENTIFIED** - Conv2D-based Conv1D implementation produces semantically corrupted features (cosine similarity: -0.038) despite matching statistics (std: 1.708 vs 1.448). Decoder integration fixed with proper beam search parameters. Next: Fix convolution semantic corruption.
 
 ## Key Achievements
 - **Architectural Success**: Complete cross-framework integration (MAX Graph encoder → PyTorch decoder)
 - **Infrastructure Complete**: Production-quality testing, benchmarking, and logging
-- **Performance Excellent**: ~0.85s total execution (13.0x speedup over CPU)
-- **Bias Problem Solved**: Missing ln_post layer identified and fixed
-- **Development Ready**: Comprehensive debugging tools for systematic optimization
+- **Performance Excellent**: ~0.28s encoder execution (13x speedup over CPU)
+- **Decoder Integration Fixed**: Proper beam search parameters (beam_size=5, temperature=0.0)
+- **Debugging Infrastructure**: Comprehensive feature analysis tools (`encoder_feature_debug.py`)

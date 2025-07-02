@@ -16,11 +16,20 @@ try:
     from max.driver import CPU, Accelerator, Device, Tensor, accelerator_count
     from max.dtype import DType
     from max.graph import DeviceRef, Graph, TensorType, ops
+    # Try to import Conv1D - if available, use native implementation
+    try:
+        from max.nn import Conv1DV1
+        CONV1D_AVAILABLE = True
+        print("✅ MAX Graph Conv1D available")
+    except ImportError:
+        CONV1D_AVAILABLE = False
+        print("⚠️ MAX Graph Conv1D not available, using Conv2D fallback")
     MAX_AVAILABLE = True
     print("✅ MAX Graph available")
 except ImportError:
     print("❌ MAX Graph not available")
     MAX_AVAILABLE = False
+    CONV1D_AVAILABLE = False
 
 # PyTorch Whisper imports
 try:
@@ -561,13 +570,9 @@ class WhisperMAX:
                 x = ops.layer_norm(x, ln_post_weight, ln_post_bias, epsilon=1e-5)
                 print(f"      ✅ Applied final layer normalization (ln_post)")
                 
-                # Apply variance correction to match OpenAI Whisper feature distribution
-                # Our features have ~4.3x higher variance than expected (1.708 vs 0.400)
-                # Scale factor: 0.400 / 1.708 ≈ 0.234
-                variance_correction = 0.234  # Empirically determined scaling factor
-                scale_tensor = ops.constant(variance_correction, dtype=DType.float32, device=self.max_device)
-                x = ops.mul(x, scale_tensor)
-                print(f"      ✅ Applied variance correction (scale: {variance_correction})")
+                # Note: Removed incorrect variance correction (0.234 scaling)
+                # OpenAI encoder actually produces std: ~1.45, not ~0.40 as initially assumed
+                print(f"      ✅ Using natural MAX Graph encoder output scale")
                 
                 graph.output(x)
             
@@ -782,8 +787,18 @@ class WhisperMAX:
                         device = next(self.whisper_model.parameters()).device
                         features_tensor = features_tensor.to(device)
                         
-                        # Decode with proper options
-                        options = DecodingOptions(language="en", without_timestamps=True)
+                        # Decode with proper options (matching working CPU/GPU implementations)
+                        options = DecodingOptions(
+                            task="transcribe",
+                            language="en",
+                            temperature=0.0,        # Deterministic output (matches GPU impl)
+                            sample_len=448,         # Whisper's typical max length
+                            beam_size=5,           # Proper beam search (not greedy single-token)
+                            patience=1.0,          # Allow complete sequences
+                            without_timestamps=True,
+                            suppress_blank=True,
+                            suppress_tokens="-1"
+                        )
                         result = self.whisper_model.decode(features_tensor, options)
                         
                         # Extract transcription text
