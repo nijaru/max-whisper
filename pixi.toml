@@ -9,8 +9,8 @@ version = "0.1.0"
 [tasks]
 hello = "mojo hello.mojo"
 graph-test = "python -c 'import max.graph; print(\"MAX Graph ready\")'"
-test = "python -m pytest tests/ -v"
-test-max = "python tests/test_max_graph.py"
+test = "python -m pytest test/ -v"
+test-max = "python test/test_max_graph.py"
 
 [feature.benchmark.tasks]
 demo = "python scripts/tui_demo.py"

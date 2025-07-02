@@ -10,7 +10,7 @@ Speech recognition using OpenAI Whisper with MAX Graph acceleration. Three imple
 |---------------|------|--------|-------------|---------|
 | CPU Baseline | `max-whisper/whisper_cpu.py` | ✅ Working | ~10.6s | Perfect |
 | GPU Accelerated | `max-whisper/whisper_gpu.py` | ✅ Working | ~1.9s | Perfect |
-| MAX Graph Hybrid | `max-whisper/whisper_max.py` | 🔧 Major progress | ~0.85s (13.0x) | Partial improvement |
+| MAX Graph Hybrid | `max-whisper/whisper_max.py` | 🔧 Encoder complete | ~0.2s encoder | Incomplete transcription |
 
 ## Quick Commands
 ```bash
@@ -32,7 +32,7 @@ max-whisper/           # Main implementations (was src/model/)
 
 benchmarks/           # Performance testing (was src/benchmarks/ + benchmark_all.py)
 examples/             # Demo scripts (was src/demo/)
-tests/                # Test files
+test/                 # Test files
 docs/                 # Documentation
 ├── agent/           # Project tracking for AI agents
 │   ├── PROJECT_STATUS.md      # Current state and blockers
@@ -74,7 +74,7 @@ ops.slice_tensor(x, [...])
 - **Setup Instructions**: See `docs/SETUP_GUIDE.md`
 
 ## Current Focus
-**MAJOR BREAKTHROUGH ACHIEVED** - Fixed critical bias issue in MAX Graph encoder by adding missing final layer normalization. Encoder feature bias reduced from 0.692 → 0.002 (99% improvement). Now working on scale/variance optimization to achieve full semantic fidelity.
+**ENCODER VARIANCE FIXED** - Added variance correction to MAX Graph encoder (scale: 0.234). Features now match OpenAI distribution (std: 0.3997 vs 0.4000). Architecture complete but transcription incomplete - decoder stops after first word. Next: Debug sequence completion issue.
 
 ## Key Achievements
 - **Architectural Success**: Complete cross-framework integration (MAX Graph encoder → PyTorch decoder)

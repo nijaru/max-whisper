@@ -8,9 +8,9 @@ A technical exploration of integrating MAX Graph operations into OpenAI's Whispe
 |---------------|--------|-------------|---------|------------------|
 | **CPU Baseline** | ✅ Working | ~10.6s | Perfect transcription | OpenAI Whisper reference |
 | **GPU Accelerated** | ✅ Working | ~1.9s (5.7x faster) | Perfect transcription | CUDA acceleration |
-| **MAX Graph** | 🔧 Major progress | ~0.85s (13.0x faster) | Partial improvement | Bias fixed, scale optimization in progress |
+| **MAX Graph** | 🔧 Encoder complete | ~0.2s encoder only | Incomplete transcription | Produces only first word |
 
-**Current Status:** **MAJOR BREAKTHROUGH** - Fixed critical bias issue in MAX Graph encoder by adding missing final layer normalization. Encoder feature bias reduced from 0.692 → 0.002 (99% improvement). Output quality significantly improved from repetitive tokens to meaningful characters. Remaining challenge: scale/variance optimization for full semantic fidelity.
+**Current Status:** **ENCODER VARIANCE FIXED** - Added variance correction to MAX Graph encoder. Features now match OpenAI distribution (std: 0.3997 vs 0.4000). Encoder architecture complete but transcription incomplete - decoder stops after first word. Next: Debug sequence completion issue.
 
 ## Quick Start
 
@@ -66,8 +66,8 @@ ops.slice_tensor(x, [...]) # Tensor slicing
 **Critical Bug Fix - Final Layer Normalization:**
 - **Root Cause Identified**: Missing final layer normalization (`ln_post`) in MAX Graph encoder
 - **Impact**: Encoder feature bias reduced from 0.692 → 0.002 (99% improvement)
-- **Output Quality**: Improved from repetitive `<|ml|>` tokens to meaningful characters
-- **Performance**: Maintained 13.0x speedup over CPU baseline
+- **Output Quality**: Improved from repetitive `<|ml|>` tokens to meaningful characters ("the")
+- **Performance**: Encoder processes in ~0.2s but transcription incomplete
 
 **Before Fix vs After Fix:**
 ```
@@ -77,13 +77,13 @@ After:  Mean: 0.002280, Std: 1.474399, Range: [-16.09, 12.60]
 
 ### ⚠️ **Remaining Challenges**
 
-**Scale/Variance Optimization:**
-- Encoder features still have higher variance than expected (std: 1.47 vs target: ~0.40)
-- Need to investigate attention mechanism precision and convolution operations
-- Working on systematic numerical debugging for full semantic fidelity
+**Decoder Sequence Completion:**
+- Encoder architecture complete and variance-corrected (std: 0.3997 vs target: 0.4000)
+- Decoder integration working but stops after first token
+- CPU/GPU produce 2035 characters, MAX Graph produces only 3 characters ("the")
 
 **Next Steps:**
-Continue scale optimization to achieve perfect semantic output matching CPU/GPU implementations.
+Debug decoder sequence completion to achieve full transcription length matching CPU/GPU implementations.
 
 ## Key Technical Insights
 
@@ -92,21 +92,21 @@ Continue scale optimization to achieve perfect semantic output matching CPU/GPU 
 - Cross-framework integration (MAX Graph → PyTorch) is technically feasible
 - Weight extraction and integration from pretrained models functions correctly
 - Systematic debugging can identify and fix critical numerical issues
-- Performance is excellent (~0.85s total, 13.0x speedup over CPU)
+- Encoder performance is excellent (~0.2s, encoder portion only)
 
 **Key Learning:**
 This project demonstrates the importance of **complete architectural fidelity** when implementing neural network acceleration. Missing even a single layer normalization can cause major semantic quality degradation, while systematic debugging and feature analysis can identify and resolve such issues.
 
 **Development Approach:**
-Successfully implementing AI acceleration requires both technical integration (✅ achieved) and precise numerical fidelity (🔧 major progress made, optimization continuing).
+Successfully implementing AI acceleration requires both technical integration (✅ encoder achieved) and complete sequence generation (🔧 decoder integration incomplete).
 
 ## Implementation Details
 
 **Architecture:**
 ```
 Audio → Mel Spectrogram → MAX Graph Encoder → PyTorch Decoder → Text
-                           ↓ (bias fixed ✅)    ↓ (integration works)
-                    Real computation graphs    Scale optimization in progress
+                           ↓ (variance fixed ✅)    ↓ (stops early ❌)
+                    ~0.2s encoder execution    Produces only "the"
 ```
 
 **File Structure:**
@@ -114,16 +114,16 @@ Audio → Mel Spectrogram → MAX Graph Encoder → PyTorch Decoder → Text
 max-whisper/
 ├── whisper_cpu.py      # ✅ CPU baseline (perfect transcription)
 ├── whisper_gpu.py      # ✅ GPU accelerated (perfect transcription)
-└── whisper_max.py      # ✅ MAX Graph integration (pipeline works)
+└── whisper_max.py      # 🔧 MAX Graph integration (encoder works, decoder incomplete)
 ```
 
 **Performance Results:**
-- CPU Baseline: ~10.6s (perfect quality)
-- GPU Accelerated: ~1.9s (perfect quality, 5.7x speedup)
-- MAX Graph: ~0.24s when working (44x speedup, repetitive output)
+- CPU Baseline: ~10.6s (perfect quality, 2035 chars transcription)
+- GPU Accelerated: ~1.9s (perfect quality, 2035 chars transcription)  
+- MAX Graph: ~0.2s encoder only (incomplete, 3 chars output: "the")
 
 **Technical Foundation:**
-This project proves MAX Graph can successfully accelerate complex AI models. The architectural integration is complete, cross-framework compatibility works, and performance is competitive. The focus now shifts to semantic optimization - the next frontier in AI acceleration.
+This project proves MAX Graph can successfully accelerate AI model components. The encoder integration is complete, cross-framework compatibility works, and encoder performance is excellent. The challenge is completing full sequence generation - the current implementation stops after the first token.
 
 ## Development & Testing
 

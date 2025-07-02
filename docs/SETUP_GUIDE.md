@@ -103,7 +103,7 @@ benchmarks/            # Performance testing
 ├── benchmark_runner.py    # Enhanced runner
 └── benchmark_all.py       # Legacy runner
 
-tests/                 # Test suite
+test/                  # Test suite
 ├── test_implementations.py
 ├── test_audio_processing.py
 └── test_max_graph.py
