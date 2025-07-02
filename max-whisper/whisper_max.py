@@ -393,9 +393,10 @@ class WhisperMAX:
             
             # Build comprehensive input types for all weights
             input_types = [
-                # Audio features (input mel spectrogram)
+                # Audio features (input mel spectrogram) - OpenAI format: [batch, n_mels, seq_len]
                 TensorType(DType.float32, (1, n_mels, n_audio_ctx), device=self.max_device),
-                # Conv layers
+                # Conv layers - using MAX Graph Conv1D compatible format
+                # Conv1: [out_channels, in_channels, kernel_size] format for pytorch weights
                 TensorType(DType.float32, (n_audio_state, n_mels, 3), device=self.max_device),  # conv1_weight
                 TensorType(DType.float32, (n_audio_state,), device=self.max_device),            # conv1_bias
                 TensorType(DType.float32, (n_audio_state, n_audio_state, 3), device=self.max_device), # conv2_weight  
@@ -445,55 +446,57 @@ class WhisperMAX:
                 conv2_bias = inputs[input_idx]; input_idx += 1
                 pos_embed = inputs[input_idx]; input_idx += 1
                 
-                print(f"      🔧 Building conv layers...")
-                # Transpose mel: [batch, n_mels, seq_len] -> [batch, seq_len, n_mels]
-                mel_transposed = ops.transpose(mel_input, 1, 2)
+                print(f"      🔧 Building efficient Conv1D using Conv2D...")
                 
-                # Conv1d layer 1: kernel_size=3, stride=1, padding=1
-                # Whisper Conv1: 80 -> 384 channels, keeps sequence length
-                # For proper 1D conv, we need to handle padding and use all 3 kernel positions
-                # Simplified approach: use weighted sum of all kernel positions
-                conv1_k0 = conv1_weight[:, :, 0]  # Left kernel  
-                conv1_k1 = conv1_weight[:, :, 1]  # Middle kernel
-                conv1_k2 = conv1_weight[:, :, 2]  # Right kernel
+                # Implement Conv1D using Conv2D operations for efficiency
+                # Input: mel_input [1, 80, 3000] (batch, channels, length)
                 
-                # Apply convolution-like operation (weighted average of kernels)
-                # This approximates the conv1d with padding but in a simplified way
-                x0 = ops.matmul(mel_transposed, ops.transpose(conv1_k0, 0, 1))
-                x1 = ops.matmul(mel_transposed, ops.transpose(conv1_k1, 0, 1))
-                x2 = ops.matmul(mel_transposed, ops.transpose(conv1_k2, 0, 1))
+                # Transpose to NHWC format for Conv2D: [1, 80, 3000] -> [1, 3000, 80]
+                mel_transposed = ops.transpose(mel_input, 1, 2)  # [1, 3000, 80]
                 
-                # Average the kernel outputs (simplified conv)
-                scale_third = ops.constant(1.0/3.0, dtype=DType.float32, device=self.max_device)
-                x = ops.mul(ops.add(ops.add(x0, x1), x2), scale_third)
-                x = ops.add(x, conv1_bias)
-                x = ops.gelu(x)  # GELU activation
+                # Add height dimension for Conv2D: [1, 3000, 80] -> [1, 1, 3000, 80] (NHWC)
+                mel_2d = ops.reshape(mel_transposed, (1, 1, 3000, n_mels))  # [1, height=1, width=3000, channels=80]
                 
-                # Conv1d layer 2: kernel_size=3, stride=2, padding=1  
-                # Whisper Conv2: 384 -> 384 channels, HALVES sequence length (stride=2)
-                # This is crucial - we need to downsample by 2!
-                conv2_k0 = conv2_weight[:, :, 0]
-                conv2_k1 = conv2_weight[:, :, 1] 
-                conv2_k2 = conv2_weight[:, :, 2]
+                # Convert Conv1D weights to Conv2D format
+                # conv1_weight: [384, 80, 3] (pytorch) -> [1, 3, 80, 384] (Conv2D RSCF: height, width, in_channels, out_channels)
+                conv1_weight_permuted = ops.permute(conv1_weight, [2, 1, 0])  # [3, 80, 384]
+                conv1_weight_2d = ops.reshape(conv1_weight_permuted, (1, 3, n_mels, n_audio_state))  # [1, 3, 80, 384]
                 
-                # Apply convolution with all kernels
-                x0 = ops.matmul(x, ops.transpose(conv2_k0, 0, 1))
-                x1 = ops.matmul(x, ops.transpose(conv2_k1, 0, 1))
-                x2 = ops.matmul(x, ops.transpose(conv2_k2, 0, 1))
+                # Apply Conv1D as Conv2D: kernel=3, stride=1, padding=1
+                # padding=(top, bottom, left, right) - for 1D conv, pad width only: (0, 0, 1, 1)
+                x = ops.conv2d(
+                    mel_2d, 
+                    conv1_weight_2d, 
+                    stride=(1, 1),           # (height_stride, width_stride)
+                    padding=(0, 0, 1, 1),    # (pad_top, pad_bottom, pad_left, pad_right)
+                    bias=conv1_bias
+                )  # Output: [1, 1, 3000, 384]
                 
-                # Average kernel outputs
-                x = ops.mul(ops.add(ops.add(x0, x1), x2), scale_third)
-                x = ops.add(x, conv2_bias)
-                x = ops.gelu(x)  # GELU activation
+                # Remove height dimension and apply GELU: [1, 1, 3000, 384] -> [1, 3000, 384]
+                x = ops.reshape(x, (1, 3000, n_audio_state))
+                x = ops.gelu(x)
                 
-                # Implement stride=2 downsampling: take every 2nd element
-                # Shape: [batch=1, seq_len=1500, d_model=384] -> [batch=1, seq_len=750, d_model=384]
-                # Use ops.slice_tensor with correct syntax: [slice_batch, slice_seq, slice_features]
-                x = ops.slice_tensor(x, [
-                    slice(None),        # Keep all batch elements
-                    slice(None, None, 2), # Downsample sequence by stride=2 (every 2nd element)
-                    slice(None)         # Keep all feature dimensions
-                ])
+                # Conv1D layer 2: 384 -> 384, kernel=3, stride=2, padding=1 (with downsampling)
+                # Add height dimension again: [1, 3000, 384] -> [1, 1, 3000, 384]
+                x_2d = ops.reshape(x, (1, 1, 3000, n_audio_state))
+                
+                # Convert conv2 weights to Conv2D format
+                # conv2_weight: [384, 384, 3] (pytorch) -> [1, 3, 384, 384] (Conv2D RSCF format)
+                conv2_weight_permuted = ops.permute(conv2_weight, [2, 1, 0])  # [3, 384, 384]
+                conv2_weight_2d = ops.reshape(conv2_weight_permuted, (1, 3, n_audio_state, n_audio_state))  # [1, 3, 384, 384]
+                
+                # Apply Conv1D as Conv2D with stride=2 for downsampling
+                x = ops.conv2d(
+                    x_2d,
+                    conv2_weight_2d,
+                    stride=(1, 2),           # stride=2 in width dimension for downsampling
+                    padding=(0, 0, 1, 1),    # padding=1 in width dimension
+                    bias=conv2_bias
+                )  # Output: [1, 1, 1500, 384] (width downsampled by stride=2)
+                
+                # Remove height dimension and apply GELU: [1, 1, 1500, 384] -> [1, 1500, 384]
+                x = ops.reshape(x, (1, 1500, n_audio_state))
+                x = ops.gelu(x)
                 
                 # Add positional embeddings (already correct size: 1500)
                 # pos_embed shape: [seq_len=1500, d_model=384] matches x after downsampling
@@ -599,8 +602,8 @@ class WhisperMAX:
         K_transposed = ops.transpose(K_heads, -2, -1)  # [batch, num_heads, head_dim, seq_len]
         attention_scores = ops.matmul(Q_heads, K_transposed)  # [batch, num_heads, seq_len, seq_len]
         
-        # Scale by sqrt(head_dim) - use fixed numeric value
-        scale_factor = 1.0 / (64 ** 0.5)  # sqrt(64) = 8, so scale = 1/8 = 0.125
+        # Scale by sqrt(head_dim) - use dynamic calculation for proper scaling
+        scale_factor = 1.0 / (head_dim ** 0.5)  # Dynamic scaling based on actual head_dim
         scale_tensor = ops.constant(scale_factor, dtype=DType.float32, device=self.max_device)
         scaled_scores = ops.mul(attention_scores, scale_tensor)
         

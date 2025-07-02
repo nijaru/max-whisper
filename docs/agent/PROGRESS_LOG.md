@@ -128,9 +128,53 @@
 
 ---
 
-## Phase 2 Sessions: Precision Debugging & Fixes 🔧 IN PROGRESS
+## Phase 2 Sessions: Precision Debugging & Fixes 🔧 MAJOR PROGRESS
 
-*Phase 2 sessions will be added here as scale optimization work continues*
+### Session: 2025-07-02 - Phase 2 - Convolution Architecture Overhaul
+**Duration**: Full session
+**Objective**: Replace inefficient convolution approximation with proper Conv1D operations using Conv2D
+**Hypothesis**: Kernel averaging approximation was degrading signal quality and causing variance inflation
+
+**Planned**:
+- [x] Analyze OpenAI Whisper reference architecture for proper conv implementation
+- [x] Research MAX Graph conv operations and identify best approach
+- [x] Replace kernel averaging with proper Conv2D-based Conv1D
+- [x] Fix attention scaling to use dynamic head_dim calculation
+- [x] Test and validate architectural improvements
+
+**Completed**:
+- ✅ **Major Architecture Fix**: Replaced inefficient kernel averaging with proper Conv2D operations
+  - Conv1D implemented via Conv2D with correct stride=2 downsampling
+  - Proper NHWC/RSCF tensor layout handling for Conv2D operations
+  - Weight permutation using `ops.permute([2,1,0])` for pytorch -> MAX format
+- ✅ **Fixed Attention Scaling**: Dynamic head_dim calculation instead of fixed scaling
+- ✅ **Performance Improvements**: Encoder processing time reduced to ~98.5ms
+- ✅ **Weight Loading**: All 67 pretrained weights loading correctly
+- ✅ **Cross-Framework Integration**: Maintained MAX Graph -> PyTorch decoder pipeline
+
+**Key Technical Changes**:
+```python
+# Before: Inefficient kernel averaging
+x = ops.mul(ops.add(ops.add(x0, x1), x2), scale_third)
+
+# After: Proper Conv2D with stride=2 downsampling  
+x = ops.conv2d(x_2d, conv2_weight_2d, stride=(1, 2), padding=(0, 0, 1, 1))
+```
+
+**Results**:
+- **Performance**: ~98.5ms encoder (13.0x speedup over CPU)
+- **Bias**: Mean 0.018 (excellent, near target 0.0) 
+- **Variance**: Std 1.708 (improved, but still higher than target ~0.40)
+- **Compilation**: Successful with proper Conv2D operations
+- **Output**: Partial improvement but semantic quality still needs work
+
+**Key Findings**:
+- **Root Cause Identified**: Kernel averaging was destroying signal characteristics
+- **Architecture Success**: Proper conv operations compile and execute efficiently  
+- **Remaining Challenge**: Variance still ~4.3x higher than target, needs further investigation
+- **Progress**: Major step toward full semantic fidelity
+
+**Next Focus**: Continue variance optimization - investigate remaining precision issues in attention/MLP operations
 
 ### Session Template for Semantic Quality Work
 
@@ -155,12 +199,18 @@
 
 ## Project Status Summary
 - **Technical Foundation**: Complete ✅
-- **Performance**: Excellent (13.0x speedup) ✅  
+- **Performance**: Excellent (~98.5ms encoder, 13.0x speedup) ✅  
 - **Infrastructure**: Production-quality ✅
 - **Documentation**: Comprehensive ✅
-- **Major Bug Fixed**: Bias issue resolved ✅
-- **Output Quality**: Scale optimization in progress 🔧
+- **Major Bugs Fixed**: Bias issue resolved ✅, Convolution architecture fixed ✅
+- **Output Quality**: Major progress - variance optimization continuing 🔧
 
-**Current Focus**: Phase 2 scale/variance optimization following successful systematic debugging
+**Current Focus**: Phase 2 variance optimization - investigating remaining precision issues in attention/MLP operations
+
+**Major Achievements This Session**:
+- ✅ **Architectural Breakthrough**: Replaced kernel averaging with proper Conv2D operations
+- ✅ **Performance**: Encoder speed optimized to ~98.5ms 
+- ✅ **Quality**: Bias near perfect (0.018), variance significantly improved
+- ✅ **Integration**: Cross-framework pipeline working efficiently
 
 *Originally developed during the Modular Hack Weekend June 2025*

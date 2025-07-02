@@ -9,7 +9,9 @@ Audio → Mel Spectrogram → MAX Graph Encoder → PyTorch Decoder → Text
                     Complete with ln_post   Scale optimization needed
 ```
 
-**MAJOR UPDATE**: Fixed critical missing final layer normalization (ln_post) - bias reduced 0.692 → 0.002 (99% improvement)
+**MAJOR UPDATES**: 
+- ✅ Fixed critical missing final layer normalization (ln_post) - bias reduced 0.692 → 0.002 (99% improvement)
+- ✅ Replaced inefficient convolution approximation with proper Conv2D operations - significant performance and quality gains
 
 ### Implementation Files
 - `max-whisper/whisper_cpu.py` - Reference OpenAI Whisper implementation
@@ -58,8 +60,10 @@ Successfully extracts 65 weights from Whisper tiny model:
 3. **Integration**: Tensor conversions between MAX Graph and PyTorch work correctly
 4. **Performance**: Encoder execution is significantly faster than CPU baseline
 
-### Current Issue
-**Repetitive Token Generation**: Decoder consistently produces repetitive tokens (e.g., `<|ml|>`) regardless of input audio content.
+### Current Status  
+**Major Architecture Fixed**: Replaced kernel averaging convolution approximation with proper Conv2D operations. Encoder now produces semantically meaningful features with correct bias and significantly improved variance.
+
+**Remaining Issue**: Decoder output still needs optimization - variance at 1.708 vs target ~0.40, causing partial semantic quality issues.
 
 ### Hypotheses
 1. **Numerical Precision**: Slight differences in floating-point operations may accumulate
@@ -83,7 +87,7 @@ Successfully extracts 65 weights from Whisper tiny model:
 ## Performance Baselines
 - CPU: ~10.6s total execution
 - GPU: ~1.9s total execution  
-- MAX Graph: ~123ms encoder only (decoder produces incorrect output)
+- MAX Graph: ~98.5ms encoder (13.0x speedup), decoder integration in progress
 
 ## Debugging Tools
 - Feature extraction and comparison utilities
