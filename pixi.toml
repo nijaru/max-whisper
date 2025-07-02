@@ -21,6 +21,9 @@ test-cpu = "python max-whisper/whisper_cpu.py --model-size tiny"
 test-gpu = "python max-whisper/whisper_gpu.py --model-size tiny"  
 test-max = "python max-whisper/whisper_max.py --model-size tiny"
 benchmark-legacy = "python benchmarks/benchmark_all.py"
+extract-features = "python benchmarks/feature_extractor.py"
+compare-simple = "python benchmarks/simple_feature_comparison.py"
+debug-encoder = "python benchmarks/encoder_feature_debug.py"
 
 [dependencies]
 python = ">=3.9,<3.12"

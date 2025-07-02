@@ -57,8 +57,32 @@ Use this template for each debugging session:
 
 ## Debugging Sessions
 
-### Session: [DATE] - Initial Setup
-*This will be filled in when debugging begins*
+### Session: 2025-07-01 - Missing Final Layer Norm Fix
+
+**Objective**: Fix semantic quality issue causing repetitive token generation
+
+**Hypothesis**: MAX Graph encoder output has wrong bias and scale due to missing operations
+
+**Approach**: Systematically compare encoder feature statistics between implementations
+
+**Results**: 
+- **Critical Issue Found**: Missing final layer normalization (`ln_post`) in MAX Graph encoder
+- **Root Cause**: Whisper encoder has `ln_post` layer after all transformer blocks, but MAX Graph implementation was missing it
+- **Fix Applied**: Added `ln_post` weight extraction and final layer norm operation to MAX Graph encoder
+
+**Key Findings**:
+- **Before fix**: Mean: 0.692341, Std: 1.338029, Range: [-11.33, 16.05] 
+- **After fix**: Mean: 0.002280, Std: 1.474399, Range: [-16.09, 12.60]
+- **Bias problem SOLVED**: Mean went from 0.692 → 0.002 (almost zero)
+- **Scale issue remains**: Std still ~1.47 vs expected ~0.40
+- **Output improved**: Changed from repetitive `<|ml|>` tokens to single character (progress!)
+
+**Todos Created**: Address remaining scale/variance issues
+
+**Next Steps**: 
+1. Investigate why std deviation is still too high (1.47 vs 0.40)
+2. Possible causes: Attention mechanism precision, convolution operations, weight precision
+3. Continue systematic debugging of remaining numerical differences
 
 ---
 

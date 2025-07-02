@@ -360,6 +360,12 @@ class WhisperMAX:
                                     self.weights[f'layer_{i}_mlp_fc2_bias'] = fc2_layer.bias.detach().cpu().numpy()
                                 print(f"        ✅ Extracted MLP FC2 from block.mlp[2]")
             
+            # Extract final layer norm (ln_post) - CRITICAL for proper output normalization
+            if hasattr(encoder, 'ln_post'):
+                self.weights['ln_post_weight'] = encoder.ln_post.weight.detach().cpu().numpy()
+                self.weights['ln_post_bias'] = encoder.ln_post.bias.detach().cpu().numpy()
+                print(f"    ✅ Extracted final layer normalization (ln_post)")
+            
             print(f"    ✅ Extracted {len(self.weights)} weight tensors")
             
             # Debug: Print available weight keys to understand what we actually extracted
@@ -420,6 +426,12 @@ class WhisperMAX:
                     TensorType(DType.float32, (n_audio_state, n_audio_state * 4), device=self.max_device), # mlp_fc2_weight
                     TensorType(DType.float32, (n_audio_state,), device=self.max_device),                # mlp_fc2_bias
                 ])
+            
+            # Add final layer norm (ln_post) - CRITICAL for proper output normalization
+            input_types.extend([
+                TensorType(DType.float32, (n_audio_state,), device=self.max_device),  # ln_post_weight
+                TensorType(DType.float32, (n_audio_state,), device=self.max_device),  # ln_post_bias
+            ])
             
             with Graph("whisper_max_encoder_full", input_types=input_types) as graph:
                 inputs = list(graph.inputs)
@@ -539,6 +551,12 @@ class WhisperMAX:
                     x = ops.add(residual, x_mlp)
                     
                     print(f"        ✅ Layer {layer_idx} complete")
+                
+                # Apply final layer normalization (ln_post) - CRITICAL for proper output
+                ln_post_weight = inputs[input_idx]; input_idx += 1
+                ln_post_bias = inputs[input_idx]; input_idx += 1
+                x = ops.layer_norm(x, ln_post_weight, ln_post_bias, epsilon=1e-5)
+                print(f"      ✅ Applied final layer normalization (ln_post)")
                 
                 graph.output(x)
             
@@ -923,6 +941,14 @@ class WhisperMAX:
                     Tensor.from_numpy(mlp_fc2.astype(np.float32)).to(self.max_driver_device),
                     Tensor.from_numpy(mlp_fc2_bias.astype(np.float32)).to(self.max_driver_device),
                 ])
+            
+            # Add final layer norm weights (ln_post) - CRITICAL for proper output normalization
+            ln_post_weight = self.weights.get('ln_post_weight', np.ones((d_model,)))
+            ln_post_bias = self.weights.get('ln_post_bias', np.zeros((d_model,)))
+            weight_tensors.extend([
+                Tensor.from_numpy(ln_post_weight.astype(np.float32)).to(self.max_driver_device),
+                Tensor.from_numpy(ln_post_bias.astype(np.float32)).to(self.max_driver_device),
+            ])
             
             # Execute MAX Graph encoder with all tensors
             outputs = self.max_encoder.execute(*weight_tensors)

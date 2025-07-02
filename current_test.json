@@ -1,0 +1,32 @@
+[
+  {
+    "implementation": "cpu",
+    "model_size": "tiny",
+    "audio_file": "audio_samples/modular_video.wav",
+    "timestamp": 1751390879.245803,
+    "status": "success",
+    "execution_time": 3.3376317024230957,
+    "transcription": "Music Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie iMalls out of the box on AMD and Nvidia hardware. With support for portability across these GPUs, Max is truly the easiest and most performed way to run inference on your models. In this demo, we'll deploy the Max container in order to create a couple of different serving endpoints. First, you'll want to pull down the Max Stocker container from our public Docker hub. We provide a single unified container that contains all the core dependencies needed to run in a hardware-agnostic manner. Let's start with the NVIDIA. I'm running on a host here that has a H-180 gig GPU attached. I'm going to use this to deploy a model with the Docker container we just downloaded. I can pass a hugging-face model ID for the model that we want to use. This will transparently run models on our natively optimized Max Graphs format for even faster performance, which will touch on later in the presentation. This spins up a rest endpoint that's open AI compatible with no extra setup required. Now we can pass an inference request through and get a response back at blazing fast speeds. Check this out. I'm going to send a curl request with OpenAI-Chat completion-A-Pi-Spec. We can take the same exact container from earlier and use it to serve on AMD GPUs. The best part? All of this just works out of the box. Max unlocks the fastest inference on AMD hardware in just minutes. In fact, here's how Max compares to existing infrastructure. And here's how AMD and NVIDIA performance compared directly. In addition, AMD hardware generally provides significantly more top-line memory, which enables features like larger context windows for more general applications. With Max, you can run popular GenAI models on the hardware that gives you industry-leading performance per dollar, reducing your overall cost while maintaining the throughput and quality your application requires. Thanks for watching!",
+    "transcription_length": 2035
+  },
+  {
+    "implementation": "gpu",
+    "model_size": "tiny",
+    "audio_file": "audio_samples/modular_video.wav",
+    "timestamp": 1751390883.0759616,
+    "status": "success",
+    "execution_time": 0.9643995761871338,
+    "transcription": "Music Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie iMalls out of the box on AMD and Nvidia hardware. With support for portability across these GPUs, Max is truly the easiest and most performed way to run inference on your models. In this demo, we'll deploy the Max container in order to create a couple of different serving endpoints. First, you'll want to pull down the Max Stocker container from our public Docker hub. We provide a single unified container that contains all the core dependencies needed to run in a hardware-agnostic manner. Let's start with the NVIDIA. I'm running on a host here that has a H-180 gig GPU attached. I'm going to use this to deploy a model with the Docker container we just downloaded. I can pass a hugging-face model ID for the model that we want to use. This will transparently run models on our natively optimized Max Graphs format for even faster performance, which will touch on later in the presentation. This spins up a rest endpoint that's open AI compatible with no extra setup required. Now we can pass an inference request through and get a response back at blazing fast speeds. Check this out. I'm going to send a curl request with OpenAI-Chat completion-A-Pi-Spec. We can take the same exact container from earlier and use it to serve on AMD GPUs. The best part? All of this just works out of the box. Max unlocks the fastest inference on AMD hardware in just minutes. In fact, here's how Max compares to existing infrastructure. And here's how AMD and NVIDIA performance compared directly. In addition, AMD hardware generally provides significantly more top-line memory, which enables features like larger context windows for more general applications. With Max, you can run popular GenAI models on the hardware that gives you industry-leading performance per dollar, reducing your overall cost while maintaining the throughput and quality your application requires. Thanks for watching!",
+    "transcription_length": 2035
+  },
+  {
+    "implementation": "max",
+    "model_size": "tiny",
+    "audio_file": "audio_samples/modular_video.wav",
+    "timestamp": 1751390884.3282206,
+    "status": "success",
+    "execution_time": 0.5187931060791016,
+    "transcription": "<|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|><|ml|>",
+    "transcription_length": 1344
+  }
+]
