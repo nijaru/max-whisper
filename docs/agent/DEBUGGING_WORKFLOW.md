@@ -4,7 +4,9 @@
 
 ## Overview
 
-This workflow provides systematic procedures for debugging the semantic quality issue in the MAX Graph implementation. Follow these steps to maintain consistency and track progress effectively.
+This workflow provides systematic procedures for debugging the semantic quality issue in the MAX Graph implementation. **MAJOR UPDATE**: Phase 1 completed successfully with critical bias bug fixed. Now in Phase 2 focusing on scale/variance optimization.
+
+**Current Status**: ✅ Bias fixed (0.692 → 0.002), 🔧 Scale optimization needed (std: 1.47 vs ~0.40)
 
 ## Before Starting Any Session
 
@@ -25,10 +27,12 @@ export DEBUG_SESSION="$(date +%Y%m%d_%H%M)"
 echo "Starting debugging session: $DEBUG_SESSION"
 ```
 
-## Phase 1: Feature Analysis Workflow
+## Phase 1: Feature Analysis Workflow ✅ COMPLETED
 
-### Step 1: Extract Encoder Features
-For systematic comparison, extract features from all implementations:
+**Summary**: Successfully identified and fixed missing final layer normalization (ln_post).
+
+### Step 1: Extract Encoder Features ✅ COMPLETED
+Systematic comparison infrastructure established with debugging tools:
 
 ```bash
 # Extract features from each implementation
@@ -61,19 +65,28 @@ Update `DEBUGGING_FINDINGS.md` with:
 - Identified divergence layers/operations
 - Hypotheses for next investigation
 
-## Phase 2: Precision Debugging Workflow
+## Phase 2: Precision Debugging Workflow 🔧 IN PROGRESS
 
-### Step 1: Isolate Operations
-Test individual operations in isolation:
+**Current Focus**: Scale/variance optimization - encoder std is 1.47 vs target ~0.40
 
-```python
-# Example: Test attention operation precision
-def test_attention_precision():
-    # Extract attention inputs from both implementations
-    # Run attention operation separately
-    # Compare outputs numerically
-    pass
+### Step 1: Scale/Variance Analysis
+Focus on operations that may cause variance inflation:
+
+```bash
+# Run current debugging tools
+pixi run -e benchmark debug-encoder --audio audio_samples/modular_video.wav
+
+# Key metrics to track:
+# - Mean (should be ~0.002, ✅ FIXED)  
+# - Std (currently 1.47, target ~0.40)
+# - Range and distribution patterns
 ```
+
+**Priority Operations to Investigate**:
+1. **Attention mechanism** - Multi-head attention scaling
+2. **Convolution operations** - 1D conv scaling in feature extraction
+3. **Weight precision** - Tensor conversion and floating point precision
+4. **Layer normalization epsilon** - Numerical stability parameters
 
 ### Step 2: Fix and Validate Loop
 For each identified issue:
