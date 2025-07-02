@@ -45,7 +45,7 @@ install-check = "python scripts/setup_weights.py"
 **Current**: Only 1 basic test file
 **Needed**:
 ```
-tests/
+test/
 ├── unit/
 │   ├── test_whisper_cpu.py
 │   ├── test_whisper_gpu.py

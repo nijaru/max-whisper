@@ -89,6 +89,12 @@ max:
 
 # fast implementation removed
 
+# Run test suite
+test:
+	$(call check_env)
+	@echo "🧪 Running test suite..."
+	@$(PIXI_ENV) python -m pytest test/ -v
+
 # Detailed benchmark analysis  
 benchmark:
 	$(call check_env)
@@ -132,11 +138,13 @@ endif
 clean:
 	@echo "🧹 Cleaning up..."
 	rm -f COMPLETE_RESULTS*.md
-	rm -f *.pyc
+	rm -f *.pyc *.json
 	rm -rf __pycache__
 	rm -rf max-whisper/__pycache__
 	rm -rf benchmarks/__pycache__
 	rm -rf examples/__pycache__
+	rm -rf test/__pycache__
+	rm -rf test/output/*
 	@echo "✅ Cleanup complete"
 
 # Installation and setup commands
