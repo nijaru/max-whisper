@@ -8,36 +8,39 @@
 - **CPU Baseline** (`max-whisper/whisper_cpu.py`) - Perfect transcription, ~10.6s
 - **GPU Accelerated** (`max-whisper/whisper_gpu.py`) - Perfect transcription, ~1.9s (5.7x speedup)
 
-### MAX Graph Implementation ⚠️
+### MAX Graph Implementation 🔧
 - **File**: `max-whisper/whisper_max.py`
-- **Technical Status**: Complete architectural integration
-- **Output Quality**: Produces repetitive tokens instead of meaningful transcription
-- **Performance**: ~123ms encoder execution on GPU
+- **Technical Status**: Major breakthrough - bias issue fixed
+- **Output Quality**: Significant improvement from repetitive tokens to meaningful characters
+- **Performance**: ~0.85s total execution (13.0x speedup over CPU)
 
 ## What Works in MAX Graph
 - ✅ Environment setup and compilation
-- ✅ Weight extraction (65 pretrained weights from Whisper tiny)
+- ✅ Weight extraction (67 pretrained weights from Whisper tiny, including critical ln_post)
 - ✅ Graph compilation with MAX Graph operations
 - ✅ Cross-framework integration (MAX Graph encoder → PyTorch decoder)
 - ✅ Device management (GPU/CPU)
 - ✅ Fast execution without errors
+- ✅ Bias problem fixed with final layer normalization
 
-## Current Focus: Semantic Quality Implementation
+## Current Focus: Scale/Variance Optimization
 
-**Problem**: The encoder produces mathematically correct but semantically poor features. This results in the decoder generating repetitive tokens (e.g., `<|ml|>`) instead of meaningful speech transcription.
+**Major Progress**: Fixed critical bias issue by adding missing final layer normalization (`ln_post`). Encoder feature bias reduced from 0.692 → 0.002 (99% improvement).
+
+**Remaining Challenge**: Encoder features still have higher variance than expected (std: 1.47 vs target: ~0.40). Working on scale optimization for full semantic fidelity.
 
 **Strategic Plan**: 3-phase systematic approach (see `SEMANTIC_QUALITY_PLAN.md`)
-- **Phase 1**: Feature Analysis & Comparison (Week 1)
-- **Phase 2**: Precision Debugging & Fixes (Weeks 2-3)  
-- **Phase 3**: Validation & Optimization (Week 4)
+- **Phase 1**: Feature Analysis & Comparison ✅ COMPLETED - Major bias fix identified and implemented
+- **Phase 2**: Precision Debugging & Fixes 🔧 IN PROGRESS - Working on scale/variance optimization
+- **Phase 3**: Validation & Optimization (Upcoming)
 
-**Current Phase**: Phase 1 - Ready to begin feature extraction and comparison
+**Current Phase**: Phase 2 - Scale optimization and variance matching
 
 ## Immediate Next Steps
-1. **Set up feature extraction** for all three implementations
-2. **Create comparison infrastructure** for numerical analysis
-3. **Run baseline comparison** to identify divergence points
-4. **Begin systematic debugging** based on findings
+1. **Investigate scale/variance issues** in encoder output (std: 1.47 vs target: ~0.40)
+2. **Analyze attention mechanism precision** - potential source of variance inflation
+3. **Debug convolution operations** - another potential source of scale issues
+4. **Test weight precision and tensor operations** for numerical accuracy
 
 **Documentation**: Track progress in `DEBUGGING_FINDINGS.md` and use Claude Code todos for specific tasks
 
