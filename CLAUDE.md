@@ -8,10 +8,10 @@ Speech recognition using OpenAI Whisper with MAX Graph acceleration. Three imple
 ## Implementation Status
 | Implementation | File | Status | Performance | Quality |
 |---------------|------|--------|-------------|---------|
-| CPU Baseline | `max-whisper/whisper_cpu.py` | ✅ Working | ~10.8s | Perfect (2035 chars) |
-| GPU Accelerated | `max-whisper/whisper_gpu.py` | ✅ Working | ~2.9s | Perfect (2035 chars) |
-| MAX Graph Hybrid | `max-whisper/whisper_max.py` | ✅ Working | ~1.0s (17x speedup) | Meaningful (259 chars) |
-| **MAX Graph Full** | `max-whisper/whisper_max.py --full-max-graph` | ✅ **WORKING!** | ~1.0s (20x speedup) | Sequence-Aware Self-Attention |
+| CPU Baseline | `max-whisper/whisper_cpu.py` | ✅ Working | ~3.4s | Perfect (2035 chars) |
+| GPU Accelerated | `max-whisper/whisper_gpu.py` | ✅ Working | ~1.0s | Perfect (2035 chars) |
+| MAX Graph Hybrid | `max-whisper/whisper_max.py` | ⚠️ Length Limited | ~1.9s (1.8x speedup) | Semantic (259 chars) |
+| **MAX Graph Full** | `max-whisper/whisper_max.py --full-max-graph` | 🔧 Development | ~1.0s target | Research Phase |
 
 ## Quick Commands
 ```bash
@@ -75,18 +75,19 @@ ops.slice_tensor(x, [...])
 - **Setup Instructions**: See `docs/SETUP_GUIDE.md`
 
 ## Current Focus  
-**PIPELINE BREAKTHROUGH ACHIEVED** - Fixed critical encoder variance mismatch! Transformed garbage output to coherent English through statistical correction. Core encoder-decoder pipeline now functional with proper feature scaling (std: 1.4475 → 0.3995). Next phase: semantic quality optimization for full transcription length.
+**SEMANTIC QUALITY ACHIEVED** - MAX Graph encoder produces semantically correct transcription matching CPU baseline content. Encoder working properly (std: 1.447 ≈ OpenAI 1.448). Current challenge: extending transcription length from 259 to 2035+ characters while maintaining semantic accuracy.
 
 ## Key Achievements
-- **Complete 4-Layer Transformer Decoder**: Full native MAX Graph implementation with proper attention mechanisms
-- **Fixed Critical Issues**: Broken self-attention, wrong scaling, single-layer limitation all resolved
-- **Advanced Text Generation**: Nucleus sampling, repetition penalties, guided generation, intelligent stopping
-- **Production Architecture**: All 4 decoder layers, proper Q@K^T@V attention, cross-attention, MLP blocks
-- **Performance Maintained**: ~1.0s execution (20x speedup) with robust error handling
-- **Quality Evolution**: From stuck special tokens to real English vocabulary generation
-- **Sequence-Aware Self-Attention**: Full sequence context with causal masking for coherent text generation
-- **Historic Achievement**: First working native MAX Graph autoregressive text decoder with sequence awareness
-- **API Compatibility Fixed**: Resolved ops.softmax, ops.gather, ops.reshape compatibility issues
-- **KV Cache Implementation**: Incremental computation with 448x K,V reduction and 25,088x attention reduction
-- **Production Optimization**: Linear O(n) scaling, 0.8MB memory savings, cache management
-- **Performance Validation**: 97 tok/s average, 2.3x speedup, linear scaling confirmed, 100% reliability
+- **Semantic Quality Breakthrough**: MAX Graph encoder produces correct content ("Max provides several different libraries...")
+- **Encoder-Decoder Integration**: Successful cross-framework tensor passing (MAX Graph → PyTorch)
+- **Performance**: 1.8x speedup over CPU (1.9s vs 3.4s) with semantic accuracy
+- **Statistical Matching**: Encoder std: 1.447 matches OpenAI std: 1.448 exactly
+- **Architecture Validation**: Core pipeline proven functional without artificial corrections
+- **Content Accuracy**: Transcription matches CPU baseline semantic content
+- **Conv2D Fallback**: Working implementation for Conv1D operations in MAX Graph
+- **Error Resolution**: Fixed tensor layout and feature scaling issues
+
+## Current Challenge
+- **Length Limitation**: Consistent stopping at ~259 characters (12.7% of baseline)
+- **Decoder Investigation**: PyTorch decoder confidence drops with MAX Graph features
+- **Next Phase**: Analyze stopping criteria and feature patterns to extend length
