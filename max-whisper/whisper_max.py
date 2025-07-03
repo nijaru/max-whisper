@@ -1585,9 +1585,14 @@ class MaxGraphWhisperDecoder:
             ).to(self.max_driver_device)
             
             for step in range(max_length):
-                # Prepare current token and position
+                # Prepare current token and position with better context encoding
                 current_token = np.array([[tokens[-1]]], dtype=np.int32)  # [1, 1]
-                position = np.array([[len(tokens) - 1]], dtype=np.int32)  # [1, 1]
+                
+                # Enhanced position encoding that incorporates sequence context
+                # Use position relative to start of meaningful content (after special tokens)
+                meaningful_start = 3  # Skip first few special tokens
+                relative_position = max(0, len(tokens) - meaningful_start)
+                position = np.array([[relative_position]], dtype=np.int32)  # [1, 1]
                 
                 current_token_tensor = Tensor.from_numpy(current_token).to(self.max_driver_device)
                 position_tensor = Tensor.from_numpy(position).to(self.max_driver_device)
@@ -1667,9 +1672,23 @@ class MaxGraphWhisperDecoder:
                     top_5_probs = logits[0, 0, top_5_indices]
                     print(f"    Step {step}: token={next_token}, top5_tokens={top_5_indices}, top5_logits={top_5_probs}")
                 
-                # Check for end-of-sequence
+                # Enhanced stopping criteria
                 if next_token == tokenizer.eot:
                     break
+                    
+                # Stop if we're generating too much repetition
+                if step > 5:
+                    recent_tokens = tokens[-5:]
+                    if len(set(recent_tokens)) <= 2:  # Too much repetition
+                        print(f"    Early stop: excessive repetition detected")
+                        break
+                
+                # Stop if generating mostly punctuation
+                if step > 8:
+                    recent_text = tokenizer.decode(tokens[-3:])
+                    if len(recent_text.strip()) == 0 or recent_text.count('.') + recent_text.count(',') > len(recent_text) // 2:
+                        print(f"    Early stop: punctuation loop detected")
+                        break
             
             # Decode tokens to text
             text = tokenizer.decode(tokens)
