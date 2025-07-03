@@ -457,40 +457,37 @@ class WhisperMAX:
                 
                 print(f"      🔧 Building efficient Conv1D using Conv2D...")
                 
-                # Implement Conv1D using Conv2D operations for efficiency
+                # Implement Conv1D using Conv2D operations for MAX Graph (NHWC format)
                 # Input: mel_input [1, 80, 3000] (batch, channels, length)
                 
-                # Transpose to NHWC format for Conv2D: [1, 80, 3000] -> [1, 3000, 80]
+                # Convert to NHWC format for MAX Graph: [1, 80, 3000] -> [1, 1, 3000, 80] (NHWC)
                 mel_transposed = ops.transpose(mel_input, 1, 2)  # [1, 3000, 80]
-                
-                # Add height dimension for Conv2D: [1, 3000, 80] -> [1, 1, 3000, 80] (NHWC)
                 mel_2d = ops.reshape(mel_transposed, (1, 1, 3000, n_mels))  # [1, height=1, width=3000, channels=80]
                 
-                # Convert Conv1D weights to Conv2D format
-                # conv1_weight: [384, 80, 3] (pytorch) -> [1, 3, 80, 384] (Conv2D RSCF: height, width, in_channels, out_channels)
+                # Convert Conv1D weights to MAX Graph Conv2D format (RSCF: height, width, in_channels, out_channels)
+                # conv1_weight: [384, 80, 3] (pytorch) -> [1, 3, 80, 384] (MAX Graph format)
                 conv1_weight_permuted = ops.permute(conv1_weight, [2, 1, 0])  # [3, 80, 384]
                 conv1_weight_2d = ops.reshape(conv1_weight_permuted, (1, 3, n_mels, n_audio_state))  # [1, 3, 80, 384]
                 
-                # Apply Conv1D as Conv2D: kernel=3, stride=1, padding=1
-                # padding=(top, bottom, left, right) - for 1D conv, pad width only: (0, 0, 1, 1)
+                # Apply Conv1D as Conv2D: kernel=(1,3), stride=(1,1), padding=(0,1)
                 x = ops.conv2d(
                     mel_2d, 
                     conv1_weight_2d, 
                     stride=(1, 1),           # (height_stride, width_stride)
                     padding=(0, 0, 1, 1),    # (pad_top, pad_bottom, pad_left, pad_right)
                     bias=conv1_bias
-                )  # Output: [1, 1, 3000, 384]
+                )  # Output: [1, 1, 3000, 384] (NHWC format)
                 
-                # Remove height dimension and apply GELU: [1, 1, 3000, 384] -> [1, 3000, 384]
+                # Remove height dimension and convert to sequence format: [1, 1, 3000, 384] -> [1, 3000, 384]
                 x = ops.reshape(x, (1, 3000, n_audio_state))
                 x = ops.gelu(x)
                 
                 # Conv1D layer 2: 384 -> 384, kernel=3, stride=2, padding=1 (with downsampling)
-                # Add height dimension again: [1, 3000, 384] -> [1, 1, 3000, 384]
+                # Convert to NHWC format: [1, 3000, 384] -> [1, 1, 3000, 384]
                 x_2d = ops.reshape(x, (1, 1, 3000, n_audio_state))
                 
-                # Convert conv2 weights to Conv2D format
-                # conv2_weight: [384, 384, 3] (pytorch) -> [1, 3, 384, 384] (Conv2D RSCF format)
+                # Convert conv2 weights to MAX Graph Conv2D format (RSCF: height, width, in_channels, out_channels)
+                # conv2_weight: [384, 384, 3] (pytorch) -> [1, 3, 384, 384] (MAX Graph format)
                 conv2_weight_permuted = ops.permute(conv2_weight, [2, 1, 0])  # [3, 384, 384]
                 conv2_weight_2d = ops.reshape(conv2_weight_permuted, (1, 3, n_audio_state, n_audio_state))  # [1, 3, 384, 384]
                 
@@ -501,9 +498,9 @@ class WhisperMAX:
                     stride=(1, 2),           # stride=2 in width dimension for downsampling
                     padding=(0, 0, 1, 1),    # padding=1 in width dimension
                     bias=conv2_bias
-                )  # Output: [1, 1, 1500, 384] (width downsampled by stride=2)
+                )  # Output: [1, 1, 1500, 384] (width downsampled by stride=2, NHWC format)
                 
-                # Remove height dimension and apply GELU: [1, 1, 1500, 384] -> [1, 1500, 384]
+                # Remove height dimension: [1, 1, 1500, 384] -> [1, 1500, 384]
                 x = ops.reshape(x, (1, 1500, n_audio_state))
                 x = ops.gelu(x)
                 
@@ -721,9 +718,9 @@ class WhisperMAX:
             
             max_start = time.time()
             
-            # Process audio with mel spectrogram
-            mel_features = librosa.feature.melspectrogram(y=audio, sr=sr, n_mels=80)
-            mel_db = librosa.power_to_db(mel_features, ref=np.max)
+            # Process audio with mel spectrogram using OpenAI Whisper's method
+            import whisper
+            mel_db = whisper.log_mel_spectrogram(audio).numpy()  # Use OpenAI's exact mel processing
             print(f"      ✅ Mel features: {mel_db.shape}")
             
             # Process through MAX Graph encoder, then use original decoder for correct output
@@ -749,7 +746,7 @@ class WhisperMAX:
                     
                     # Compare with OpenAI encoder features for debugging
                     print("    🔍 COMPARISON: Getting OpenAI encoder features for comparison...")
-                    openai_features = self._get_openai_encoder_features(mel_features)
+                    openai_features = self._get_openai_encoder_features(mel_db)
                     openai_mean = np.mean(openai_features)
                     openai_std = np.std(openai_features)
                     openai_min, openai_max = np.min(openai_features), np.max(openai_features)
@@ -782,19 +779,26 @@ class WhisperMAX:
                         import torch
                         from whisper.decoding import DecodingOptions
                         
-                        # Convert corrected features to PyTorch tensor
+                        # Skip aggressive feature scaling - use original features with repetition detection
+                        # MAX Graph produces std ~1.45, OpenAI produces std ~0.40
+                        # Rely on optimized decoder parameters and repetition detection instead
+                        max_std = np.std(max_encoder_features)
+                        
+                        print(f"      🔧 Using original MAX Graph features (std: {max_std:.3f}) with repetition detection")
+                        
+                        # Convert MAX Graph features to PyTorch tensor without aggressive scaling
                         features_tensor = torch.from_numpy(max_encoder_features.copy()).float()
                         device = next(self.whisper_model.parameters()).device
                         features_tensor = features_tensor.to(device)
                         
-                        # Decode with proper options (matching working CPU/GPU implementations)
+                        # Decode with parameters optimized for original MAX Graph features
                         options = DecodingOptions(
                             task="transcribe",
                             language="en",
                             temperature=0.0,        # Deterministic output (matches GPU impl)
-                            sample_len=448,         # Whisper's typical max length
-                            beam_size=5,           # Proper beam search (not greedy single-token)
-                            patience=1.0,          # Allow complete sequences
+                            sample_len=1000,        # Increased max length for full transcription
+                            beam_size=5,           # Moderate beam search to balance quality vs speed
+                            patience=20.0,         # High patience to prevent early stopping
                             without_timestamps=True,
                             suppress_blank=True,
                             suppress_tokens="-1"
@@ -809,7 +813,15 @@ class WhisperMAX:
                         else:
                             transcription = "Decoder integration issue"
                         
-                        print(f"      ✅ MAX Graph transcription: '{transcription}'")
+                        # Apply repetition detection and cleanup
+                        original_length = len(transcription)
+                        transcription = self._clean_repetitive_text(transcription)
+                        cleaned_length = len(transcription)
+                        
+                        if cleaned_length < original_length:
+                            print(f"      🧹 Cleaned repetitive text: {original_length} → {cleaned_length} chars")
+                        
+                        print(f"      ✅ MAX Graph transcription ({len(transcription)} chars): '{transcription[:100]}{'...' if len(transcription) > 100 else ''}'")
                             
                     except Exception as e:
                         print(f"      ❌ Transcription error: {e}")
@@ -1118,6 +1130,57 @@ class WhisperMAX:
         except Exception as e:
             print(f"      ❌ MAX Graph decoder failed: {e}")
             return "MAX Graph decoding error occurred."
+    
+    def _clean_repetitive_text(self, text: str) -> str:
+        """
+        Clean repetitive text patterns that can occur with MAX Graph features
+        Detects and removes loops like "you can see that you can see that..."
+        """
+        if not text or len(text) < 20:
+            return text
+        
+        words = text.split()
+        if len(words) < 10:
+            return text
+        
+        # Look for repetitive patterns
+        for pattern_length in range(2, 8):  # Check patterns of 2-7 words
+            for start_idx in range(len(words) - pattern_length * 3):
+                pattern = words[start_idx:start_idx + pattern_length]
+                pattern_str = " ".join(pattern)
+                
+                # Count consecutive repetitions
+                repetitions = 1
+                check_idx = start_idx + pattern_length
+                
+                while check_idx + pattern_length <= len(words):
+                    next_pattern = words[check_idx:check_idx + pattern_length]
+                    if next_pattern == pattern:
+                        repetitions += 1
+                        check_idx += pattern_length
+                    else:
+                        break
+                
+                # If we found 3+ repetitions, this is likely a loop
+                if repetitions >= 3:
+                    # Keep the text before the repetition and add the pattern once
+                    before_repetition = words[:start_idx]
+                    clean_words = before_repetition + pattern
+                    
+                    # Add any text after the repetition if it's different
+                    after_idx = start_idx + (repetitions * pattern_length)
+                    if after_idx < len(words):
+                        remaining = words[after_idx:]
+                        # Only add if it's not more repetition
+                        if remaining != pattern:
+                            clean_words.extend(remaining)
+                    
+                    cleaned_text = " ".join(clean_words)
+                    
+                    # Recursively clean in case there are multiple patterns
+                    return self._clean_repetitive_text(cleaned_text)
+        
+        return text
 
 
 def demo_max(model_size="tiny", audio_file=None):

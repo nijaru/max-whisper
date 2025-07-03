@@ -34,9 +34,9 @@ def extract_max_encoder_features(audio_path="audio_samples/modular_video.wav"):
         audio, sr = librosa.load(audio_path, sr=16000)
         print(f"    ✅ Audio loaded: {len(audio)/sr:.1f}s")
         
-        # Extract mel features using librosa (same as implementation)
-        mel_features = librosa.feature.melspectrogram(y=audio, sr=sr, n_mels=80)
-        mel_db = librosa.power_to_db(mel_features, ref=np.max)
+        # Extract mel features using OpenAI Whisper's method (same as corrected implementation)
+        import whisper as whisper_lib
+        mel_db = whisper_lib.log_mel_spectrogram(audio).numpy()
         print(f"    ✅ Mel features shape: {mel_db.shape}")
         
         # Run MAX Graph encoder

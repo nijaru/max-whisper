@@ -1,0 +1,904 @@
+{
+  "baseline": {
+    "text": "Music Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie iMalls out of the box on AMD and Nvidia hardware. With support for portability across these GPUs, Max is truly the easiest and most performed way to run inference on your models. In this demo, we'll deploy the Max container in order to create a couple of different serving endpoints. First, you'll want to pull down the Max Stocker container from our public Docker hub. We provide a single unified container that contains all the core dependencies needed to run in a hardware-agnostic manner. Let's start with the NVIDIA. I'm running on a host here that has a H-180 gig GPU attached. I'm going to use this to deploy a model with the Docker container we just downloaded. I can pass a hugging-face model ID for the model that we want to use. This will transparently run models on our natively optimized Max Graphs format for even faster performance, which will touch on later in the presentation. This spins up a rest endpoint that's open AI compatible with no extra setup required. Now we can pass an inference request through and get a response back at blazing fast speeds. Check this out. I'm going to send a curl request with OpenAI-Chat completion-A-Pi-Spec. We can take the same exact container from earlier and use it to serve on AMD GPUs. The best part? All of this just works out of the box. Max unlocks the fastest inference on AMD hardware in just minutes. In fact, here's how Max compares to existing infrastructure. And here's how AMD and NVIDIA performance compared directly. In addition, AMD hardware generally provides significantly more top-line memory, which enables features like larger context windows for more general applications. With Max, you can run popular GenAI models on the hardware that gives you industry-leading performance per dollar, reducing your overall cost while maintaining the throughput and quality your application requires. Thanks for watching!",
+    "length": 2035
+  },
+  "test_results": [
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.0,
+        "patience": 1.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.18237829208374023
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.0,
+        "patience": 1.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.0518643856048584
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.0,
+        "patience": 1.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.05126047134399414
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.0,
+        "patience": 5.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.05844259262084961
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.0,
+        "patience": 5.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.0587611198425293
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.0,
+        "patience": 5.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.05822324752807617
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.0,
+        "patience": 10.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.55104660987854
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.0,
+        "patience": 10.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.5498969554901123
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.0,
+        "patience": 10.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.5504119396209717
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.1,
+        "patience": 1.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.0506289005279541
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.1,
+        "patience": 1.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.05047345161437988
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.1,
+        "patience": 1.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.05037069320678711
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.1,
+        "patience": 5.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.05811905860900879
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.1,
+        "patience": 5.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.05761837959289551
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.1,
+        "patience": 5.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.058320045471191406
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.1,
+        "patience": 10.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.5536911487579346
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.1,
+        "patience": 10.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.5474743843078613
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.1,
+        "patience": 10.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.5495619773864746
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.3,
+        "patience": 1.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.05214357376098633
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.3,
+        "patience": 1.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.0503392219543457
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.3,
+        "patience": 1.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.05043435096740723
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.3,
+        "patience": 5.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.05751776695251465
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.3,
+        "patience": 5.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.057802677154541016
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.3,
+        "patience": 5.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.058005332946777344
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.3,
+        "patience": 10.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.5521504878997803
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.3,
+        "patience": 10.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.5497682094573975
+    },
+    {
+      "parameters": {
+        "beam_size": 1,
+        "temperature": 0.3,
+        "patience": 10.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.5479710102081299
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.0,
+        "patience": 1.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.13200950622558594
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.0,
+        "patience": 1.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.09270977973937988
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.0,
+        "patience": 1.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.09104561805725098
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.0,
+        "patience": 5.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.11139321327209473
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.0,
+        "patience": 5.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.11203742027282715
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.0,
+        "patience": 5.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.11067867279052734
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.0,
+        "patience": 10.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 803,
+      "decode_time": 0.40339136123657227
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.0,
+        "patience": 10.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 803,
+      "decode_time": 0.39864087104797363
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.0,
+        "patience": 10.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 803,
+      "decode_time": 0.3999764919281006
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.1,
+        "patience": 1.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.09123444557189941
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.1,
+        "patience": 1.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.0913856029510498
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.1,
+        "patience": 1.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.09119272232055664
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.1,
+        "patience": 5.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.11080431938171387
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.1,
+        "patience": 5.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.11136007308959961
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.1,
+        "patience": 5.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.11162543296813965
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.1,
+        "patience": 10.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 803,
+      "decode_time": 0.40305566787719727
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.1,
+        "patience": 10.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 803,
+      "decode_time": 0.3992805480957031
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.1,
+        "patience": 10.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 803,
+      "decode_time": 0.3995330333709717
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.3,
+        "patience": 1.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.09236335754394531
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.3,
+        "patience": 1.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.09184122085571289
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.3,
+        "patience": 1.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.09259724617004395
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.3,
+        "patience": 5.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.11191868782043457
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.3,
+        "patience": 5.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.11082601547241211
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.3,
+        "patience": 5.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.11088156700134277
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.3,
+        "patience": 10.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 803,
+      "decode_time": 0.39966893196105957
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.3,
+        "patience": 10.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 803,
+      "decode_time": 0.4021275043487549
+    },
+    {
+      "parameters": {
+        "beam_size": 5,
+        "temperature": 0.3,
+        "patience": 10.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 803,
+      "decode_time": 0.4007687568664551
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.0,
+        "patience": 1.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.1479196548461914
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.0,
+        "patience": 1.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.14779329299926758
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.0,
+        "patience": 1.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.14725041389465332
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.0,
+        "patience": 5.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.18288755416870117
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.0,
+        "patience": 5.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.18292641639709473
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.0,
+        "patience": 5.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.18338990211486816
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.0,
+        "patience": 10.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 838,
+      "decode_time": 1.657137155532837
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.0,
+        "patience": 10.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 838,
+      "decode_time": 1.652977466583252
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.0,
+        "patience": 10.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 838,
+      "decode_time": 1.6599152088165283
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.1,
+        "patience": 1.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.14748167991638184
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.1,
+        "patience": 1.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.14897727966308594
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.1,
+        "patience": 1.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.15046167373657227
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.1,
+        "patience": 5.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.18329215049743652
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.1,
+        "patience": 5.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.18304204940795898
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.1,
+        "patience": 5.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.18317270278930664
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.1,
+        "patience": 10.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 838,
+      "decode_time": 1.656207799911499
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.1,
+        "patience": 10.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 838,
+      "decode_time": 1.663902997970581
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.1,
+        "patience": 10.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 838,
+      "decode_time": 1.6618425846099854
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.3,
+        "patience": 1.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.14877104759216309
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.3,
+        "patience": 1.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.14754557609558105
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.3,
+        "patience": 1.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.14758515357971191
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.3,
+        "patience": 5.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.18303418159484863
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.3,
+        "patience": 5.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.18357014656066895
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.3,
+        "patience": 5.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for Porter",
+      "length": 218,
+      "decode_time": 0.18314194679260254
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.3,
+        "patience": 10.0,
+        "max_length": 448
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 838,
+      "decode_time": 1.6582694053649902
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.3,
+        "patience": 10.0,
+        "max_length": 1000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 838,
+      "decode_time": 1.6551003456115723
+    },
+    {
+      "parameters": {
+        "beam_size": 10,
+        "temperature": 0.3,
+        "patience": 10.0,
+        "max_length": 2000
+      },
+      "text": "Max provides several different libraries, including a high-performance serving library, that enables you to influence on the most popular Genie I models out of the box on AMD and Nvidia hardware. With support for portability, you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that you can see that.",
+      "length": 838,
+      "decode_time": 1.6552751064300537
+    }
+  ],
+  "summary": {
+    "total_tests": 81,
+    "best_length": 838,
+    "baseline_length": 2035
+  }
+}
