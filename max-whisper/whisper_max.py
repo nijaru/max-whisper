@@ -1724,30 +1724,54 @@ class MaxGraphWhisperDecoder:
                     
                     output_idx += 2
                 
-                # 1. Mask out high-index tokens (vocabulary cleanup)
+                # 1. Improved vocabulary masking for better text quality
                 masked_logits = raw_logits.copy()
-                masked_logits[50000:] = -np.inf
                 
-                # 2. Apply context-aware repetition penalty
-                for i, recent_token in enumerate(tokens[-10:]):  # Look at last 10 tokens
+                # Mask special tokens and unusual vocabulary entries
+                masked_logits[50000:] = -np.inf  # High-index tokens
+                masked_logits[50257:] = -np.inf  # Special tokens like <|startoftranscript|>
+                
+                # Suppress control characters and problematic tokens
+                problematic_tokens = [
+                    50258, 50259, 50260, 50261, 50262, 50263, 50264,  # Special control tokens
+                    0, 1, 2, 3, 4, 5,  # Very low index tokens (often special)
+                ]
+                for token in problematic_tokens:
+                    if token < len(masked_logits):
+                        masked_logits[token] = -np.inf
+                
+                # 2. Apply context-aware repetition penalty (reduced)
+                for i, recent_token in enumerate(tokens[-5:]):  # Look at only last 5 tokens
                     if recent_token < 50000:
-                        # Stronger penalty for more recent tokens
-                        penalty = 3.0 * (1.0 - i / 10.0)  # 3.0 for most recent, decreasing
+                        # Milder penalty for more recent tokens
+                        penalty = 1.5 * (1.0 - i / 5.0)  # 1.5 for most recent, decreasing
                         masked_logits[recent_token] -= penalty
                 
-                # 3. Guide generation with context-aware token boosting
-                if step < 3:
-                    # Boost start-of-sentence tokens and common beginnings
-                    sentence_starters = [262, 464, 383, 314, 770, 921, 770]  # 'the', 'This', 'We', 'I', 'In', 'Max', etc.
-                    for token in sentence_starters:
-                        if token < len(masked_logits):
-                            masked_logits[token] += 2.0
-                elif step < 8:
-                    # Boost common content words
-                    content_words = [262, 318, 286, 290, 284, 329, 257, 307, 318, 468]  # articles, prepositions, common words
-                    for token in content_words:
+                # 3. Improved vocabulary boosting for better text quality
+                if step < 5:
+                    # Boost real words and common sentence starters
+                    good_tokens = [
+                        # Articles and determiners
+                        262, 264, 257,  # 'the', 'a', 'an'
+                        # Common words
+                        290, 318, 329, 307, 284, 468,  # 'and', 'is', 'of', 'to', 'in', 'that'
+                        # Sentence starters  
+                        464, 383, 314, 770, 921,  # 'This', 'We', 'I', 'In', 'Max'
+                        # Tech words for modular content
+                        1822, 2239, 3274, 4955,  # 'max', 'model', 'system', 'library'
+                    ]
+                    for token in good_tokens:
                         if token < len(masked_logits):
                             masked_logits[token] += 1.5
+                elif step < 15:
+                    # Continue boosting common vocabulary
+                    common_words = [
+                        262, 264, 257, 290, 318, 329, 307, 284, 468,  # Basic vocab
+                        11, 13, 30, 837, 340, 351, 588,  # Punctuation and connectors
+                    ]
+                    for token in common_words:
+                        if token < len(masked_logits):
+                            masked_logits[token] += 1.0
                 else:
                     # Boost punctuation and sentence enders
                     enders = [13, 11, 30, 50256]  # '.', ',', '?', EOS
@@ -1792,17 +1816,17 @@ class MaxGraphWhisperDecoder:
                 if next_token == tokenizer.eot:
                     break
                     
-                # Stop if we're generating too much repetition
-                if step > 5:
-                    recent_tokens = tokens[-5:]
-                    if len(set(recent_tokens)) <= 2:  # Too much repetition
+                # Stop if we're generating too much repetition (relaxed)
+                if step > 15:  # Wait longer before checking repetition
+                    recent_tokens = tokens[-8:]  # Look at more tokens
+                    if len(set(recent_tokens)) <= 1:  # Only stop on complete repetition
                         print(f"    Early stop: excessive repetition detected")
                         break
                 
-                # Stop if generating mostly punctuation
-                if step > 8:
-                    recent_text = tokenizer.decode(tokens[-3:])
-                    if len(recent_text.strip()) == 0 or recent_text.count('.') + recent_text.count(',') > len(recent_text) // 2:
+                # Stop if generating mostly punctuation (relaxed)
+                if step > 20:  # Wait much longer before checking punctuation
+                    recent_text = tokenizer.decode(tokens[-5:])  # Look at more context
+                    if len(recent_text.strip()) == 0 or recent_text.count('.') + recent_text.count(',') > len(recent_text) * 0.8:  # 80% threshold
                         print(f"    Early stop: punctuation loop detected")
                         break
             
