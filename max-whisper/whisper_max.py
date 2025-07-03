@@ -1325,17 +1325,20 @@ class MaxGraphWhisperDecoder:
             raise
     
     def _build_decoder_graph(self):
-        """Build an enhanced MAX Graph decoder with proper transformer layers"""
+        """Build a sequence-aware MAX Graph decoder with causal self-attention"""
         try:
-            print("🔧 Building enhanced MAX Graph decoder...")
+            print("🔧 Building sequence-aware MAX Graph decoder...")
             
-            # Enhanced single-step decoder with improved context modeling
-            # Input: encoder features + current token + position + context + layer weights
+            # Sequence-aware decoder with full context modeling
+            # Input: encoder features + token sequence + sequence length + causal mask + layer weights
             # Output: next token logits
             
             encoder_features_type = TensorType(DType.float32, (1, 1500, self.d_model), device=self.max_device)
-            current_token_type = TensorType(DType.int32, (1, 1), device=self.max_device)  # Current token
-            position_type = TensorType(DType.int32, (1, 1), device=self.max_device)  # Position index
+            
+            # NEW: Full sequence input instead of single token
+            sequence_type = TensorType(DType.int32, (1, self.max_seq_len), device=self.max_device)  # Full sequence
+            sequence_length_type = TensorType(DType.int32, (1,), device=self.max_device)  # Actual length
+            causal_mask_type = TensorType(DType.float32, (self.max_seq_len, self.max_seq_len), device=self.max_device)  # Causal mask
             
             # Token and positional embedding weights
             token_embedding_type = TensorType(DType.float32, (self.vocab_size, self.d_model), device=self.max_device)
@@ -1384,7 +1387,7 @@ class MaxGraphWhisperDecoder:
                 TensorType(DType.float32, (self.d_model,), device=self.max_device),  # ln_f_bias
             ]
             
-            input_types = [encoder_features_type, current_token_type, position_type,
+            input_types = [encoder_features_type, sequence_type, sequence_length_type, causal_mask_type,
                           token_embedding_type, pos_embedding_type] + layer_weights + final_ln_weights
             
             with Graph("whisper_decoder_enhanced", input_types=input_types) as graph:
@@ -1393,17 +1396,25 @@ class MaxGraphWhisperDecoder:
                 
                 # Get main inputs
                 encoder_features = inputs[input_idx]; input_idx += 1
-                current_token = inputs[input_idx]; input_idx += 1
-                position = inputs[input_idx]; input_idx += 1
+                token_sequence = inputs[input_idx]; input_idx += 1
+                sequence_length = inputs[input_idx]; input_idx += 1
+                causal_mask = inputs[input_idx]; input_idx += 1
                 token_embedding = inputs[input_idx]; input_idx += 1
                 pos_embedding = inputs[input_idx]; input_idx += 1
                 
-                # Token embedding lookup
-                token_embed = ops.gather(token_embedding, current_token, axis=0)  # [1, 1, d_model]
+                # NEW: Sequence embedding lookup for full context
+                # token_sequence: [1, max_seq_len], token_embedding: [vocab_size, d_model]
+                # Result: [1, max_seq_len, d_model]
+                token_embed = ops.gather(token_embedding, token_sequence, axis=0)  
                 
-                # Add positional embedding
-                pos_embed = ops.gather(pos_embedding, position, axis=0)  # [1, 1, d_model]
-                x = ops.add(token_embed, pos_embed)
+                # Add positional embedding for full sequence
+                # Use pre-computed position indices from input (simpler approach)
+                # We'll pass position indices as part of the generation loop
+                # For now, gather embeddings based on token positions (handled in generation loop)
+                pos_embed = pos_embedding[:self.max_seq_len, :]  # [max_seq_len, d_model]
+                pos_embed = ops.expand_dims(pos_embed, 0)  # [1, max_seq_len, d_model]
+                
+                x = ops.add(token_embed, pos_embed)  # [1, max_seq_len, d_model]
                 
                 # All 4 decoder layers for complete transformer architecture
                 for layer_idx in range(self.n_layer):
@@ -1436,30 +1447,38 @@ class MaxGraphWhisperDecoder:
                     mlp_fc2_weight = inputs[input_idx]; input_idx += 1
                     mlp_fc2_bias = inputs[input_idx]; input_idx += 1
                     
-                    # Self-attention block (causal - not implemented for single token)
-                    residual = x
+                    # Self-attention block with CAUSAL MASKING for sequence context
+                    residual = x  # [1, max_seq_len, d_model]
                     x_norm = ops.layer_norm(x, self_attn_ln_weight, self_attn_ln_bias, epsilon=1e-5)
                     
-                    # Proper self-attention with multi-head mechanism
-                    Q_self = ops.matmul(x_norm, ops.transpose(self_attn_q_weight, 0, 1))
+                    # Self-attention with multi-head mechanism for full sequence
+                    Q_self = ops.matmul(x_norm, ops.transpose(self_attn_q_weight, 0, 1))  # [1, max_seq_len, d_model]
                     Q_self = ops.add(Q_self, self_attn_q_bias)
-                    K_self = ops.matmul(x_norm, ops.transpose(self_attn_k_weight, 0, 1))
-                    V_self = ops.matmul(x_norm, ops.transpose(self_attn_v_weight, 0, 1))
+                    K_self = ops.matmul(x_norm, ops.transpose(self_attn_k_weight, 0, 1))   # [1, max_seq_len, d_model]
+                    V_self = ops.matmul(x_norm, ops.transpose(self_attn_v_weight, 0, 1))   # [1, max_seq_len, d_model]
                     V_self = ops.add(V_self, self_attn_v_bias)
                     
-                    # Self-attention computation with proper scaling
+                    # Self-attention computation with CAUSAL MASKING
                     head_dim = self.d_model // self.n_head  # 384 // 6 = 64
                     scale = 1.0 / np.sqrt(head_dim)  # Use head dimension, not full d_model
-                    self_scores = ops.matmul(Q_self, ops.transpose(K_self, -2, -1))  # [1, 1, 1]
+                    self_scores = ops.matmul(Q_self, ops.transpose(K_self, -2, -1))  # [1, max_seq_len, max_seq_len]
                     self_scores = ops.mul(self_scores, scale)
-                    self_attention_weights = ops.softmax(self_scores)
-                    self_attended = ops.matmul(self_attention_weights, V_self)  # [1, 1, d_model]
+                    
+                    # Apply causal mask: mask out future tokens (set to -inf)
+                    # causal_mask is lower triangular: 1 for allowed, 0 for masked
+                    # Use element-wise operations: mask * scores + (1-mask) * (-1e9)
+                    mask_penalty = ops.mul(ops.sub(1.0, causal_mask), -1e9)
+                    masked_scores = ops.mul(causal_mask, self_scores)
+                    masked_logits = ops.add(masked_scores, mask_penalty)
+                    
+                    self_attention_weights = ops.softmax(masked_logits, axis=-1)  # [1, max_seq_len, max_seq_len]
+                    self_attended = ops.matmul(self_attention_weights, V_self)  # [1, max_seq_len, d_model]
                     
                     # Self-attention output projection
                     self_attn_out = ops.matmul(self_attended, ops.transpose(self_attn_out_weight, 0, 1))
                     self_attn_out = ops.add(self_attn_out, self_attn_out_bias)
                     
-                    x = ops.add(residual, self_attn_out)
+                    x = ops.add(residual, self_attn_out)  # [1, max_seq_len, d_model]
                     
                     # Cross-attention block
                     residual = x
@@ -1504,8 +1523,13 @@ class MaxGraphWhisperDecoder:
                 ln_f_bias = inputs[input_idx]; input_idx += 1
                 x = ops.layer_norm(x, ln_f_weight, ln_f_bias, epsilon=1e-5)
                 
-                # Output projection to vocabulary
-                logits = ops.matmul(x, ops.transpose(token_embedding, 0, 1))  # [1, 1, vocab_size]
+                # Output projection to vocabulary for all sequence positions
+                # x: [1, max_seq_len, d_model], token_embedding^T: [d_model, vocab_size]
+                # Result: [1, max_seq_len, vocab_size]
+                logits = ops.matmul(x, ops.transpose(token_embedding, 0, 1))
+                
+                # For autoregressive generation, we'll extract the last valid position in the generation loop
+                # This allows the graph to be used for both training (all positions) and generation (last position)
                 
                 graph.output(logits)
             
@@ -1518,6 +1542,29 @@ class MaxGraphWhisperDecoder:
             import traceback
             traceback.print_exc()
             self.max_decoder = None
+    
+    def _create_causal_mask(self, seq_len: int) -> np.ndarray:
+        """Create a causal mask for autoregressive generation"""
+        # Lower triangular matrix: 1 for allowed positions, 0 for masked
+        mask = np.tril(np.ones((self.max_seq_len, self.max_seq_len), dtype=np.float32))
+        return mask
+    
+    def _prepare_sequence_inputs(self, tokens: list) -> tuple:
+        """Prepare sequence inputs with proper padding and masking"""
+        # Pad or truncate tokens to max_seq_len
+        seq_len = min(len(tokens), self.max_seq_len)
+        
+        # Create padded sequence
+        padded_sequence = np.zeros((1, self.max_seq_len), dtype=np.int32)
+        padded_sequence[0, :seq_len] = tokens[:seq_len]
+        
+        # Sequence length
+        sequence_length = np.array([seq_len], dtype=np.int32)
+        
+        # Causal mask
+        causal_mask = self._create_causal_mask(seq_len)
+        
+        return padded_sequence, sequence_length, causal_mask
     
     def generate_text(self, encoder_features: np.ndarray, max_length: int = 15) -> str:
         """
@@ -1585,28 +1632,26 @@ class MaxGraphWhisperDecoder:
             ).to(self.max_driver_device)
             
             for step in range(max_length):
-                # Prepare current token and position with better context encoding
-                current_token = np.array([[tokens[-1]]], dtype=np.int32)  # [1, 1]
+                # NEW: Prepare full sequence inputs with causal masking
+                padded_sequence, sequence_length, causal_mask = self._prepare_sequence_inputs(tokens)
                 
-                # Enhanced position encoding that incorporates sequence context
-                # Use position relative to start of meaningful content (after special tokens)
-                meaningful_start = 3  # Skip first few special tokens
-                relative_position = max(0, len(tokens) - meaningful_start)
-                position = np.array([[relative_position]], dtype=np.int32)  # [1, 1]
+                # Convert to tensors
+                sequence_tensor = Tensor.from_numpy(padded_sequence).to(self.max_driver_device)
+                sequence_length_tensor = Tensor.from_numpy(sequence_length).to(self.max_driver_device)
+                causal_mask_tensor = Tensor.from_numpy(causal_mask).to(self.max_driver_device)
                 
-                current_token_tensor = Tensor.from_numpy(current_token).to(self.max_driver_device)
-                position_tensor = Tensor.from_numpy(position).to(self.max_driver_device)
-                
-                # Execute enhanced decoder with all inputs
-                decoder_inputs = [encoder_tensor, current_token_tensor, position_tensor,
+                # Execute sequence-aware decoder with all inputs
+                decoder_inputs = [encoder_tensor, sequence_tensor, sequence_length_tensor, causal_mask_tensor,
                                 token_embedding_tensor, pos_embedding_tensor] + layer_tensors + [
                                 ln_f_weight_tensor, ln_f_bias_tensor]
                 
                 outputs = self.max_decoder.execute(*decoder_inputs)
-                logits = outputs[0].to_numpy()  # [1, 1, vocab_size]
+                all_logits = outputs[0].to_numpy()  # [1, max_seq_len, vocab_size]
                 
-                # Apply advanced sampling strategy for better text generation
-                raw_logits = logits[0, 0, :].copy()
+                # Extract logits for the current position (last valid position in sequence)
+                current_pos = len(tokens) - 1  # 0-indexed current position
+                current_pos = min(current_pos, self.max_seq_len - 1)  # Ensure within bounds
+                raw_logits = all_logits[0, current_pos, :].copy()  # Extract current position logits
                 
                 # 1. Mask out high-index tokens (vocabulary cleanup)
                 masked_logits = raw_logits.copy()
@@ -1668,9 +1713,9 @@ class MaxGraphWhisperDecoder:
                 
                 # Debug: Print first few token predictions
                 if step < 10:
-                    top_5_indices = np.argsort(logits[0, 0, :])[-5:][::-1]
-                    top_5_probs = logits[0, 0, top_5_indices]
-                    print(f"    Step {step}: token={next_token}, top5_tokens={top_5_indices}, top5_logits={top_5_probs}")
+                    top_5_indices = np.argsort(raw_logits)[-5:][::-1]
+                    top_5_probs = raw_logits[top_5_indices]
+                    print(f"    Step {step}: token={next_token}, pos={current_pos}, top5_tokens={top_5_indices}, top5_logits={top_5_probs}")
                 
                 # Enhanced stopping criteria
                 if next_token == tokenizer.eot:
