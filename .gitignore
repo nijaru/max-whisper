@@ -206,3 +206,10 @@ results/tests/temp_*
 !results/benchmarks/benchmark_results*.md
 whisper_*.npz
 whisper_*_config.json
+
+# Debug and temporary files
+encoder_debug.json
+decoder_tuning_results.json
+*_debug.json
+*_results.json
+benchmark_temp_*

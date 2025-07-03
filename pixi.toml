@@ -9,8 +9,7 @@ version = "0.1.0"
 [tasks]
 hello = "mojo hello.mojo"
 graph-test = "python -c 'import max.graph; print(\"MAX Graph ready\")'"
-test = "python -m pytest test/ -v"
-test-max = "python test/test_max_graph.py"
+test-basic = "python test/test_max_graph.py"
 
 [feature.benchmark.tasks]
 demo = "python scripts/tui_demo.py"
@@ -24,6 +23,8 @@ benchmark-legacy = "python benchmarks/benchmark_all.py"
 extract-features = "python benchmarks/feature_extractor.py"
 compare-simple = "python benchmarks/simple_feature_comparison.py"
 debug-encoder = "python benchmarks/encoder_feature_debug.py"
+test = "python -m pytest test/ -v"
+results-summary = "python benchmarks/results_tracker.py"
 
 [dependencies]
 python = ">=3.9,<3.12"
