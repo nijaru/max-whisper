@@ -1341,40 +1341,42 @@ class MaxGraphWhisperDecoder:
             token_embedding_type = TensorType(DType.float32, (self.vocab_size, self.d_model), device=self.max_device)
             pos_embedding_type = TensorType(DType.float32, (self.max_seq_len, self.d_model), device=self.max_device)
             
-            # First decoder layer weights (we'll use just one layer for now)
-            layer_weights = [
-                # Self-attention weights
-                TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # self_attn_q_weight
-                TensorType(DType.float32, (self.d_model,), device=self.max_device),  # self_attn_q_bias
-                TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # self_attn_k_weight
-                TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # self_attn_v_weight
-                TensorType(DType.float32, (self.d_model,), device=self.max_device),  # self_attn_v_bias
-                TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # self_attn_out_weight
-                TensorType(DType.float32, (self.d_model,), device=self.max_device),  # self_attn_out_bias
-                
-                # Cross-attention weights  
-                TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # cross_attn_q_weight
-                TensorType(DType.float32, (self.d_model,), device=self.max_device),  # cross_attn_q_bias
-                TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # cross_attn_k_weight
-                TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # cross_attn_v_weight
-                TensorType(DType.float32, (self.d_model,), device=self.max_device),  # cross_attn_v_bias
-                TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # cross_attn_out_weight
-                TensorType(DType.float32, (self.d_model,), device=self.max_device),  # cross_attn_out_bias
-                
-                # Layer norm weights
-                TensorType(DType.float32, (self.d_model,), device=self.max_device),  # self_attn_ln_weight
-                TensorType(DType.float32, (self.d_model,), device=self.max_device),  # self_attn_ln_bias
-                TensorType(DType.float32, (self.d_model,), device=self.max_device),  # cross_attn_ln_weight
-                TensorType(DType.float32, (self.d_model,), device=self.max_device),  # cross_attn_ln_bias
-                TensorType(DType.float32, (self.d_model,), device=self.max_device),  # mlp_ln_weight
-                TensorType(DType.float32, (self.d_model,), device=self.max_device),  # mlp_ln_bias
-                
-                # MLP weights
-                TensorType(DType.float32, (self.d_ff, self.d_model), device=self.max_device),  # mlp_fc1_weight
-                TensorType(DType.float32, (self.d_ff,), device=self.max_device),  # mlp_fc1_bias
-                TensorType(DType.float32, (self.d_model, self.d_ff), device=self.max_device),  # mlp_fc2_weight
-                TensorType(DType.float32, (self.d_model,), device=self.max_device),  # mlp_fc2_bias
-            ]
+            # All 4 decoder layer weights for complete transformer
+            layer_weights = []
+            for layer_idx in range(self.n_layer):  # 4 layers
+                layer_weights.extend([
+                    # Self-attention weights
+                    TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # self_attn_q_weight
+                    TensorType(DType.float32, (self.d_model,), device=self.max_device),  # self_attn_q_bias
+                    TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # self_attn_k_weight
+                    TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # self_attn_v_weight
+                    TensorType(DType.float32, (self.d_model,), device=self.max_device),  # self_attn_v_bias
+                    TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # self_attn_out_weight
+                    TensorType(DType.float32, (self.d_model,), device=self.max_device),  # self_attn_out_bias
+                    
+                    # Cross-attention weights  
+                    TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # cross_attn_q_weight
+                    TensorType(DType.float32, (self.d_model,), device=self.max_device),  # cross_attn_q_bias
+                    TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # cross_attn_k_weight
+                    TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # cross_attn_v_weight
+                    TensorType(DType.float32, (self.d_model,), device=self.max_device),  # cross_attn_v_bias
+                    TensorType(DType.float32, (self.d_model, self.d_model), device=self.max_device),  # cross_attn_out_weight
+                    TensorType(DType.float32, (self.d_model,), device=self.max_device),  # cross_attn_out_bias
+                    
+                    # Layer norm weights
+                    TensorType(DType.float32, (self.d_model,), device=self.max_device),  # self_attn_ln_weight
+                    TensorType(DType.float32, (self.d_model,), device=self.max_device),  # self_attn_ln_bias
+                    TensorType(DType.float32, (self.d_model,), device=self.max_device),  # cross_attn_ln_weight
+                    TensorType(DType.float32, (self.d_model,), device=self.max_device),  # cross_attn_ln_bias
+                    TensorType(DType.float32, (self.d_model,), device=self.max_device),  # mlp_ln_weight
+                    TensorType(DType.float32, (self.d_model,), device=self.max_device),  # mlp_ln_bias
+                    
+                    # MLP weights
+                    TensorType(DType.float32, (self.d_ff, self.d_model), device=self.max_device),  # mlp_fc1_weight
+                    TensorType(DType.float32, (self.d_ff,), device=self.max_device),  # mlp_fc1_bias
+                    TensorType(DType.float32, (self.d_model, self.d_ff), device=self.max_device),  # mlp_fc2_weight
+                    TensorType(DType.float32, (self.d_model,), device=self.max_device),  # mlp_fc2_bias
+                ])
             
             # Final layer norm
             final_ln_weights = [
@@ -1403,89 +1405,99 @@ class MaxGraphWhisperDecoder:
                 pos_embed = ops.gather(pos_embedding, position, axis=0)  # [1, 1, d_model]
                 x = ops.add(token_embed, pos_embed)
                 
-                # Single decoder layer (using first layer weights)
-                # Get layer weights
-                self_attn_q_weight = inputs[input_idx]; input_idx += 1
-                self_attn_q_bias = inputs[input_idx]; input_idx += 1
-                self_attn_k_weight = inputs[input_idx]; input_idx += 1
-                self_attn_v_weight = inputs[input_idx]; input_idx += 1
-                self_attn_v_bias = inputs[input_idx]; input_idx += 1
-                self_attn_out_weight = inputs[input_idx]; input_idx += 1
-                self_attn_out_bias = inputs[input_idx]; input_idx += 1
-                
-                cross_attn_q_weight = inputs[input_idx]; input_idx += 1
-                cross_attn_q_bias = inputs[input_idx]; input_idx += 1
-                cross_attn_k_weight = inputs[input_idx]; input_idx += 1
-                cross_attn_v_weight = inputs[input_idx]; input_idx += 1
-                cross_attn_v_bias = inputs[input_idx]; input_idx += 1
-                cross_attn_out_weight = inputs[input_idx]; input_idx += 1
-                cross_attn_out_bias = inputs[input_idx]; input_idx += 1
-                
-                self_attn_ln_weight = inputs[input_idx]; input_idx += 1
-                self_attn_ln_bias = inputs[input_idx]; input_idx += 1
-                cross_attn_ln_weight = inputs[input_idx]; input_idx += 1
-                cross_attn_ln_bias = inputs[input_idx]; input_idx += 1
-                mlp_ln_weight = inputs[input_idx]; input_idx += 1
-                mlp_ln_bias = inputs[input_idx]; input_idx += 1
-                
-                mlp_fc1_weight = inputs[input_idx]; input_idx += 1
-                mlp_fc1_bias = inputs[input_idx]; input_idx += 1
-                mlp_fc2_weight = inputs[input_idx]; input_idx += 1
-                mlp_fc2_bias = inputs[input_idx]; input_idx += 1
-                
-                # Self-attention block (causal - not implemented for single token)
-                residual = x
-                x_norm = ops.layer_norm(x, self_attn_ln_weight, self_attn_ln_bias, epsilon=1e-5)
-                
-                # Simplified self-attention (single token, no masking needed)
-                Q_self = ops.matmul(x_norm, ops.transpose(self_attn_q_weight, 0, 1))
-                Q_self = ops.add(Q_self, self_attn_q_bias)
-                K_self = ops.matmul(x_norm, ops.transpose(self_attn_k_weight, 0, 1))
-                V_self = ops.matmul(x_norm, ops.transpose(self_attn_v_weight, 0, 1))
-                V_self = ops.add(V_self, self_attn_v_bias)
-                
-                # Self-attention computation (trivial for single token)
-                self_attn_out = ops.matmul(Q_self, ops.transpose(self_attn_out_weight, 0, 1))
-                self_attn_out = ops.add(self_attn_out, self_attn_out_bias)
-                
-                x = ops.add(residual, self_attn_out)
-                
-                # Cross-attention block
-                residual = x
-                x_norm = ops.layer_norm(x, cross_attn_ln_weight, cross_attn_ln_bias, epsilon=1e-5)
-                
-                # Cross-attention: Q from decoder, K,V from encoder
-                Q_cross = ops.matmul(x_norm, ops.transpose(cross_attn_q_weight, 0, 1))
-                Q_cross = ops.add(Q_cross, cross_attn_q_bias)
-                K_cross = ops.matmul(encoder_features, ops.transpose(cross_attn_k_weight, 0, 1))
-                V_cross = ops.matmul(encoder_features, ops.transpose(cross_attn_v_weight, 0, 1))
-                V_cross = ops.add(V_cross, cross_attn_v_bias)
-                
-                # Cross-attention computation
-                cross_scores = ops.matmul(Q_cross, ops.transpose(K_cross, -2, -1))  # [1, 1, 1500]
-                scale = 1.0 / np.sqrt(self.d_model)
-                cross_scores = ops.mul(cross_scores, scale)
-                cross_attention_weights = ops.softmax(cross_scores)
-                cross_attended = ops.matmul(cross_attention_weights, V_cross)  # [1, 1, d_model]
-                
-                # Cross-attention output projection
-                cross_attn_out = ops.matmul(cross_attended, ops.transpose(cross_attn_out_weight, 0, 1))
-                cross_attn_out = ops.add(cross_attn_out, cross_attn_out_bias)
-                
-                x = ops.add(residual, cross_attn_out)
-                
-                # MLP block
-                residual = x
-                x_norm = ops.layer_norm(x, mlp_ln_weight, mlp_ln_bias, epsilon=1e-5)
-                
-                # MLP: Linear -> GELU -> Linear
-                x_mlp = ops.matmul(x_norm, ops.transpose(mlp_fc1_weight, 0, 1))
-                x_mlp = ops.add(x_mlp, mlp_fc1_bias)
-                x_mlp = ops.gelu(x_mlp)
-                x_mlp = ops.matmul(x_mlp, ops.transpose(mlp_fc2_weight, 0, 1))
-                x_mlp = ops.add(x_mlp, mlp_fc2_bias)
-                
-                x = ops.add(residual, x_mlp)
+                # All 4 decoder layers for complete transformer architecture
+                for layer_idx in range(self.n_layer):
+                    # Get layer weights
+                    self_attn_q_weight = inputs[input_idx]; input_idx += 1
+                    self_attn_q_bias = inputs[input_idx]; input_idx += 1
+                    self_attn_k_weight = inputs[input_idx]; input_idx += 1
+                    self_attn_v_weight = inputs[input_idx]; input_idx += 1
+                    self_attn_v_bias = inputs[input_idx]; input_idx += 1
+                    self_attn_out_weight = inputs[input_idx]; input_idx += 1
+                    self_attn_out_bias = inputs[input_idx]; input_idx += 1
+                    
+                    cross_attn_q_weight = inputs[input_idx]; input_idx += 1
+                    cross_attn_q_bias = inputs[input_idx]; input_idx += 1
+                    cross_attn_k_weight = inputs[input_idx]; input_idx += 1
+                    cross_attn_v_weight = inputs[input_idx]; input_idx += 1
+                    cross_attn_v_bias = inputs[input_idx]; input_idx += 1
+                    cross_attn_out_weight = inputs[input_idx]; input_idx += 1
+                    cross_attn_out_bias = inputs[input_idx]; input_idx += 1
+                    
+                    self_attn_ln_weight = inputs[input_idx]; input_idx += 1
+                    self_attn_ln_bias = inputs[input_idx]; input_idx += 1
+                    cross_attn_ln_weight = inputs[input_idx]; input_idx += 1
+                    cross_attn_ln_bias = inputs[input_idx]; input_idx += 1
+                    mlp_ln_weight = inputs[input_idx]; input_idx += 1
+                    mlp_ln_bias = inputs[input_idx]; input_idx += 1
+                    
+                    mlp_fc1_weight = inputs[input_idx]; input_idx += 1
+                    mlp_fc1_bias = inputs[input_idx]; input_idx += 1
+                    mlp_fc2_weight = inputs[input_idx]; input_idx += 1
+                    mlp_fc2_bias = inputs[input_idx]; input_idx += 1
+                    
+                    # Self-attention block (causal - not implemented for single token)
+                    residual = x
+                    x_norm = ops.layer_norm(x, self_attn_ln_weight, self_attn_ln_bias, epsilon=1e-5)
+                    
+                    # Proper self-attention with multi-head mechanism
+                    Q_self = ops.matmul(x_norm, ops.transpose(self_attn_q_weight, 0, 1))
+                    Q_self = ops.add(Q_self, self_attn_q_bias)
+                    K_self = ops.matmul(x_norm, ops.transpose(self_attn_k_weight, 0, 1))
+                    V_self = ops.matmul(x_norm, ops.transpose(self_attn_v_weight, 0, 1))
+                    V_self = ops.add(V_self, self_attn_v_bias)
+                    
+                    # Self-attention computation with proper scaling
+                    head_dim = self.d_model // self.n_head  # 384 // 6 = 64
+                    scale = 1.0 / np.sqrt(head_dim)  # Use head dimension, not full d_model
+                    self_scores = ops.matmul(Q_self, ops.transpose(K_self, -2, -1))  # [1, 1, 1]
+                    self_scores = ops.mul(self_scores, scale)
+                    self_attention_weights = ops.softmax(self_scores)
+                    self_attended = ops.matmul(self_attention_weights, V_self)  # [1, 1, d_model]
+                    
+                    # Self-attention output projection
+                    self_attn_out = ops.matmul(self_attended, ops.transpose(self_attn_out_weight, 0, 1))
+                    self_attn_out = ops.add(self_attn_out, self_attn_out_bias)
+                    
+                    x = ops.add(residual, self_attn_out)
+                    
+                    # Cross-attention block
+                    residual = x
+                    x_norm = ops.layer_norm(x, cross_attn_ln_weight, cross_attn_ln_bias, epsilon=1e-5)
+                    
+                    # Cross-attention: Q from decoder, K,V from encoder
+                    Q_cross = ops.matmul(x_norm, ops.transpose(cross_attn_q_weight, 0, 1))
+                    Q_cross = ops.add(Q_cross, cross_attn_q_bias)
+                    K_cross = ops.matmul(encoder_features, ops.transpose(cross_attn_k_weight, 0, 1))
+                    V_cross = ops.matmul(encoder_features, ops.transpose(cross_attn_v_weight, 0, 1))
+                    V_cross = ops.add(V_cross, cross_attn_v_bias)
+                    
+                    # Cross-attention computation with proper scaling
+                    cross_scores = ops.matmul(Q_cross, ops.transpose(K_cross, -2, -1))  # [1, 1, 1500]
+                    head_dim = self.d_model // self.n_head  # 384 // 6 = 64
+                    scale = 1.0 / np.sqrt(head_dim)  # Use head dimension, not full d_model
+                    cross_scores = ops.mul(cross_scores, scale)
+                    cross_attention_weights = ops.softmax(cross_scores)
+                    cross_attended = ops.matmul(cross_attention_weights, V_cross)  # [1, 1, d_model]
+                    
+                    # Cross-attention output projection
+                    cross_attn_out = ops.matmul(cross_attended, ops.transpose(cross_attn_out_weight, 0, 1))
+                    cross_attn_out = ops.add(cross_attn_out, cross_attn_out_bias)
+                    
+                    x = ops.add(residual, cross_attn_out)
+                    
+                    # MLP block
+                    residual = x
+                    x_norm = ops.layer_norm(x, mlp_ln_weight, mlp_ln_bias, epsilon=1e-5)
+                    
+                    # MLP: Linear -> GELU -> Linear
+                    x_mlp = ops.matmul(x_norm, ops.transpose(mlp_fc1_weight, 0, 1))
+                    x_mlp = ops.add(x_mlp, mlp_fc1_bias)
+                    x_mlp = ops.gelu(x_mlp)
+                    x_mlp = ops.matmul(x_mlp, ops.transpose(mlp_fc2_weight, 0, 1))
+                    x_mlp = ops.add(x_mlp, mlp_fc2_bias)
+                    
+                    x = ops.add(residual, x_mlp)
                 
                 # Final layer norm
                 ln_f_weight = inputs[input_idx]; input_idx += 1
@@ -1507,7 +1519,7 @@ class MaxGraphWhisperDecoder:
             traceback.print_exc()
             self.max_decoder = None
     
-    def generate_text(self, encoder_features: np.ndarray, max_length: int = 100) -> str:
+    def generate_text(self, encoder_features: np.ndarray, max_length: int = 30) -> str:
         """
         Generate text using autoregressive decoding with enhanced MAX Graph decoder
         
@@ -1542,26 +1554,27 @@ class MaxGraphWhisperDecoder:
                 self.weights['positional_embedding'].astype(np.float32)
             ).to(self.max_driver_device)
             
-            # Prepare first layer weights (using layer 0)
+            # Prepare all 4 layer weights for complete decoder
             layer_tensors = []
-            for weight_name in [
-                'decoder_layer_0_self_attn_q_proj_weight', 'decoder_layer_0_self_attn_q_proj_bias',
-                'decoder_layer_0_self_attn_k_proj_weight', 'decoder_layer_0_self_attn_v_proj_weight',
-                'decoder_layer_0_self_attn_v_proj_bias', 'decoder_layer_0_self_attn_out_proj_weight',
-                'decoder_layer_0_self_attn_out_proj_bias',
-                'decoder_layer_0_cross_attn_q_proj_weight', 'decoder_layer_0_cross_attn_q_proj_bias',
-                'decoder_layer_0_cross_attn_k_proj_weight', 'decoder_layer_0_cross_attn_v_proj_weight',
-                'decoder_layer_0_cross_attn_v_proj_bias', 'decoder_layer_0_cross_attn_out_proj_weight',
-                'decoder_layer_0_cross_attn_out_proj_bias',
-                'decoder_layer_0_self_attn_layer_norm_weight', 'decoder_layer_0_self_attn_layer_norm_bias',
-                'decoder_layer_0_cross_attn_layer_norm_weight', 'decoder_layer_0_cross_attn_layer_norm_bias',
-                'decoder_layer_0_mlp_layer_norm_weight', 'decoder_layer_0_mlp_layer_norm_bias',
-                'decoder_layer_0_mlp_fc1_weight', 'decoder_layer_0_mlp_fc1_bias',
-                'decoder_layer_0_mlp_fc2_weight', 'decoder_layer_0_mlp_fc2_bias'
-            ]:
-                layer_tensors.append(Tensor.from_numpy(
-                    self.weights[weight_name].astype(np.float32)
-                ).to(self.max_driver_device))
+            for layer_idx in range(self.n_layer):  # 4 layers
+                for weight_name in [
+                    f'decoder_layer_{layer_idx}_self_attn_q_proj_weight', f'decoder_layer_{layer_idx}_self_attn_q_proj_bias',
+                    f'decoder_layer_{layer_idx}_self_attn_k_proj_weight', f'decoder_layer_{layer_idx}_self_attn_v_proj_weight',
+                    f'decoder_layer_{layer_idx}_self_attn_v_proj_bias', f'decoder_layer_{layer_idx}_self_attn_out_proj_weight',
+                    f'decoder_layer_{layer_idx}_self_attn_out_proj_bias',
+                    f'decoder_layer_{layer_idx}_cross_attn_q_proj_weight', f'decoder_layer_{layer_idx}_cross_attn_q_proj_bias',
+                    f'decoder_layer_{layer_idx}_cross_attn_k_proj_weight', f'decoder_layer_{layer_idx}_cross_attn_v_proj_weight',
+                    f'decoder_layer_{layer_idx}_cross_attn_v_proj_bias', f'decoder_layer_{layer_idx}_cross_attn_out_proj_weight',
+                    f'decoder_layer_{layer_idx}_cross_attn_out_proj_bias',
+                    f'decoder_layer_{layer_idx}_self_attn_layer_norm_weight', f'decoder_layer_{layer_idx}_self_attn_layer_norm_bias',
+                    f'decoder_layer_{layer_idx}_cross_attn_layer_norm_weight', f'decoder_layer_{layer_idx}_cross_attn_layer_norm_bias',
+                    f'decoder_layer_{layer_idx}_mlp_layer_norm_weight', f'decoder_layer_{layer_idx}_mlp_layer_norm_bias',
+                    f'decoder_layer_{layer_idx}_mlp_fc1_weight', f'decoder_layer_{layer_idx}_mlp_fc1_bias',
+                    f'decoder_layer_{layer_idx}_mlp_fc2_weight', f'decoder_layer_{layer_idx}_mlp_fc2_bias'
+                ]:
+                    layer_tensors.append(Tensor.from_numpy(
+                        self.weights[weight_name].astype(np.float32)
+                    ).to(self.max_driver_device))
             
             # Final layer norm
             ln_f_weight_tensor = Tensor.from_numpy(
@@ -1587,9 +1600,37 @@ class MaxGraphWhisperDecoder:
                 outputs = self.max_decoder.execute(*decoder_inputs)
                 logits = outputs[0].to_numpy()  # [1, 1, vocab_size]
                 
-                # Get next token (greedy decoding)
-                next_token = np.argmax(logits[0, 0, :])
+                # Apply temperature scaling and get next token with better sampling
+                temperature = 0.8  # Higher temperature for more diversity
+                scaled_logits = logits[0, 0, :] / temperature
+                
+                # Mask out high-index tokens that are likely noise (keep only first 50k tokens)
+                scaled_logits[50000:] = -np.inf
+                
+                # Add repetition penalty for recently generated tokens
+                for recent_token in tokens[-5:]:  # Penalize last 5 tokens
+                    if recent_token < 50000:
+                        scaled_logits[recent_token] -= 2.0  # Repetition penalty
+                
+                # Use top-k sampling instead of pure greedy for more diversity
+                k = 50
+                top_k_indices = np.argsort(scaled_logits)[-k:]
+                top_k_logits = scaled_logits[top_k_indices]
+                
+                # Apply softmax to get probabilities
+                exp_logits = np.exp(top_k_logits - np.max(top_k_logits))
+                probs = exp_logits / np.sum(exp_logits)
+                
+                # Sample from top-k tokens
+                sampled_idx = np.random.choice(len(top_k_indices), p=probs)
+                next_token = top_k_indices[sampled_idx]
                 tokens.append(int(next_token))
+                
+                # Debug: Print first few token predictions
+                if step < 10:
+                    top_5_indices = np.argsort(logits[0, 0, :])[-5:][::-1]
+                    top_5_probs = logits[0, 0, top_5_indices]
+                    print(f"    Step {step}: token={next_token}, top5_tokens={top_5_indices}, top5_logits={top_5_probs}")
                 
                 # Check for end-of-sequence
                 if next_token == tokenizer.eot:
