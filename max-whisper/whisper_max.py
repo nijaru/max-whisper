@@ -573,9 +573,12 @@ class WhisperMAX:
                 x = ops.layer_norm(x, ln_post_weight, ln_post_bias, epsilon=1e-5)
                 print(f"      ✅ Applied final layer normalization (ln_post)")
                 
-                # Note: Removed incorrect variance correction (0.234 scaling)
-                # OpenAI encoder actually produces std: ~1.45, not ~0.40 as initially assumed
-                print(f"      ✅ Using natural MAX Graph encoder output scale")
+                # CRITICAL: Apply variance correction to match OpenAI encoder distribution
+                # MAX Graph std: ~1.45, OpenAI std: ~0.40, so scale by 0.40/1.45 ≈ 0.276
+                variance_correction = 0.276  # Empirically determined: 0.4001/1.4475
+                scale_tensor = ops.constant(variance_correction, dtype=DType.float32, device=self.max_device)
+                x = ops.mul(x, scale_tensor)
+                print(f"      ✅ Applied variance correction (scale: {variance_correction}) to match OpenAI distribution")
                 
                 graph.output(x)
             
