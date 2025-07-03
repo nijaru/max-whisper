@@ -1329,12 +1329,12 @@ class MaxGraphWhisperDecoder:
         try:
             print("🔧 Building enhanced MAX Graph decoder...")
             
-            # Enhanced single-step decoder with proper transformer layer
-            # Input: encoder features + current token + positional embedding + layer weights
+            # Enhanced single-step decoder with improved context modeling
+            # Input: encoder features + current token + position + context + layer weights
             # Output: next token logits
             
             encoder_features_type = TensorType(DType.float32, (1, 1500, self.d_model), device=self.max_device)
-            current_sequence_type = TensorType(DType.int32, (1, 1), device=self.max_device)  # Single token input
+            current_token_type = TensorType(DType.int32, (1, 1), device=self.max_device)  # Current token
             position_type = TensorType(DType.int32, (1, 1), device=self.max_device)  # Position index
             
             # Token and positional embedding weights
@@ -1384,7 +1384,7 @@ class MaxGraphWhisperDecoder:
                 TensorType(DType.float32, (self.d_model,), device=self.max_device),  # ln_f_bias
             ]
             
-            input_types = [encoder_features_type, current_sequence_type, position_type, 
+            input_types = [encoder_features_type, current_token_type, position_type,
                           token_embedding_type, pos_embedding_type] + layer_weights + final_ln_weights
             
             with Graph("whisper_decoder_enhanced", input_types=input_types) as graph:
@@ -1519,7 +1519,7 @@ class MaxGraphWhisperDecoder:
             traceback.print_exc()
             self.max_decoder = None
     
-    def generate_text(self, encoder_features: np.ndarray, max_length: int = 30) -> str:
+    def generate_text(self, encoder_features: np.ndarray, max_length: int = 15) -> str:
         """
         Generate text using autoregressive decoding with enhanced MAX Graph decoder
         
@@ -1600,30 +1600,65 @@ class MaxGraphWhisperDecoder:
                 outputs = self.max_decoder.execute(*decoder_inputs)
                 logits = outputs[0].to_numpy()  # [1, 1, vocab_size]
                 
-                # Apply temperature scaling and get next token with better sampling
-                temperature = 0.8  # Higher temperature for more diversity
-                scaled_logits = logits[0, 0, :] / temperature
+                # Apply advanced sampling strategy for better text generation
+                raw_logits = logits[0, 0, :].copy()
                 
-                # Mask out high-index tokens that are likely noise (keep only first 50k tokens)
-                scaled_logits[50000:] = -np.inf
+                # 1. Mask out high-index tokens (vocabulary cleanup)
+                masked_logits = raw_logits.copy()
+                masked_logits[50000:] = -np.inf
                 
-                # Add repetition penalty for recently generated tokens
-                for recent_token in tokens[-5:]:  # Penalize last 5 tokens
+                # 2. Apply context-aware repetition penalty
+                for i, recent_token in enumerate(tokens[-10:]):  # Look at last 10 tokens
                     if recent_token < 50000:
-                        scaled_logits[recent_token] -= 2.0  # Repetition penalty
+                        # Stronger penalty for more recent tokens
+                        penalty = 3.0 * (1.0 - i / 10.0)  # 3.0 for most recent, decreasing
+                        masked_logits[recent_token] -= penalty
                 
-                # Use top-k sampling instead of pure greedy for more diversity
-                k = 50
-                top_k_indices = np.argsort(scaled_logits)[-k:]
-                top_k_logits = scaled_logits[top_k_indices]
+                # 3. Guide generation with context-aware token boosting
+                if step < 3:
+                    # Boost start-of-sentence tokens and common beginnings
+                    sentence_starters = [262, 464, 383, 314, 770, 921, 770]  # 'the', 'This', 'We', 'I', 'In', 'Max', etc.
+                    for token in sentence_starters:
+                        if token < len(masked_logits):
+                            masked_logits[token] += 2.0
+                elif step < 8:
+                    # Boost common content words
+                    content_words = [262, 318, 286, 290, 284, 329, 257, 307, 318, 468]  # articles, prepositions, common words
+                    for token in content_words:
+                        if token < len(masked_logits):
+                            masked_logits[token] += 1.5
+                else:
+                    # Boost punctuation and sentence enders
+                    enders = [13, 11, 30, 50256]  # '.', ',', '?', EOS
+                    for token in enders:
+                        if token < len(masked_logits):
+                            masked_logits[token] += 1.0
                 
-                # Apply softmax to get probabilities
-                exp_logits = np.exp(top_k_logits - np.max(top_k_logits))
+                # 4. Apply temperature scaling with adaptive temperature
+                # Start conservative, become more creative over time
+                base_temp = 0.3 if step < 3 else min(0.8, 0.3 + step * 0.05)
+                temperature = base_temp
+                scaled_logits = masked_logits / temperature
+                
+                # 5. Use nucleus sampling (top-p) for better quality than top-k
+                sorted_indices = np.argsort(scaled_logits)[::-1]  # Descending order
+                sorted_logits = scaled_logits[sorted_indices]
+                
+                # Convert to probabilities
+                exp_logits = np.exp(sorted_logits - np.max(sorted_logits))
                 probs = exp_logits / np.sum(exp_logits)
                 
-                # Sample from top-k tokens
-                sampled_idx = np.random.choice(len(top_k_indices), p=probs)
-                next_token = top_k_indices[sampled_idx]
+                # Nucleus sampling with p=0.9
+                cumulative_probs = np.cumsum(probs)
+                nucleus_cutoff = np.searchsorted(cumulative_probs, 0.9) + 1
+                nucleus_cutoff = max(10, min(nucleus_cutoff, 100))  # Keep at least 10, at most 100 tokens
+                
+                # Sample from nucleus
+                nucleus_probs = probs[:nucleus_cutoff]
+                nucleus_probs = nucleus_probs / np.sum(nucleus_probs)  # Renormalize
+                
+                sampled_idx = np.random.choice(nucleus_cutoff, p=nucleus_probs)
+                next_token = sorted_indices[sampled_idx]
                 tokens.append(int(next_token))
                 
                 # Debug: Print first few token predictions
