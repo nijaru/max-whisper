@@ -44,24 +44,24 @@ Prepare the KV-cached sequence-aware MAX Graph decoder for enterprise-grade depl
 ### Files Needed in Context:
 
 Core Implementation:
-@max-whisper/whisper_max.py - Production KV-cached decoder implementation
+@max-whisper/whisper_max.py - Production KV-cached decoder implementation (lines 1327-1800 for KV cache logic)
 @test_kv_cache_compilation.py - Compilation and basic inference validation
 
-Validation Results:
-@KV_CACHE_VALIDATION_REPORT.md - Complete technical validation report
-@benchmark_kv_cache.py - Performance testing suite
-@kv_cache_analysis.py - Statistical analysis framework
-@kv_cache_benchmark_results.json - Raw benchmark data
+Validation Framework:
+@KV_CACHE_VALIDATION_REPORT.md - Complete technical validation report with performance metrics
+@benchmark_kv_cache.py - Comprehensive performance testing suite with stress testing capabilities
+@kv_cache_analysis.py - Statistical analysis framework for scaling validation
+@kv_cache_benchmark_results.json - Raw benchmark data with performance baselines
 
 Production Infrastructure:
-@examples/ - Demo scripts for production usage
-@benchmarks/ - Performance measurement utilities
-@test/ - Comprehensive test suite
+@examples/ - Demo scripts showing production usage patterns
+@benchmarks/encoder_feature_debug.py - Performance measurement utilities for extended testing
+@test/ - Comprehensive test suite for production validation
 
-Project Documentation:
-@CLAUDE.md - Updated project status and achievements
-@docs/agent/PROJECT_STATUS.md - Current state with Phase 9 completion
-@docs/agent/DEVELOPMENT_PLAN.md - Roadmap with Phase 10 production deployment
+Project Planning:
+@CLAUDE.md - Updated project status with validation completion
+@docs/agent/PROJECT_STATUS.md - Current achievements and Phase 10 priorities
+@docs/agent/DEVELOPMENT_PLAN.md - Production deployment roadmap
 
 ## Specific Tasks for Next Session:
 
