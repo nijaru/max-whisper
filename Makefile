@@ -1,18 +1,14 @@
-# max-whisper: Speech Recognition with MAX Graph
-# Makefile for demo and testing of all implementations
+# MAX Graph Whisper
+# Professional speech recognition with MAX Graph acceleration
 
-# Default model size (tiny for fastest testing)
+# Configuration
 MODEL_SIZE ?= tiny
-
-# Default audio file
 AUDIO_FILE ?= audio_samples/modular_video.wav
-
-# Environment setup
 PIXI_ENV = pixi run -e benchmark
 
 # Environment check helper
 define check_env
-	@$(MAKE) env-check >/dev/null 2>&1 || { echo "❌ Environment not ready. Run 'make install' first."; exit 1; }
+	@$(MAKE) verify >/dev/null 2>&1 || { echo "❌ Environment not ready. Run 'make install' first."; exit 1; }
 endef
 
 # Suppress make directory messages
@@ -23,134 +19,119 @@ ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 MODEL_ARG := $(if $(filter tiny small base,$(ARGS)),$(filter tiny small base,$(ARGS)),$(MODEL_SIZE))
 AUDIO_ARG := $(if $(filter-out tiny small base,$(ARGS)),$(filter-out tiny small base,$(ARGS)),$(AUDIO_FILE))
 
-# Define phony targets including model sizes
-.PHONY: help demo benchmark test clean tiny small base cpu gpu max install build env-check gpu-check
+# Define phony targets
+.PHONY: help demo benchmark test clean install verify results
+.PHONY: test-cpu test-gpu test-max benchmark-json debug-encoder debug-features
 
-# Default target - run recommended demo
-all:
-	$(call check_env)
-	@echo "🚀 Starting recommended demo (tiny model)..."
-	@$(PIXI_ENV) python scripts/tui_demo.py tiny $(AUDIO_FILE)
+# Default target - show help
+all: help
 
 help:
-	@echo "🚀 max-whisper - Speech Recognition with MAX Graph"
-	@echo "======================================================="
+	@echo "# MAX Graph Whisper"
+	@echo "High-performance speech recognition with MAX Graph acceleration"
 	@echo ""
-	@echo "🚀 QUICK START:"
-	@echo "  tiny                   - Full demo with tiny model (fastest, recommended)"
-	@echo "  small                  - Full demo with small model (slower)"
-	@echo "  base                   - Full demo with base model (slowest)"
+	@echo "## Quick Start"
+	@echo "  make install          # Setup environment"
+	@echo "  make demo             # Interactive comparison demo"
 	@echo ""
-	@echo "🎯 MAIN COMMANDS:"
-	@echo "  demo [model] [file]    - All 3 implementations"
-	@echo "  benchmark [model]      - Performance analysis with detailed results"
+	@echo "## Core Commands"
+	@echo "  demo                  # Side-by-side comparison with live metrics"
+	@echo "  benchmark             # Structured performance analysis"
+	@echo "  benchmark-json        # JSON output for analysis"
+	@echo "  results               # View historical results"
 	@echo ""
-	@echo "🔧 INDIVIDUAL TESTS:"
-	@echo "  cpu [model] [file]     - CPU baseline only"
-	@echo "  gpu [model] [file]     - GPU accelerated only"
-	@echo "  max [model] [file]     - MAX Graph integration only"
+	@echo "## Individual Testing"
+	@echo "  test-cpu              # Test CPU baseline"
+	@echo "  test-gpu              # Test GPU acceleration"
+	@echo "  test-max              # Test MAX Graph hybrid"
+	@echo "  test                  # Run test suite"
 	@echo ""
-	@echo "🛠️ SETUP & UTILITIES:"
-	@echo "  install                - Install pixi and setup environment"
-	@echo "  build                  - Build project (install dependencies)"
-	@echo "  env-check              - Check pixi environment"
-	@echo "  gpu-check              - Verify GPU setup"
-	@echo "  clean                  - Clean up files"
+	@echo "## Development"
+	@echo "  install               # Setup development environment"
+	@echo "  verify                # Verify MAX Graph and CUDA setup"
+	@echo "  clean                 # Clean build artifacts"
+	@echo "  debug-encoder         # Debug encoder feature extraction"
+	@echo "  debug-features        # Compare feature distributions"
 	@echo ""
-	@echo "💡 EXAMPLES:"
-	@echo "  make install           # First-time setup (install pixi + dependencies)"
-	@echo "  make                   # Run recommended demo (after setup)"
-	@echo "  make tiny              # Quick demo with tiny model"
-	@echo "  make demo base         # All 3 tests, base model"
-	@echo "  make cpu tiny          # CPU test only, tiny model"
-	@echo "  make max small my.wav  # MAX Graph test, small model, custom file"
+	@echo "## Examples"
+	@echo "  make install && make demo    # Complete setup and demo"
+	@echo "  make test-max               # Test MAX Graph implementation only"
+	@echo "  make benchmark-json         # Get benchmark data in JSON format"
 
-# Main demo - all 3 implementations with TUI
+# Interactive demo
 demo:
 	$(call check_env)
-	@echo "🚀 Starting full demo with $(MODEL_ARG) model..."
-	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG)
+	@echo "🚀 Starting interactive comparison demo..."
+	@$(PIXI_ENV) python scripts/tui_demo.py
 
 # Individual implementation tests
-cpu:
+test-cpu:
 	$(call check_env)
-	@echo "🔧 Running CPU test with $(MODEL_ARG) model..."
-	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG) --tests cpu
+	@echo "🔧 Testing CPU baseline..."
+	@$(PIXI_ENV) python max-whisper/whisper_cpu.py --model-size $(MODEL_SIZE)
 
-gpu:
+test-gpu:
 	$(call check_env)
-	@echo "⚡ Running GPU test with $(MODEL_ARG) model..."
-	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG) --tests gpu
+	@echo "⚡ Testing GPU acceleration..."
+	@$(PIXI_ENV) python max-whisper/whisper_gpu.py --model-size $(MODEL_SIZE)
 
-max:
+test-max:
 	$(call check_env)
-	@echo "🎯 Running MAX Graph test with $(MODEL_ARG) model..."
-	@$(PIXI_ENV) python scripts/tui_demo.py $(MODEL_ARG) $(AUDIO_ARG) --tests max
+	@echo "🎯 Testing MAX Graph hybrid..."
+	@$(PIXI_ENV) python max-whisper/whisper_max.py --model-size $(MODEL_SIZE)
 
-# fast implementation removed
-
-# Run test suite
+# Test suite
 test:
 	$(call check_env)
 	@echo "🧪 Running test suite..."
 	@$(PIXI_ENV) python -m pytest test/ -v
 
-# Detailed benchmark analysis  
+# Benchmarking
 benchmark:
 	$(call check_env)
-	@echo "📊 Running comprehensive benchmark with $(MODEL_ARG) model..."
-	@$(PIXI_ENV) python benchmarks/benchmark_all.py --model-size $(MODEL_ARG) --audio-file $(AUDIO_ARG)
+	@echo "📊 Running structured performance analysis..."
+	@$(PIXI_ENV) python benchmarks/benchmark_runner.py
 
-# Direct model size commands (run full demo with that model)
-# Only run if they're the primary target, not secondary arguments
-tiny:
-ifeq ($(word 1,$(MAKECMDGOALS)),tiny)
+benchmark-json:
 	$(call check_env)
-	@echo "🚀 Starting tiny model demo (fastest)..."
-	@$(PIXI_ENV) python scripts/tui_demo.py tiny $(AUDIO_FILE)
-else
-	@true
-endif
+	@echo "📊 Running benchmark with JSON output..."
+	@$(PIXI_ENV) python benchmarks/benchmark_runner.py --json-output
 
-small:
-ifeq ($(word 1,$(MAKECMDGOALS)),small)
+results:
 	$(call check_env)
-	@echo "🚀 Starting small model demo (recommended)..."
-	@$(PIXI_ENV) python scripts/tui_demo.py small $(AUDIO_FILE)
-else
-	@true
-endif
+	@echo "📈 Viewing historical results..."
+	@$(PIXI_ENV) python benchmarks/results_tracker.py
 
-base:
-ifeq ($(word 1,$(MAKECMDGOALS)),base)
+# Development and debugging
+debug-encoder:
 	$(call check_env)
-	@echo "🚀 Starting base model demo (best quality)..."
-	@$(PIXI_ENV) python scripts/tui_demo.py base $(AUDIO_FILE)
-else
-	@true
-endif
+	@echo "🔍 Debugging encoder feature extraction..."
+	@$(PIXI_ENV) python benchmarks/research/encoder_feature_debug.py
 
-# Catch-all rule for audio files and unknown targets
-%:
-	@:
+debug-features:
+	$(call check_env)
+	@echo "🔍 Comparing feature distributions..."
+	@$(PIXI_ENV) python benchmarks/research/simple_feature_comparison.py
 
-# Clean up generated files
+# Clean up build artifacts
 clean:
-	@echo "🧹 Cleaning up..."
-	rm -f COMPLETE_RESULTS*.md
+	@echo "🧹 Cleaning build artifacts..."
 	rm -f *.pyc *.json
 	rm -rf __pycache__
 	rm -rf max-whisper/__pycache__
 	rm -rf benchmarks/__pycache__
-	rm -rf examples/__pycache__
+	rm -rf scripts/__pycache__
 	rm -rf test/__pycache__
+	rm -rf .pytest_cache
 	rm -rf test/output/*
+	rm -f *_debug.json *_results.json
 	@echo "✅ Cleanup complete"
 
-# Installation and setup commands
+# Installation and setup
 install:
-	@echo "🏗️ Setting up Modular Hackathon project..."
-	@echo "📦 Step 1: Installing pixi package manager..."
+	@echo "🚀 MAX Graph Whisper - Setting up development environment..."
+	@echo ""
+	@echo "📦 Installing pixi package manager..."
 	@if command -v pixi >/dev/null 2>&1; then \
 		echo "✅ pixi already installed"; \
 	else \
@@ -158,38 +139,25 @@ install:
 		curl -fsSL https://pixi.sh/install.sh | bash; \
 		echo "✅ pixi installed"; \
 		echo "⚠️  Please restart your shell or run: source ~/.bashrc"; \
-		echo "⚠️  Then run 'make build' to continue setup"; \
+		echo "⚠️  Then run 'make install' again to continue setup"; \
 		exit 0; \
 	fi
-	@echo "📦 Step 2: Installing project dependencies..."
-	@$(MAKE) build
-	@echo "🎉 Installation complete! Try: make small"
-
-setup-weights:
-	@echo "📦 Setting up MAX Graph Whisper weights..."
-	@$(PIXI_ENV) python scripts/setup_weights.py
-
-build:
-	@echo "🔨 Building project dependencies..."
-	@if ! command -v pixi >/dev/null 2>&1; then \
-		echo "❌ pixi not found. Please run 'make install' first."; \
-		exit 1; \
-	fi
-	@echo "📦 Installing pixi environments and dependencies..."
+	@echo ""
+	@echo "📦 Installing project dependencies..."
 	@pixi install
+	@echo ""
 	@echo "🔍 Verifying installation..."
-	@$(MAKE) env-check
-	@echo "✅ Build complete!"
+	@$(MAKE) verify
+	@echo ""
+	@echo "🎉 Installation complete!"
+	@echo "Try: make demo"
 
-# Environment and compatibility checks
-env-check:
-	@echo "🔍 Checking environment..."
-	@command -v pixi >/dev/null 2>&1 || { echo "❌ pixi not found. Please install pixi first."; exit 1; }
+verify:
+	@echo "🔍 Verifying MAX Graph and CUDA setup..."
+	@command -v pixi >/dev/null 2>&1 || { echo "❌ pixi not found"; exit 1; }
 	@echo "✅ pixi found"
 	@pixi info >/dev/null 2>&1 || { echo "❌ pixi environment not ready"; exit 1; }
 	@echo "✅ pixi environment ready"
-	@echo "✅ Environment check complete"
-
-gpu-check:
-	@echo "🔍 Checking GPU setup..."
-	@$(PIXI_ENV) python scripts/gpu_check.py
+	@$(PIXI_ENV) python -c "import max.graph; print('✅ MAX Graph available')" 2>/dev/null || echo "⚠️ MAX Graph not available"
+	@$(PIXI_ENV) python -c "import torch; print(f'✅ PyTorch {torch.__version__} available')" 2>/dev/null || echo "❌ PyTorch not available"
+	@$(PIXI_ENV) python -c "import torch; print('✅ CUDA available' if torch.cuda.is_available() else '⚠️ CUDA not available')" 2>/dev/null || echo "❌ CUDA check failed"
