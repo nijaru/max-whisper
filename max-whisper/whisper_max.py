@@ -1412,7 +1412,7 @@ class MaxGraphWhisperDecoder:
                 # We'll pass position indices as part of the generation loop
                 # For now, gather embeddings based on token positions (handled in generation loop)
                 pos_embed = pos_embedding[:self.max_seq_len, :]  # [max_seq_len, d_model]
-                pos_embed = ops.expand_dims(pos_embed, 0)  # [1, max_seq_len, d_model]
+                pos_embed = ops.reshape(pos_embed, (1, self.max_seq_len, self.d_model))  # [1, max_seq_len, d_model]
                 
                 x = ops.add(token_embed, pos_embed)  # [1, max_seq_len, d_model]
                 
@@ -1471,7 +1471,7 @@ class MaxGraphWhisperDecoder:
                     masked_scores = ops.mul(causal_mask, self_scores)
                     masked_logits = ops.add(masked_scores, mask_penalty)
                     
-                    self_attention_weights = ops.softmax(masked_logits, axis=-1)  # [1, max_seq_len, max_seq_len]
+                    self_attention_weights = ops.softmax(masked_logits)  # [1, max_seq_len, max_seq_len]
                     self_attended = ops.matmul(self_attention_weights, V_self)  # [1, max_seq_len, d_model]
                     
                     # Self-attention output projection
