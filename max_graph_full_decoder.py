@@ -547,8 +547,8 @@ class FullMaxGraphWhisperDecoder:
         
         return output
     
-    def generate_semantic_text(self, encoder_features: np.ndarray, max_length: int = 50, 
-                              beam_size: int = 1, temperature: float = 0.7, 
+    def generate_semantic_text(self, encoder_features: np.ndarray, max_length: int = 100, 
+                              beam_size: int = 1, temperature: float = 0.3, 
                               top_p: float = 0.9, top_k: int = 50) -> str:
         """Generate semantic text using pure MAX Graph operations with advanced sampling"""
         try:
@@ -568,11 +568,15 @@ class FullMaxGraphWhisperDecoder:
     def _greedy_generate(self, encoder_features: np.ndarray, max_length: int, 
                         temperature: float, top_p: float, top_k: int) -> str:
         """Greedy generation (beam_size=1)"""
+        # Apply feature post-processing to improve decoder compatibility
+        # This replicates the breakthrough from the hybrid approach
+        processed_features = self._apply_feature_postprocessing(encoder_features)
+        
         # Initialize with start token
         tokens = [self.sot_token]
         
         # Prepare decoder inputs
-        encoder_tensor = self._numpy_to_max_tensor(encoder_features)
+        encoder_tensor = self._numpy_to_max_tensor(processed_features)
         
         for step in range(max_length):
             # Create input tokens tensor (padded to max_seq_len)
@@ -665,12 +669,12 @@ class FullMaxGraphWhisperDecoder:
                         # Get logits for the current position
                         next_token_logits = logits_np[0, current_len - 1, :]  # [vocab_size]
                         print(f"      🎯 Using position {current_len - 1}, logits shape: {next_token_logits.shape}")
-                        next_token = self._sample_token(next_token_logits, temperature, top_p, top_k)
+                        next_token = self._sample_token(next_token_logits, temperature=0.3)
                     else:
                         # Use last available position 
                         next_token_logits = logits_np[0, -1, :]  # [vocab_size]
                         print(f"      🎯 Using last position, logits shape: {next_token_logits.shape}")
-                        next_token = self._sample_token(next_token_logits, temperature, top_p, top_k)
+                        next_token = self._sample_token(next_token_logits, temperature=0.3)
                 elif logits_np.ndim == 2:
                     # Format: [seq_len, vocab_size] or [batch, vocab_size]
                     if logits_np.shape[0] == 1:
@@ -680,12 +684,12 @@ class FullMaxGraphWhisperDecoder:
                         # [seq_len, vocab_size] - use last position
                         next_token_logits = logits_np[-1, :]
                     print(f"      🎯 2D logits shape: {next_token_logits.shape}")
-                    next_token = self._sample_token(next_token_logits, temperature, top_p, top_k)
+                    next_token = self._sample_token(next_token_logits, temperature=0.3)
                 elif logits_np.ndim == 1:
                     # Single value or vocab distribution
                     if logits_np.shape[0] == self.vocab_size:
                         # Full vocabulary distribution
-                        next_token = self._sample_token(logits_np, temperature, top_p, top_k)
+                        next_token = self._sample_token(logits_np, temperature=0.3)
                         print(f"      🎯 1D vocab distribution, shape: {logits_np.shape}")
                     else:
                         # Single token (fallback)
@@ -706,6 +710,19 @@ class FullMaxGraphWhisperDecoder:
                 # Check for end token
                 if next_token == self.eos_token:
                     break
+                
+                # Prevent immediate repetition of the same token
+                if len(tokens) > 1 and next_token == tokens[-1]:
+                    # If we're about to repeat the same token, use argmax instead for diversity
+                    next_token_logits = logits_np[0, current_len - 1, :] if logits_np.ndim == 3 else next_token_logits
+                    next_token = np.argmax(next_token_logits)
+                    
+                    # If argmax is still the same, try second highest
+                    if next_token == tokens[-1]:
+                        sorted_indices = np.argsort(next_token_logits)
+                        next_token = sorted_indices[-2]
+                    
+                    print(f"      🔄 Avoided repetition, selected token: {next_token}")
                     
                 tokens.append(int(next_token))
                 
@@ -885,6 +902,40 @@ class FullMaxGraphWhisperDecoder:
             return text
         else:
             return "No valid sequences generated"
+    
+    def _apply_feature_postprocessing(self, encoder_features: np.ndarray) -> np.ndarray:
+        """Apply conservative feature post-processing to improve decoder compatibility"""
+        print("🔧 Applying feature post-processing for better compatibility...")
+        
+        # This replicates the breakthrough from hybrid approach 
+        # MAX Graph produces std ~1.45, OpenAI produces std ~0.40
+        original_std = np.std(encoder_features)
+        original_mean = np.mean(encoder_features)
+        
+        # Conservative approach: partial normalization to preserve semantics
+        # Only move 30% toward target distribution to maintain semantic patterns
+        target_mean = 0.0002
+        target_std = 0.4000
+        normalization_strength = 0.3  # Conservative 30% adjustment
+        
+        current_mean = np.mean(encoder_features)
+        current_std = np.std(encoder_features)
+        
+        # Partial scaling toward target
+        target_scale = target_std / current_std
+        actual_scale = 1.0 + normalization_strength * (target_scale - 1.0)
+        
+        target_shift = target_mean - (current_mean * actual_scale)
+        actual_shift = normalization_strength * target_shift
+        
+        # Apply conservative transformation
+        processed_features = encoder_features * actual_scale + actual_shift
+        processed_std = np.std(processed_features)
+        
+        print(f"      📊 Feature processing: {original_std:.3f} → {processed_std:.3f} std (30% normalization)")
+        print(f"      📊 Mean adjustment: {original_mean:.6f} → {np.mean(processed_features):.6f}")
+        
+        return processed_features
     
     def _numpy_to_max_tensor(self, arr: np.ndarray):
         """Convert numpy array to MAX Graph tensor"""
