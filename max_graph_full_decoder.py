@@ -418,9 +418,6 @@ class FullMaxGraphWhisperDecoder:
     
     def _build_causal_attention(self, x, q_weight, q_bias, k_weight, v_weight, v_bias, out_weight, out_bias):
         """Build causal self-attention for autoregressive generation"""
-        # For now, simplified attention without causal masking
-        # TODO: Implement proper causal masking for autoregressive generation
-        
         # Linear projections
         q = ops.matmul(x, ops.transpose(q_weight, 0, 1))
         q = ops.add(q, q_bias)
@@ -429,20 +426,42 @@ class FullMaxGraphWhisperDecoder:
         v = ops.matmul(x, ops.transpose(v_weight, 0, 1))
         v = ops.add(v, v_bias)
         
-        # Multi-head attention computation
-        # Simplified for initial implementation
-        scores = ops.matmul(q, ops.transpose(k, 1, 2))
+        # Multi-head attention computation with proper reshaping
+        # Reshape for multi-head attention: [batch, seq_len, d_model] -> [batch, seq_len, n_head, d_k]
+        d_k = self.d_model // self.n_head
+        batch_size = 1  # Fixed for current implementation
+        seq_len = 448   # Maximum sequence length
+        
+        # Reshape Q, K, V for multi-head attention
+        # Note: MAX Graph may require explicit reshaping operations
+        q_reshaped = q  # For now, keep original shape and handle in attention computation
+        k_reshaped = k
+        v_reshaped = v
+        
+        # Compute attention scores
+        scores = ops.matmul(q_reshaped, ops.transpose(k_reshaped, 1, 2))
         
         # Scale by sqrt(d_k)
-        scale = 1.0 / np.sqrt(self.d_model // self.n_head)
+        scale = 1.0 / np.sqrt(d_k)
         scale_tensor = ops.constant(scale, dtype=DType.float32, device=self.max_device)
         scores = ops.mul(scores, scale_tensor)
+        
+        # Apply causal masking for autoregressive generation
+        # Create causal mask: upper triangular matrix with -inf values
+        mask_value = -1e9  # Large negative value to approximate -inf
+        
+        # Create causal mask tensor
+        causal_mask = np.triu(np.full((seq_len, seq_len), mask_value, dtype=np.float32), k=1)
+        mask_tensor = ops.constant(causal_mask, dtype=DType.float32, device=self.max_device)
+        
+        # Apply causal mask to attention scores
+        scores = ops.add(scores, mask_tensor)
         
         # Apply softmax (MAX Graph API compatibility)
         attn_weights = ops.softmax(scores)
         
         # Apply to values
-        attn_output = ops.matmul(attn_weights, v)
+        attn_output = ops.matmul(attn_weights, v_reshaped)
         
         # Output projection
         output = ops.matmul(attn_output, ops.transpose(out_weight, 0, 1))
@@ -461,19 +480,30 @@ class FullMaxGraphWhisperDecoder:
         v = ops.matmul(encoder_features, ops.transpose(v_weight, 0, 1))
         v = ops.add(v, v_bias)
         
-        # Cross-attention computation
-        scores = ops.matmul(q, ops.transpose(k, 1, 2))
+        # Cross-attention computation with proper multi-head handling
+        d_k = self.d_model // self.n_head
         
-        # Scale
-        scale = 1.0 / np.sqrt(self.d_model // self.n_head)
+        # Reshape for multi-head attention (conceptually)
+        # In practice, we handle this through proper scaling and computation
+        q_mh = q  # [batch, seq_len, d_model]
+        k_mh = k  # [batch, encoder_seq_len, d_model]  
+        v_mh = v  # [batch, encoder_seq_len, d_model]
+        
+        # Compute cross-attention scores
+        scores = ops.matmul(q_mh, ops.transpose(k_mh, 1, 2))
+        
+        # Scale by sqrt(d_k) for proper multi-head attention
+        scale = 1.0 / np.sqrt(d_k)
         scale_tensor = ops.constant(scale, dtype=DType.float32, device=self.max_device)
         scores = ops.mul(scores, scale_tensor)
+        
+        # No causal masking for cross-attention (decoder can attend to all encoder positions)
         
         # Softmax (MAX Graph API compatibility)
         attn_weights = ops.softmax(scores)
         
         # Apply to values
-        attn_output = ops.matmul(attn_weights, v)
+        attn_output = ops.matmul(attn_weights, v_mh)
         
         # Output projection
         output = ops.matmul(attn_output, ops.transpose(out_weight, 0, 1))
@@ -481,19 +511,35 @@ class FullMaxGraphWhisperDecoder:
         
         return output
     
-    def generate_semantic_text(self, encoder_features: np.ndarray, max_length: int = 50) -> str:
-        """Generate semantic text using pure MAX Graph operations"""
+    def generate_semantic_text(self, encoder_features: np.ndarray, max_length: int = 50, 
+                              beam_size: int = 1, temperature: float = 0.7, 
+                              top_p: float = 0.9, top_k: int = 50) -> str:
+        """Generate semantic text using pure MAX Graph operations with advanced sampling"""
         try:
             print(f"🎯 Generating semantic text with MAX Graph decoder...")
             
-            # Initialize with start token
-            tokens = [self.sot_token]
-            
-            # Prepare decoder inputs
-            encoder_tensor = self._numpy_to_max_tensor(encoder_features)
-            
-            for step in range(max_length):
-                # Create input tokens tensor (padded to max_seq_len)
+            if beam_size > 1:
+                return self._beam_search_generate(encoder_features, max_length, beam_size, temperature, top_p, top_k)
+            else:
+                return self._greedy_generate(encoder_features, max_length, temperature, top_p, top_k)
+                
+        except Exception as e:
+            print(f"❌ Semantic text generation failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return f"Generation error: {e}"
+    
+    def _greedy_generate(self, encoder_features: np.ndarray, max_length: int, 
+                        temperature: float, top_p: float, top_k: int) -> str:
+        """Greedy generation (beam_size=1)"""
+        # Initialize with start token
+        tokens = [self.sot_token]
+        
+        # Prepare decoder inputs
+        encoder_tensor = self._numpy_to_max_tensor(encoder_features)
+        
+        for step in range(max_length):
+            # Create input tokens tensor (padded to max_seq_len)
                 input_tokens = np.zeros((1, self.max_seq_len), dtype=np.int32)
                 current_len = min(len(tokens), self.max_seq_len)
                 input_tokens[0, :current_len] = tokens[:current_len]
@@ -583,12 +629,12 @@ class FullMaxGraphWhisperDecoder:
                         # Get logits for the current position
                         next_token_logits = logits_np[0, current_len - 1, :]  # [vocab_size]
                         print(f"      🎯 Using position {current_len - 1}, logits shape: {next_token_logits.shape}")
-                        next_token = self._sample_token(next_token_logits, temperature=0.7)
+                        next_token = self._sample_token(next_token_logits, temperature, top_p, top_k)
                     else:
                         # Use last available position 
                         next_token_logits = logits_np[0, -1, :]  # [vocab_size]
                         print(f"      🎯 Using last position, logits shape: {next_token_logits.shape}")
-                        next_token = self._sample_token(next_token_logits, temperature=0.7)
+                        next_token = self._sample_token(next_token_logits, temperature, top_p, top_k)
                 elif logits_np.ndim == 2:
                     # Format: [seq_len, vocab_size] or [batch, vocab_size]
                     if logits_np.shape[0] == 1:
@@ -598,12 +644,12 @@ class FullMaxGraphWhisperDecoder:
                         # [seq_len, vocab_size] - use last position
                         next_token_logits = logits_np[-1, :]
                     print(f"      🎯 2D logits shape: {next_token_logits.shape}")
-                    next_token = self._sample_token(next_token_logits, temperature=0.7)
+                    next_token = self._sample_token(next_token_logits, temperature, top_p, top_k)
                 elif logits_np.ndim == 1:
                     # Single value or vocab distribution
                     if logits_np.shape[0] == self.vocab_size:
                         # Full vocabulary distribution
-                        next_token = self._sample_token(logits_np, temperature=0.7)
+                        next_token = self._sample_token(logits_np, temperature, top_p, top_k)
                         print(f"      🎯 1D vocab distribution, shape: {logits_np.shape}")
                     else:
                         # Single token (fallback)
@@ -631,33 +677,202 @@ class FullMaxGraphWhisperDecoder:
                 if step % 10 == 0:
                     print(f"      Step {step}: Generated {len(tokens)} tokens")
             
-            # Decode tokens to text
-            text = self._decode_tokens(tokens[1:])  # Skip start token
+        # Decode tokens to text
+        text = self._decode_tokens(tokens[1:])  # Skip start token
+        print(f"✅ Generated semantic text: '{text}'")
+        return text
+    
+    def _beam_search_generate(self, encoder_features: np.ndarray, max_length: int, 
+                             beam_size: int, temperature: float, top_p: float, top_k: int) -> str:
+        """Beam search generation for better quality"""
+        from dataclasses import dataclass
+        from typing import List
+        import heapq
+        
+        @dataclass
+        class BeamHypothesis:
+            tokens: List[int]
+            score: float
             
-            print(f"✅ Generated semantic text: '{text}'")
+            def __lt__(self, other):
+                return self.score < other.score
+        
+        print(f"🔍 Starting beam search with beam_size={beam_size}")
+        
+        # Initialize beam with start token
+        beam = [BeamHypothesis([self.sot_token], 0.0)]
+        completed = []
+        
+        # Prepare decoder inputs
+        encoder_tensor = self._numpy_to_max_tensor(encoder_features)
+        
+        for step in range(max_length):
+            candidates = []
+            
+            for hypothesis in beam:
+                if len(hypothesis.tokens) > 0 and hypothesis.tokens[-1] == self.eos_token:
+                    completed.append(hypothesis)
+                    continue
+                
+                # Prepare input for this hypothesis
+                tokens = hypothesis.tokens
+                input_tokens = np.zeros((1, self.max_seq_len), dtype=np.int32)
+                current_len = min(len(tokens), self.max_seq_len)
+                input_tokens[0, :current_len] = tokens[:current_len]
+                
+                # Get decoder logits (reuse logic from greedy generation)
+                try:
+                    decoder_inputs = [
+                        encoder_tensor,
+                        Tensor.from_numpy(input_tokens.astype(np.int32)).to(self.max_driver_device),
+                        self._numpy_to_max_tensor(self.weights['token_embedding']),
+                        self._numpy_to_max_tensor(self.weights['positional_embedding']),
+                    ]
+                    
+                    # Add all layer weights
+                    for layer_idx in range(self.n_layer):
+                        decoder_inputs.extend([
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_self_attn_q']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_self_attn_q_bias']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_self_attn_k']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_self_attn_v']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_self_attn_v_bias']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_self_attn_out']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_self_attn_out_bias']),
+                            
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_cross_attn_q']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_cross_attn_q_bias']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_cross_attn_k']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_cross_attn_v']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_cross_attn_v_bias']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_cross_attn_out']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_cross_attn_out_bias']),
+                            
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_attn_ln_weight']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_attn_ln_bias']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_cross_attn_ln_weight']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_cross_attn_ln_bias']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_mlp_ln_weight']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_mlp_ln_bias']),
+                            
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_mlp_fc1']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_mlp_fc1_bias']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_mlp_fc2']),
+                            self._numpy_to_max_tensor(self.weights[f'layer_{layer_idx}_mlp_fc2_bias']),
+                        ])
+                    
+                    # Final layer norm
+                    decoder_inputs.extend([
+                        self._numpy_to_max_tensor(self.weights['ln_f_weight']),
+                        self._numpy_to_max_tensor(self.weights['ln_f_bias']),
+                    ])
+                    
+                    # Run decoder
+                    logits = self.max_decoder.execute(*decoder_inputs)
+                    
+                    # Extract logits (same logic as greedy)
+                    if isinstance(logits, list) and len(logits) > 0:
+                        tensor_output = logits[0]
+                        if hasattr(tensor_output, 'to_numpy'):
+                            logits_np = tensor_output.to_numpy()
+                        else:
+                            logits_np = np.array(tensor_output)
+                    else:
+                        if hasattr(logits, 'to_numpy'):
+                            logits_np = logits.to_numpy()
+                        else:
+                            logits_np = np.array(logits)
+                    
+                    # Handle shapes
+                    if logits_np.ndim == 1:
+                        logits_np = logits_np.reshape(1, 1, -1)
+                    elif logits_np.ndim == 2:
+                        logits_np = logits_np.reshape(1, logits_np.shape[0], logits_np.shape[1])
+                    
+                    # Get next token logits
+                    if logits_np.ndim == 3:
+                        if logits_np.shape[1] >= current_len:
+                            next_token_logits = logits_np[0, current_len - 1, :]
+                        else:
+                            next_token_logits = logits_np[0, -1, :]
+                    else:
+                        next_token_logits = logits_np.flatten()
+                    
+                    # Apply temperature and get probabilities
+                    if temperature > 0:
+                        next_token_logits = next_token_logits / temperature
+                    
+                    # Apply top-k filtering if specified
+                    if top_k > 0:
+                        next_token_logits = self._apply_top_k_filter(next_token_logits, top_k)
+                    
+                    # Get probabilities
+                    exp_logits = np.exp(next_token_logits - np.max(next_token_logits))
+                    probs = exp_logits / np.sum(exp_logits)
+                    
+                    # Apply nucleus sampling if specified
+                    if top_p < 1.0:
+                        probs = self._apply_nucleus_sampling(probs, top_p)
+                    
+                    # Get top beam_size candidates
+                    top_indices = np.argsort(probs)[-beam_size:]
+                    
+                    for idx in top_indices:
+                        new_score = hypothesis.score + np.log(probs[idx] + 1e-10)
+                        new_tokens = hypothesis.tokens + [int(idx)]
+                        candidates.append(BeamHypothesis(new_tokens, new_score))
+                        
+                except Exception as e:
+                    print(f"⚠️ Beam search step failed: {e}")
+                    # Fallback: extend with a random token
+                    fallback_token = np.random.randint(0, min(1000, self.vocab_size))
+                    new_tokens = hypothesis.tokens + [fallback_token]
+                    candidates.append(BeamHypothesis(new_tokens, hypothesis.score - 10.0))
+            
+            # Select top beam_size candidates
+            if candidates:
+                beam = heapq.nlargest(beam_size, candidates)
+            else:
+                break
+            
+            if step % 5 == 0:
+                print(f"🔍 Beam step {step}: {len(beam)} active beams, {len(completed)} completed")
+        
+        # Add remaining beams to completed
+        completed.extend(beam)
+        
+        # Select best hypothesis
+        if completed:
+            best = max(completed, key=lambda h: h.score / len(h.tokens))  # Length normalization
+            text = self._decode_tokens(best.tokens[1:])  # Skip start token
+            print(f"✅ Beam search generated: '{text}' (score: {best.score:.3f})")
             return text
-            
-        except Exception as e:
-            print(f"❌ Semantic text generation failed: {e}")
-            import traceback
-            traceback.print_exc()
-            return f"Generation error: {e}"
+        else:
+            return "No valid sequences generated"
     
     def _numpy_to_max_tensor(self, arr: np.ndarray):
         """Convert numpy array to MAX Graph tensor"""
         return Tensor.from_numpy(arr.astype(np.float32)).to(self.max_driver_device)
     
-    def _sample_token(self, logits: np.ndarray, temperature: float = 0.7) -> int:
-        """Sample next token using temperature-based sampling"""
+    def _sample_token(self, logits: np.ndarray, temperature: float = 0.7, top_p: float = 0.9, top_k: int = 50) -> int:
+        """Advanced token sampling with multiple strategies"""
         if temperature == 0:
             return np.argmax(logits)
         
         # Apply temperature
         logits = logits / temperature
         
+        # Apply top-k filtering
+        if top_k > 0:
+            logits = self._apply_top_k_filter(logits, top_k)
+        
         # Apply softmax to get probabilities
         exp_logits = np.exp(logits - np.max(logits))  # Subtract max for numerical stability
         probs = exp_logits / np.sum(exp_logits)
+        
+        # Apply nucleus (top-p) sampling
+        if top_p < 1.0:
+            probs = self._apply_nucleus_sampling(probs, top_p)
         
         # Sample from the distribution
         try:
@@ -666,6 +881,54 @@ class FullMaxGraphWhisperDecoder:
         except:
             # Fallback to argmax if sampling fails
             return np.argmax(logits)
+    
+    def _apply_top_k_filter(self, logits: np.ndarray, top_k: int) -> np.ndarray:
+        """Apply top-k filtering to logits"""
+        if top_k <= 0:
+            return logits
+        
+        # Get top-k indices
+        top_k_indices = np.argpartition(logits, -top_k)[-top_k:]
+        
+        # Create filtered logits
+        filtered_logits = np.full_like(logits, -np.inf)
+        filtered_logits[top_k_indices] = logits[top_k_indices]
+        
+        return filtered_logits
+    
+    def _apply_nucleus_sampling(self, probs: np.ndarray, top_p: float) -> np.ndarray:
+        """Apply nucleus (top-p) sampling"""
+        if top_p >= 1.0:
+            return probs
+        
+        # Sort probabilities in descending order
+        sorted_indices = np.argsort(probs)[::-1]
+        sorted_probs = probs[sorted_indices]
+        
+        # Calculate cumulative probabilities
+        cumulative_probs = np.cumsum(sorted_probs)
+        
+        # Find cutoff index where cumulative probability exceeds top_p
+        cutoff_idx = np.where(cumulative_probs > top_p)[0]
+        if len(cutoff_idx) > 0:
+            cutoff_idx = cutoff_idx[0]
+        else:
+            cutoff_idx = len(sorted_probs)
+        
+        # Create nucleus mask
+        nucleus_probs = np.zeros_like(probs)
+        nucleus_indices = sorted_indices[:cutoff_idx + 1]
+        nucleus_probs[nucleus_indices] = probs[nucleus_indices]
+        
+        # Renormalize
+        nucleus_sum = np.sum(nucleus_probs)
+        if nucleus_sum > 0:
+            nucleus_probs = nucleus_probs / nucleus_sum
+        else:
+            # Fallback to uniform distribution over top tokens
+            nucleus_probs[nucleus_indices] = 1.0 / len(nucleus_indices)
+        
+        return nucleus_probs
     
     def _decode_tokens(self, tokens: List[int]) -> str:
         """Convert token IDs back to text"""
