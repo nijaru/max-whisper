@@ -1086,7 +1086,13 @@ class WhisperMAX:
                 audio_padded = whisper.pad_or_trim(audio_resampled)
                 
                 # Use whisper.transcribe which will use our monkey-patched encoder
-                result = whisper.transcribe(self.whisper_model, audio_padded, language="en")
+                # Apply optimized temperature to reduce repetition while preserving semantics
+                result = whisper.transcribe(
+                    self.whisper_model, 
+                    audio_padded, 
+                    language="en",
+                    temperature=0.5  # Optimized temperature for repetition reduction
+                )
                 
                 if isinstance(result, dict) and 'text' in result:
                     return result['text'].strip()
@@ -1152,11 +1158,15 @@ class WhisperMAX:
         if len(words) < 10:
             return text
         
-        # Look for repetitive patterns
-        for pattern_length in range(2, 8):  # Check patterns of 2-7 words
-            for start_idx in range(len(words) - pattern_length * 3):
+        # Look for repetitive patterns, including longer phrases
+        for pattern_length in range(2, 15):  # Extended range to catch longer patterns
+            for start_idx in range(len(words) - pattern_length * 2):  # Need at least 2 occurrences
                 pattern = words[start_idx:start_idx + pattern_length]
                 pattern_str = " ".join(pattern)
+                
+                # Skip very short patterns unless they're clearly repetitive
+                if pattern_length <= 3 and len(set(pattern)) > 1:
+                    continue
                 
                 # Count consecutive repetitions
                 repetitions = 1
@@ -1170,18 +1180,34 @@ class WhisperMAX:
                     else:
                         break
                 
-                # If we found 3+ repetitions, this is likely a loop
-                if repetitions >= 3:
-                    # Keep the text before the repetition and add the pattern once
+                # Adaptive thresholds based on pattern length and content quality
+                if pattern_length <= 3:
+                    min_repetitions = 6  # Very strict for short patterns
+                elif pattern_length <= 6:
+                    min_repetitions = 4  # Moderate for medium patterns
+                else:
+                    min_repetitions = 3  # More lenient for long phrases
+                
+                if repetitions >= min_repetitions:
+                    # Preserve good content: keep everything before repetition starts
                     before_repetition = words[:start_idx]
-                    clean_words = before_repetition + pattern
                     
-                    # Add any text after the repetition if it's different
+                    # Add pattern once or twice for natural flow, not zero times
+                    if len(before_repetition) > 50:  # If we have substantial content before repetition
+                        allowed_repetitions = 1  # Just add once to complete the thought
+                    else:
+                        allowed_repetitions = min(2, repetitions - 1)  # Allow 1-2 repetitions
+                    
+                    clean_words = before_repetition
+                    for _ in range(allowed_repetitions):
+                        clean_words.extend(pattern)
+                    
+                    # Add any text after the repetition if it's different and substantial
                     after_idx = start_idx + (repetitions * pattern_length)
                     if after_idx < len(words):
                         remaining = words[after_idx:]
-                        # Only add if it's not more repetition
-                        if remaining != pattern:
+                        # Only add if it's not more repetition and has enough content
+                        if remaining != pattern and len(remaining) > 3:
                             clean_words.extend(remaining)
                     
                     cleaned_text = " ".join(clean_words)
@@ -1267,12 +1293,34 @@ class WhisperMAX:
             import torch
             from whisper.decoding import DecodingOptions
             
-            # Skip aggressive feature scaling - use original features with repetition detection
+            # Apply conservative feature post-processing to improve decoder compatibility
             # MAX Graph produces std ~1.45, OpenAI produces std ~0.40
-            # Rely on optimized decoder parameters and repetition detection instead
-            max_std = np.std(max_encoder_features)
+            original_std = np.std(max_encoder_features)
             
-            print(f"      🔧 Using original MAX Graph features (std: {max_std:.3f}) with repetition detection")
+            # Conservative approach: partial normalization to preserve semantics
+            # Only move 30% toward target distribution to maintain semantic patterns
+            target_mean = 0.0002
+            target_std = 0.4000
+            normalization_strength = 0.3  # Conservative 30% adjustment
+            
+            current_mean = np.mean(max_encoder_features)
+            current_std = np.std(max_encoder_features)
+            
+            # Partial scaling toward target
+            target_scale = target_std / current_std
+            actual_scale = 1.0 + normalization_strength * (target_scale - 1.0)
+            
+            target_shift = target_mean - (current_mean * actual_scale)
+            actual_shift = normalization_strength * target_shift
+            
+            # Apply conservative transformation
+            processed_features = max_encoder_features * actual_scale + actual_shift
+            processed_std = np.std(processed_features)
+            
+            print(f"      🔧 Applied conservative feature processing: {original_std:.3f} → {processed_std:.3f} std (30% normalization)")
+            
+            # Use processed features for decoding
+            max_encoder_features = processed_features
             
             # Convert MAX Graph features to PyTorch tensor without aggressive scaling
             features_tensor = torch.from_numpy(max_encoder_features.copy()).float()
@@ -1283,7 +1331,7 @@ class WhisperMAX:
             options = DecodingOptions(
                 task="transcribe",
                 language="en",
-                temperature=0.0,        # Deterministic output (matches GPU impl)
+                temperature=0.3,        # Moderate temperature - balance creativity and stability
                 sample_len=1000,        # Increased max length for full transcription
                 beam_size=5,           # Moderate beam search to balance quality vs speed
                 patience=20.0,         # High patience to prevent early stopping
