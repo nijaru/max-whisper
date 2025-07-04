@@ -49,17 +49,53 @@ class FullMaxGraphWhisperDecoder:
         self.weights = {}
         self.tokenizer = None
         
-        # Whisper tiny architecture
-        if model_size == "tiny":
-            self.vocab_size = 51865
-            self.d_model = 384
-            self.n_layer = 4  
-            self.n_head = 6
-            self.d_ff = 1536  # 4 * d_model
-            self.max_seq_len = 448
-            self.encoder_seq_len = 1500  # From encoder
-        else:
-            raise NotImplementedError(f"Model size {model_size} not implemented")
+        # Model architecture configurations
+        model_configs = {
+            "tiny": {
+                "vocab_size": 51865,
+                "n_layer": 4,
+                "n_head": 6, 
+                "d_model": 384,
+                "encoder_layers": 4,
+                "encoder_attention_heads": 6,
+                "encoder_hidden_size": 384
+            },
+            "small": {
+                "vocab_size": 51865,
+                "n_layer": 12,
+                "n_head": 12,
+                "d_model": 768,
+                "encoder_layers": 12,
+                "encoder_attention_heads": 12,
+                "encoder_hidden_size": 768
+            },
+            "base": {
+                "vocab_size": 51865,
+                "n_layer": 12,
+                "n_head": 12,
+                "d_model": 768,
+                "encoder_layers": 12,
+                "encoder_attention_heads": 12,
+                "encoder_hidden_size": 768
+            }
+        }
+        
+        if model_size not in model_configs:
+            raise ValueError(f"Unsupported model size: {model_size}. Choose from: {list(model_configs.keys())}")
+        
+        config = model_configs[model_size]
+        self.vocab_size = config["vocab_size"]
+        self.n_layer = config["n_layer"]
+        self.n_head = config["n_head"]
+        self.d_model = config["d_model"]
+        self.encoder_layers = config["encoder_layers"]
+        self.encoder_attention_heads = config["encoder_attention_heads"]
+        self.encoder_hidden_size = config["encoder_hidden_size"]
+        
+        # Computed values
+        self.d_ff = 4 * self.d_model  # Feed-forward dimension
+        self.max_seq_len = 448
+        self.encoder_seq_len = 1500  # From encoder
             
         # Special tokens (Whisper vocabulary)
         self.bos_token = 50258  # Beginning of sequence
@@ -951,9 +987,9 @@ class FullMaxGraphWhisperDecoder:
         
         return f"Generated {len(tokens)} tokens"
 
-def test_full_max_graph_decoder():
-    """Test the full MAX Graph decoder implementation"""
-    print("🚀 Testing Full MAX Graph Whisper Decoder")
+def test_full_max_graph_decoder(model_size: str = "tiny"):
+    """Test the full MAX Graph decoder implementation with different model sizes"""
+    print(f"🚀 Testing Full MAX Graph Whisper Decoder ({model_size})")
     print("=" * 60)
     
     if not MAX_AVAILABLE or not ENCODER_AVAILABLE:

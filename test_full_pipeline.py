@@ -57,7 +57,7 @@ def test_full_max_graph_pipeline():
         print("🔧 Step 3: Setting up full MAX Graph decoder...")
         decoder_start = time.time()
         
-        decoder = FullMaxGraphWhisperDecoder()
+        decoder = FullMaxGraphWhisperDecoder(model_size="tiny")
         decoder_setup_time = time.time() - decoder_start
         
         print(f"✅ Decoder setup completed in {decoder_setup_time:.2f}s")
@@ -140,5 +140,40 @@ def main():
         if result and "error" in result:
             print(f"   🐛 Error: {result['error']}")
 
+def test_multiple_model_sizes():
+    """Test multiple Whisper model sizes"""
+    print("🚀 Testing Multiple Whisper Model Sizes")
+    print("=" * 70)
+    
+    model_sizes = ["tiny"]  # Start with tiny, add others as they're implemented
+    
+    for model_size in model_sizes:
+        print(f"\n📊 Testing {model_size} model:")
+        print("-" * 40)
+        
+        try:
+            # Test basic initialization
+            decoder = FullMaxGraphWhisperDecoder(model_size=model_size)
+            print(f"✅ {model_size} model initialized successfully")
+            print(f"   - Layers: {decoder.n_layer}")
+            print(f"   - Attention heads: {decoder.n_head}")
+            print(f"   - Model dimension: {decoder.d_model}")
+            print(f"   - Vocabulary size: {decoder.vocab_size}")
+            
+            # Test weight extraction (if available)
+            try:
+                decoder._extract_decoder_weights()
+                print(f"   ✅ Weight extraction successful")
+                print(f"   - Total weights: {len(decoder.weights)}")
+            except Exception as e:
+                print(f"   ⚠️ Weight extraction failed: {e}")
+            
+        except Exception as e:
+            print(f"❌ {model_size} model failed: {e}")
+
 if __name__ == "__main__":
-    main()
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "multi":
+        test_multiple_model_sizes()
+    else:
+        main()
