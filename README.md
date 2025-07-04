@@ -6,7 +6,7 @@ High-performance speech recognition using MAX Graph acceleration for OpenAI Whis
 
 MAX Graph Whisper demonstrates real-world AI acceleration by integrating MAX Graph operations into OpenAI's Whisper speech recognition pipeline. The project achieves significant performance improvements through a hybrid approach: MAX Graph encoder with PyTorch decoder.
 
-**Current Status**: Repetition optimization breakthrough - meaningful text generation with feature post-processing and 1.8x speedup.
+**Current Status**: Full MAX Graph decoder development - complete end-to-end pipeline implementation for unlimited semantic text generation.
 
 ## Performance
 
@@ -15,8 +15,9 @@ MAX Graph Whisper demonstrates real-world AI acceleration by integrating MAX Gra
 | CPU Baseline | 3.49s | 1.0x | 100% (2035 chars) | ✅ Reference |
 | GPU Accelerated | 1.9s | 1.8x | 100% (2035 chars) | ✅ Complete |
 | **MAX Graph Hybrid** | **1.9s** | **1.8x** | **20.7% (422 chars)** | ✅ **Meaningful** |
+| **MAX Graph Full** | **TBD** | **TBD** | **Unlimited** | 🚀 **Development** |
 
-**Latest Achievement**: Meaningful technical transcriptions with controlled repetition through feature post-processing and smart cleaning algorithms.
+**Latest Achievement**: Complete MAX Graph decoder architecture designed with autoregressive generation and cross-attention for unlimited semantic text.
 
 ## Quick Start
 
