@@ -1301,7 +1301,7 @@ class WhisperMAX:
             # Only move 30% toward target distribution to maintain semantic patterns
             target_mean = 0.0002
             target_std = 0.4000
-            normalization_strength = 0.3  # Conservative 30% adjustment
+            normalization_strength = 0.35  # Conservative 35% adjustment - preserve quality while improving length
             
             current_mean = np.mean(max_encoder_features)
             current_std = np.std(max_encoder_features)
