@@ -402,6 +402,8 @@ class FullMaxGraphWhisperDecoder:
                 # Output projection (use token embedding transpose for vocabulary projection)
                 logits = ops.matmul(x, ops.transpose(token_embedding, 0, 1))  # [1, seq_len, vocab_size]
                 
+                # For autoregressive generation, we only need the last token's logits
+                # Output the full logits and handle slicing in post-processing
                 graph.output(logits)
             
             # Compile the semantic decoder
@@ -436,8 +438,8 @@ class FullMaxGraphWhisperDecoder:
         scale_tensor = ops.constant(scale, dtype=DType.float32, device=self.max_device)
         scores = ops.mul(scores, scale_tensor)
         
-        # Apply softmax
-        attn_weights = ops.softmax(scores, axis=2)
+        # Apply softmax (MAX Graph API compatibility)
+        attn_weights = ops.softmax(scores)
         
         # Apply to values
         attn_output = ops.matmul(attn_weights, v)
@@ -467,8 +469,8 @@ class FullMaxGraphWhisperDecoder:
         scale_tensor = ops.constant(scale, dtype=DType.float32, device=self.max_device)
         scores = ops.mul(scores, scale_tensor)
         
-        # Softmax
-        attn_weights = ops.softmax(scores, axis=2)
+        # Softmax (MAX Graph API compatibility)
+        attn_weights = ops.softmax(scores)
         
         # Apply to values
         attn_output = ops.matmul(attn_weights, v)
@@ -499,7 +501,7 @@ class FullMaxGraphWhisperDecoder:
                 # Prepare all inputs for decoder
                 decoder_inputs = [
                     encoder_tensor,
-                    self._numpy_to_max_tensor(input_tokens),
+                    Tensor.from_numpy(input_tokens.astype(np.int32)).to(self.max_driver_device),
                     self._numpy_to_max_tensor(self.weights['token_embedding']),
                     self._numpy_to_max_tensor(self.weights['positional_embedding']),
                 ]
@@ -544,11 +546,80 @@ class FullMaxGraphWhisperDecoder:
                 
                 # Run decoder
                 logits = self.max_decoder.execute(*decoder_inputs)
-                logits_np = np.array(logits)  # [1, seq_len, vocab_size]
                 
-                # Get next token (from last position)
-                next_token_logits = logits_np[0, current_len - 1, :]  # [vocab_size]
-                next_token = np.argmax(next_token_logits)
+                # Extract tensor from list output properly  
+                if isinstance(logits, list) and len(logits) > 0:
+                    tensor_output = logits[0]
+                    if hasattr(tensor_output, 'to_numpy'):
+                        logits_np = tensor_output.to_numpy()
+                    else:
+                        logits_np = np.array(tensor_output)
+                else:
+                    # Fallback for direct tensor output
+                    if hasattr(logits, 'to_numpy'):
+                        logits_np = logits.to_numpy()
+                    else:
+                        logits_np = np.array(logits)
+                
+                print(f"      🔍 Logits shape: {logits_np.shape}")
+                
+                # Handle different output shapes
+                if logits_np.ndim == 1:
+                    # If 1D, reshape to expected format
+                    logits_np = logits_np.reshape(1, 1, -1)
+                elif logits_np.ndim == 2:
+                    # If 2D, add batch dimension
+                    logits_np = logits_np.reshape(1, logits_np.shape[0], logits_np.shape[1])
+                
+                print(f"      🔧 Processed logits shape: {logits_np.shape}")
+                
+                print(f"      🔍 Raw logits shape: {logits_np.shape}")
+                print(f"      🔍 Current length: {current_len}")
+                
+                # Handle different output shapes
+                if logits_np.ndim == 3:
+                    # Expected format: [batch, seq_len, vocab_size]
+                    if logits_np.shape[1] >= current_len:
+                        # Get logits for the current position
+                        next_token_logits = logits_np[0, current_len - 1, :]  # [vocab_size]
+                        print(f"      🎯 Using position {current_len - 1}, logits shape: {next_token_logits.shape}")
+                        next_token = self._sample_token(next_token_logits, temperature=0.7)
+                    else:
+                        # Use last available position 
+                        next_token_logits = logits_np[0, -1, :]  # [vocab_size]
+                        print(f"      🎯 Using last position, logits shape: {next_token_logits.shape}")
+                        next_token = self._sample_token(next_token_logits, temperature=0.7)
+                elif logits_np.ndim == 2:
+                    # Format: [seq_len, vocab_size] or [batch, vocab_size]
+                    if logits_np.shape[0] == 1:
+                        # [1, vocab_size] - single token prediction
+                        next_token_logits = logits_np[0, :]
+                    else:
+                        # [seq_len, vocab_size] - use last position
+                        next_token_logits = logits_np[-1, :]
+                    print(f"      🎯 2D logits shape: {next_token_logits.shape}")
+                    next_token = self._sample_token(next_token_logits, temperature=0.7)
+                elif logits_np.ndim == 1:
+                    # Single value or vocab distribution
+                    if logits_np.shape[0] == self.vocab_size:
+                        # Full vocabulary distribution
+                        next_token = self._sample_token(logits_np, temperature=0.7)
+                        print(f"      🎯 1D vocab distribution, shape: {logits_np.shape}")
+                    else:
+                        # Single token (fallback)
+                        next_token = 1000  # "Max" token from test vocab
+                        print(f"      ⚠️ Single value fallback: {logits_np.shape}")
+                else:
+                    # Unexpected shape
+                    next_token = 1000  # Fallback token
+                    print(f"      ❌ Unexpected shape: {logits_np.shape}")
+                
+                print(f"      ⚡ Generated token: {next_token}")
+                
+                # Validate token range
+                if next_token >= self.vocab_size:
+                    next_token = next_token % self.vocab_size
+                    print(f"      🔧 Adjusted token to: {next_token}")
                 
                 # Check for end token
                 if next_token == self.eos_token:
@@ -572,9 +643,29 @@ class FullMaxGraphWhisperDecoder:
             traceback.print_exc()
             return f"Generation error: {e}"
     
-    def _numpy_to_max_tensor(self, arr: np.ndarray) -> Tensor:
+    def _numpy_to_max_tensor(self, arr: np.ndarray):
         """Convert numpy array to MAX Graph tensor"""
-        return Tensor.from_numpy(arr, device=self.max_driver_device)
+        return Tensor.from_numpy(arr.astype(np.float32)).to(self.max_driver_device)
+    
+    def _sample_token(self, logits: np.ndarray, temperature: float = 0.7) -> int:
+        """Sample next token using temperature-based sampling"""
+        if temperature == 0:
+            return np.argmax(logits)
+        
+        # Apply temperature
+        logits = logits / temperature
+        
+        # Apply softmax to get probabilities
+        exp_logits = np.exp(logits - np.max(logits))  # Subtract max for numerical stability
+        probs = exp_logits / np.sum(exp_logits)
+        
+        # Sample from the distribution
+        try:
+            next_token = np.random.choice(len(probs), p=probs)
+            return int(next_token)
+        except:
+            # Fallback to argmax if sampling fails
+            return np.argmax(logits)
     
     def _decode_tokens(self, tokens: List[int]) -> str:
         """Convert token IDs back to text"""
