@@ -66,10 +66,12 @@ def test_full_max_graph_pipeline():
         print("🎯 Step 4: Generating semantic text with pure MAX Graph...")
         generation_start = time.time()
         
-        # Generate text using only MAX Graph operations
+        # Generate text using only MAX Graph operations with greedy generation
         generated_text = decoder.generate_semantic_text(
             encoder_features, 
-            max_length=50
+            max_length=200,
+            beam_size=1,
+            temperature=0.8
         )
         
         generation_time = time.time() - generation_start
