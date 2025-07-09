@@ -1297,11 +1297,11 @@ class WhisperMAX:
             # MAX Graph produces std ~1.45, OpenAI produces std ~0.40
             original_std = np.std(max_encoder_features)
             
-            # Conservative approach: partial normalization to preserve semantics
-            # Only move 30% toward target distribution to maintain semantic patterns
+            # Conservative approach: minimal normalization to preserve full semantic content
+            # Reduce normalization to maintain better feature fidelity for longer generation
             target_mean = 0.0002
             target_std = 0.4000
-            normalization_strength = 0.35  # Conservative 35% adjustment - preserve quality while improving length
+            normalization_strength = 0.15  # Very conservative 15% adjustment - maximize content preservation
             
             current_mean = np.mean(max_encoder_features)
             current_std = np.std(max_encoder_features)
@@ -1327,14 +1327,14 @@ class WhisperMAX:
             device = next(self.whisper_model.parameters()).device
             features_tensor = features_tensor.to(device)
             
-            # Decode with parameters optimized for original MAX Graph features
+            # Decode with parameters optimized for full-length transcription
             options = DecodingOptions(
                 task="transcribe",
                 language="en",
-                temperature=0.3,        # Moderate temperature - balance creativity and stability
-                sample_len=1000,        # Increased max length for full transcription
-                beam_size=5,           # Moderate beam search to balance quality vs speed
-                patience=20.0,         # High patience to prevent early stopping
+                temperature=0.0,        # Greedy decoding for maximum accuracy
+                sample_len=2000,        # Much longer max length for full transcription
+                beam_size=1,           # Greedy search for fastest, most accurate results
+                patience=50.0,         # Very high patience to prevent early stopping
                 without_timestamps=True,
                 suppress_blank=True,
                 suppress_tokens="-1"

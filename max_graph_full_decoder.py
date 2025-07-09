@@ -782,9 +782,13 @@ class FullMaxGraphWhisperDecoder:
                     # Breaking repetitive pattern - inject some randomness
                     next_token_logits = logits_np[0, current_len - 1, :] if logits_np.ndim == 3 else next_token_logits
                     # Use nucleus sampling to break the pattern
-                    probs = np.exp(next_token_logits / (current_temperature * 1.5))  # Higher temperature
+                    temp = max(current_temperature * 1.5, 0.1)  # Avoid division by zero
+                    probs = np.exp(next_token_logits / temp)
                     probs = probs / np.sum(probs)
-                    next_token = np.random.choice(len(probs), p=probs)
+                    if np.isnan(probs).any():
+                        next_token = np.random.randint(0, len(probs))
+                    else:
+                        next_token = np.random.choice(len(probs), p=probs)
                     print(f"      🌪️ Breaking phrase repetition, random token: {next_token}")
             
             tokens.append(int(next_token))
@@ -976,66 +980,37 @@ class FullMaxGraphWhisperDecoder:
             return "No valid sequences generated"
     
     def _apply_feature_postprocessing(self, encoder_features: np.ndarray) -> np.ndarray:
-        """Apply semantic-preserving feature alignment for decoder compatibility"""
-        print("🔧 Applying semantic-preserving feature alignment...")
+        """Apply conservative feature processing matching hybrid approach for correct transcription"""
+        print("🔧 Applying conservative feature processing for correct transcription...")
         
-        # Original approach was too aggressive - preserve the semantic structure
-        # The key insight: decoder weights expect specific feature ranges, not distributions
+        # Use EXACT same approach as hybrid whisper_max.py:1296-1323
+        # This is the key to getting correct transcription instead of random multilingual tokens
         original_std = np.std(encoder_features)
-        original_mean = np.mean(encoder_features)
         
-        # BREAKTHROUGH: Layer-wise feature alignment instead of global normalization
-        # Analyze feature patterns across sequence positions
-        seq_len = encoder_features.shape[1]  # Should be 1500 for 30s audio
-        d_model = encoder_features.shape[2]   # Should be 384 for tiny model
+        # Conservative approach: partial normalization to preserve semantics
+        # Only move 35% toward target distribution to maintain semantic patterns
+        target_mean = 0.0002
+        target_std = 0.4000
+        normalization_strength = 0.35  # Conservative 35% adjustment - preserve quality while improving length
         
-        # Step 1: Ensure features are in reasonable range for decoder weights
-        # Decoder expects features roughly in range [-2, 2] based on trained weights
-        feature_range = np.max(encoder_features) - np.min(encoder_features)
-        if feature_range > 4.0:  # Too large range
-            scale_factor = 3.0 / feature_range  # Scale to [-1.5, 1.5] range
-            encoder_features = encoder_features * scale_factor
-            print(f"      📊 Range scaling: {feature_range:.3f} → {scale_factor * feature_range:.3f}")
+        current_mean = np.mean(encoder_features)
+        current_std = np.std(encoder_features)
         
-        # Step 2: Apply layer normalization per sequence position (like trained decoder expects)
-        # This maintains semantic relationships while normalizing scale
-        normalized_features = np.zeros_like(encoder_features)
+        # Partial scaling toward target
+        target_scale = target_std / current_std
+        actual_scale = 1.0 + normalization_strength * (target_scale - 1.0)
         
-        for seq_idx in range(seq_len):
-            # Get features for this sequence position
-            pos_features = encoder_features[0, seq_idx, :]  # [d_model]
-            
-            # Apply layer normalization (zero mean, unit variance)
-            pos_mean = np.mean(pos_features)
-            pos_std = np.std(pos_features) + 1e-6  # Add epsilon for stability
-            
-            # Normalize this position
-            normalized_pos = (pos_features - pos_mean) / pos_std
-            
-            # Scale to expected range (based on decoder weight analysis)
-            normalized_pos = normalized_pos * 0.5  # Conservative scaling
-            
-            normalized_features[0, seq_idx, :] = normalized_pos
+        target_shift = target_mean - (current_mean * actual_scale)
+        actual_shift = normalization_strength * target_shift
         
-        # Step 3: Global alignment to expected decoder input range
-        final_mean = np.mean(normalized_features)
-        final_std = np.std(normalized_features)
+        # Apply conservative transformation
+        processed_features = encoder_features * actual_scale + actual_shift
+        processed_std = np.std(processed_features)
         
-        # Target values based on successful CPU baseline analysis
-        # More permissive values to encourage longer generation
-        target_mean = 0.0
-        target_std = 0.4  # Slightly higher for better expressiveness
+        print(f"      🔧 Applied conservative feature processing: {original_std:.3f} → {processed_std:.3f} std (35% normalization)")
+        print(f"      📊 Conservative transformation preserves semantic grounding for accurate transcription")
         
-        # Gentle alignment to target distribution
-        aligned_features = normalized_features * (target_std / final_std)
-        aligned_features = aligned_features + (target_mean - np.mean(aligned_features))
-        
-        final_std_result = np.std(aligned_features)
-        print(f"      📊 Semantic alignment: {original_std:.3f} → {final_std_result:.3f} std")
-        print(f"      📊 Position-wise normalization: {seq_len} positions processed")
-        print(f"      📊 Final range: [{np.min(aligned_features):.3f}, {np.max(aligned_features):.3f}]")
-        
-        return aligned_features
+        return processed_features
     
     def _predict_content_tokens(self, encoder_features: np.ndarray, num_tokens: int = 3) -> List[int]:
         """Predict likely content tokens from encoder features to prime the decoder"""

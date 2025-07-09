@@ -67,11 +67,12 @@ def test_full_max_graph_pipeline():
         generation_start = time.time()
         
         # Generate text using only MAX Graph operations with greedy generation
+        # Use greedy decoding (temperature=0.0) for more accurate transcription
         generated_text = decoder.generate_semantic_text(
             encoder_features, 
             max_length=200,
             beam_size=1,
-            temperature=0.8
+            temperature=0.0  # Greedy decoding for accuracy
         )
         
         generation_time = time.time() - generation_start
